@@ -1,75 +1,86 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import {
-  Eye, ChevronRight, Star, Home, Building2, Hotel, Car, GraduationCap, Heart,
+  Eye, Star, Home, Building2, Hotel, Car, GraduationCap, Heart,
   Play, ArrowRight, Quote
 } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
 import { motion } from 'framer-motion'
 
-// Sample data (will be replaced with database data)
-const categories = [
-  { name: 'Real Estate', slug: 'real-estate', icon: Home, count: 24 },
-  { name: 'Business', slug: 'business', icon: Building2, count: 18 },
-  { name: 'Hospitality', slug: 'hospitality', icon: Hotel, count: 12 },
-  { name: 'Automotive', slug: 'automotive', icon: Car, count: 8 },
-  { name: 'Education', slug: 'education', icon: GraduationCap, count: 6 },
-  { name: 'Healthcare', slug: 'healthcare', icon: Heart, count: 5 },
+// Icon mapping for categories
+const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  'real-estate': Home,
+  'business': Building2,
+  'hospitality': Hotel,
+  'automotive': Car,
+  'education': GraduationCap,
+  'healthcare': Heart,
+}
+
+// Placeholder data - shown when no database tours exist
+const placeholderCategories = [
+  { name: 'Real Estate', slug: 'real-estate', tourCount: 0 },
+  { name: 'Business', slug: 'business', tourCount: 0 },
+  { name: 'Hospitality', slug: 'hospitality', tourCount: 0 },
+  { name: 'Automotive', slug: 'automotive', tourCount: 0 },
+  { name: 'Education', slug: 'education', tourCount: 0 },
+  { name: 'Healthcare', slug: 'healthcare', tourCount: 0 },
 ]
 
-const featuredTours = [
+const placeholderTours = [
   {
-    id: '1',
-    title: 'Luxury Downtown Penthouse',
-    slug: 'luxury-downtown-penthouse',
-    clientName: 'Premier Realty Group',
-    location: 'New York, NY',
+    id: 'placeholder-1',
+    title: 'Your First Tour',
+    slug: 'placeholder',
+    clientName: 'Add tours from admin panel',
+    location: 'Your location',
     coverImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-    category: 'Real Estate',
+    category: { name: 'Real Estate' },
   },
   {
-    id: '2',
-    title: 'Modern Office Space',
-    slug: 'modern-office-space',
-    clientName: 'TechHub Coworking',
-    location: 'San Francisco, CA',
+    id: 'placeholder-2',
+    title: 'Business Space Tour',
+    slug: 'placeholder',
+    clientName: 'Create via /admin',
+    location: 'Your city',
     coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
-    category: 'Business',
+    category: { name: 'Business' },
   },
   {
-    id: '3',
-    title: 'Boutique Hotel & Spa',
-    slug: 'boutique-hotel-spa',
-    clientName: 'The Grand Retreat',
-    location: 'Miami, FL',
+    id: 'placeholder-3',
+    title: 'Hospitality Showcase',
+    slug: 'placeholder',
+    clientName: 'Coming soon...',
+    location: 'Your region',
     coverImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
-    category: 'Hospitality',
+    category: { name: 'Hospitality' },
   },
 ]
 
-const testimonials = [
+const placeholderTestimonials = [
   {
-    id: '1',
-    clientName: 'Sarah Mitchell',
-    clientTitle: 'Real Estate Agent',
-    content: 'Z360 Virtual Tours transformed how I showcase properties. My listings now get 3x more engagement!',
+    id: 'placeholder-1',
+    clientName: 'Your Client Name',
+    clientTitle: 'Client Title',
+    content: 'Add testimonials through the admin panel to showcase your client feedback here.',
     rating: 5,
   },
   {
-    id: '2',
-    clientName: 'Michael Chen',
+    id: 'placeholder-2',
+    clientName: 'Happy Customer',
     clientTitle: 'Business Owner',
-    content: 'The virtual tour of our coworking space has been a game-changer for attracting clients.',
+    content: 'Testimonials help build trust. Add real reviews from your satisfied clients.',
     rating: 5,
   },
   {
-    id: '3',
-    clientName: 'Jennifer Rodriguez',
-    clientTitle: 'Hotel Manager',
-    content: 'Our bookings increased by 40% after adding the virtual tour. Guests love it!',
+    id: 'placeholder-3',
+    clientName: 'Satisfied Client',
+    clientTitle: 'Property Manager',
+    content: 'Showcase your best reviews here to convert more visitors into clients.',
     rating: 5,
   },
 ]
@@ -81,7 +92,68 @@ const stats = [
   { value: '98%', label: 'Client Satisfaction' },
 ]
 
+interface Tour {
+  id: string
+  title: string
+  slug: string
+  clientName: string | null
+  location: string | null
+  coverImage: string
+  category: { name: string }
+}
+
+interface Category {
+  id?: string
+  name: string
+  slug: string
+  tourCount: number
+}
+
+interface Testimonial {
+  id: string
+  clientName: string
+  clientTitle: string | null
+  content: string
+  rating: number
+}
+
 export default function HomePage() {
+  const [tours, setTours] = useState<Tour[]>(placeholderTours)
+  const [categories, setCategories] = useState<Category[]>(placeholderCategories)
+  const [testimonials] = useState<Testimonial[]>(placeholderTestimonials)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch featured tours
+        const toursRes = await fetch('/api/tours?featured=true&limit=3')
+        if (toursRes.ok) {
+          const toursData = await toursRes.json()
+          if (toursData.length > 0) {
+            setTours(toursData)
+          }
+        }
+
+        // Fetch categories
+        const catsRes = await fetch('/api/categories')
+        if (catsRes.ok) {
+          const catsData = await catsRes.json()
+          if (catsData.length > 0) {
+            setCategories(catsData)
+          }
+        }
+      } catch (error) {
+        // Keep using placeholder data
+        console.log('Using placeholder data')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
+
   return (
     <div className="min-h-screen bg-navy">
       <PublicHeader />
@@ -158,7 +230,7 @@ export default function HomePage() {
               <div className="relative aspect-square">
                 <div className="absolute inset-4 rounded-2xl overflow-hidden border border-gold/20">
                   <Image
-                    src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80"
+                    src={tours[0]?.coverImage || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80'}
                     alt="Virtual Tour Preview"
                     fill
                     className="object-cover"
@@ -175,7 +247,7 @@ export default function HomePage() {
 
                   <div className="absolute bottom-4 left-4 right-4">
                     <p className="text-caption text-cream-muted">Featured Tour</p>
-                    <p className="text-h4 font-semibold text-cream">Luxury Downtown Penthouse</p>
+                    <p className="text-h4 font-semibold text-cream">{tours[0]?.title || 'Your Featured Tour'}</p>
                   </div>
                 </div>
 
@@ -207,7 +279,7 @@ export default function HomePage() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {categories.map((category, index) => {
-              const Icon = category.icon
+              const Icon = categoryIcons[category.slug] || Home
               return (
                 <motion.div
                   key={category.slug}
@@ -222,7 +294,7 @@ export default function HomePage() {
                         <Icon className="w-7 h-7 text-gold" />
                       </div>
                       <h3 className="text-h4 font-semibold text-cream mb-1">{category.name}</h3>
-                      <p className="text-caption text-cream-muted">{category.count} tours</p>
+                      <p className="text-caption text-cream-muted">{category.tourCount} tours</p>
                     </Card>
                   </Link>
                 </motion.div>
@@ -255,7 +327,7 @@ export default function HomePage() {
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredTours.map((tour, index) => (
+            {tours.map((tour, index) => (
               <motion.div
                 key={tour.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -263,7 +335,7 @@ export default function HomePage() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Link href={`/tour/${tour.slug}`}>
+                <Link href={tour.slug === 'placeholder' ? '/admin' : `/tour/${tour.slug}`}>
                   <Card className="overflow-hidden group cursor-pointer hover:border-gold/30 transition-all">
                     <div className="relative h-56">
                       <Image
@@ -284,7 +356,7 @@ export default function HomePage() {
                       {/* Category Badge */}
                       <div className="absolute top-4 left-4">
                         <span className="bg-gold text-navy text-caption font-semibold px-3 py-1 rounded-full">
-                          {tour.category}
+                          {tour.category.name}
                         </span>
                       </div>
                     </div>

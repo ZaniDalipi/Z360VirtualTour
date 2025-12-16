@@ -1,15 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, Filter, Play, MapPin, Grid, List } from 'lucide-react'
+import { Search, Play, MapPin, Grid, List } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Input, Card, Chip } from '@/components/ui'
 import { motion } from 'framer-motion'
 
-// Sample data - will be fetched from database
-const categories = [
+// Placeholder data - shown when no database tours exist
+const placeholderCategories = [
   { id: 'all', name: 'All Tours', slug: 'all' },
   { id: 'real-estate', name: 'Real Estate', slug: 'real-estate' },
   { id: 'business', name: 'Business', slug: 'business' },
@@ -18,85 +18,140 @@ const categories = [
   { id: 'education', name: 'Education', slug: 'education' },
 ]
 
-const tours = [
+const placeholderTours = [
   {
-    id: '1',
-    title: 'Luxury Downtown Penthouse',
-    slug: 'luxury-downtown-penthouse',
-    shortDesc: 'Stunning penthouse with panoramic city views',
-    clientName: 'Premier Realty Group',
-    location: 'New York, NY',
+    id: 'placeholder-1',
+    title: 'Your First Tour',
+    slug: 'placeholder',
+    shortDescription: 'Add your first tour from the admin panel',
+    clientName: 'Add tours via /admin',
+    location: 'Your location',
     coverImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
     category: { name: 'Real Estate', slug: 'real-estate' },
     featured: true,
   },
   {
-    id: '2',
-    title: 'Modern Office Space',
-    slug: 'modern-office-space',
-    shortDesc: 'Contemporary office with open floor plan',
-    clientName: 'TechHub Coworking',
-    location: 'San Francisco, CA',
+    id: 'placeholder-2',
+    title: 'Business Space Tour',
+    slug: 'placeholder',
+    shortDescription: 'Showcase your business with 360° tours',
+    clientName: 'Create via admin panel',
+    location: 'Your city',
     coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
     category: { name: 'Business', slug: 'business' },
     featured: true,
   },
   {
-    id: '3',
-    title: 'Boutique Hotel & Spa',
-    slug: 'boutique-hotel-spa',
-    shortDesc: 'Intimate boutique hotel with full spa',
-    clientName: 'The Grand Retreat',
-    location: 'Miami, FL',
+    id: 'placeholder-3',
+    title: 'Hospitality Showcase',
+    slug: 'placeholder',
+    shortDescription: 'Perfect for hotels, restaurants, and venues',
+    clientName: 'Coming soon...',
+    location: 'Your region',
     coverImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
     category: { name: 'Hospitality', slug: 'hospitality' },
     featured: true,
   },
   {
-    id: '4',
-    title: 'Waterfront Villa Estate',
-    slug: 'waterfront-villa-estate',
-    shortDesc: 'Magnificent waterfront estate with private dock',
-    clientName: 'Coastal Luxury Realty',
-    location: 'Malibu, CA',
+    id: 'placeholder-4',
+    title: 'Real Estate Property',
+    slug: 'placeholder',
+    shortDescription: 'Add your property tours here',
+    clientName: 'Your client name',
+    location: 'Property location',
     coverImage: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80',
     category: { name: 'Real Estate', slug: 'real-estate' },
     featured: false,
   },
   {
-    id: '5',
-    title: 'Artisan Coffee Roastery',
-    slug: 'artisan-coffee-roastery',
-    shortDesc: 'Craft coffee roastery and café experience',
-    clientName: 'Bean & Brew Co.',
-    location: 'Portland, OR',
+    id: 'placeholder-5',
+    title: 'Coffee Shop Tour',
+    slug: 'placeholder',
+    shortDescription: 'Perfect for cafes and retail stores',
+    clientName: 'Business name',
+    location: 'Store location',
     coverImage: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',
     category: { name: 'Business', slug: 'business' },
     featured: false,
   },
   {
-    id: '6',
-    title: 'Fine Dining Restaurant',
-    slug: 'fine-dining-restaurant',
-    shortDesc: 'Michelin-starred dining experience',
-    clientName: 'La Maison Élégante',
-    location: 'Chicago, IL',
+    id: 'placeholder-6',
+    title: 'Restaurant Tour',
+    slug: 'placeholder',
+    shortDescription: 'Showcase your dining experience',
+    clientName: 'Restaurant name',
+    location: 'Restaurant location',
     coverImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
     category: { name: 'Hospitality', slug: 'hospitality' },
     featured: false,
   },
 ]
 
+interface Tour {
+  id: string
+  title: string
+  slug: string
+  shortDescription?: string | null
+  clientName: string | null
+  location: string | null
+  coverImage: string
+  category: { name: string; slug: string }
+  featured: boolean
+}
+
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
+
 export default function ToursPage() {
+  const [tours, setTours] = useState<Tour[]>(placeholderTours)
+  const [categories, setCategories] = useState<Category[]>(placeholderCategories)
   const [activeCategory, setActiveCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch tours
+        const toursRes = await fetch('/api/tours')
+        if (toursRes.ok) {
+          const toursData = await toursRes.json()
+          if (toursData.length > 0) {
+            setTours(toursData)
+          }
+        }
+
+        // Fetch categories
+        const catsRes = await fetch('/api/categories')
+        if (catsRes.ok) {
+          const catsData = await catsRes.json()
+          if (catsData.length > 0) {
+            // Add "All Tours" option
+            setCategories([
+              { id: 'all', name: 'All Tours', slug: 'all' },
+              ...catsData,
+            ])
+          }
+        }
+      } catch (error) {
+        console.log('Using placeholder data')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const filteredTours = tours.filter((tour) => {
     const matchesCategory = activeCategory === 'all' || tour.category.slug === activeCategory
     const matchesSearch = tour.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         tour.clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         tour.location.toLowerCase().includes(searchQuery.toLowerCase())
+                         (tour.clientName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                         (tour.location?.toLowerCase() || '').includes(searchQuery.toLowerCase())
     return matchesCategory && matchesSearch
   })
 
@@ -183,7 +238,7 @@ export default function ToursPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Link href={`/tour/${tour.slug}`}>
+                <Link href={tour.slug === 'placeholder' ? '/admin' : `/tour/${tour.slug}`}>
                   <Card className={`overflow-hidden group cursor-pointer hover:border-gold/30 transition-all ${viewMode === 'list' ? 'flex' : ''}`}>
                     <div className={`relative ${viewMode === 'list' ? 'w-64 flex-shrink-0' : 'h-56'}`}>
                       <div className={viewMode === 'list' ? 'h-full' : ''}>
@@ -223,8 +278,8 @@ export default function ToursPage() {
                       <h3 className="text-h3 font-semibold text-cream mb-2 group-hover:text-gold transition-colors">
                         {tour.title}
                       </h3>
-                      {tour.shortDesc && (
-                        <p className="text-body text-cream-soft mb-3">{tour.shortDesc}</p>
+                      {tour.shortDescription && (
+                        <p className="text-body text-cream-soft mb-3">{tour.shortDescription}</p>
                       )}
                       <p className="text-body text-cream-muted mb-1">{tour.clientName}</p>
                       <p className="text-caption text-cream-dim flex items-center gap-1">
