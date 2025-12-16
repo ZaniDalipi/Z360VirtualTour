@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useState } from 'react'
-import { Menu, X, Eye } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui'
 import { cn } from '@/lib/utils'
 
@@ -22,13 +23,26 @@ export function PublicHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-lg bg-gold/20 flex items-center justify-center">
-              <Eye className="w-6 h-6 text-gold" />
+          <Link href="/" className="flex items-center">
+            {/* Mobile Logo */}
+            <div className="block md:hidden relative h-12 w-20">
+              <Image
+                src="/images/logo-mobile.png"
+                alt="Z360 Virtual Tours"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-            <div>
-              <span className="text-xl font-bold text-cream">Z<span className="text-gold">360</span></span>
-              <p className="text-[10px] text-cream-muted -mt-1 hidden sm:block">VIRTUAL TOURS</p>
+            {/* Desktop Logo */}
+            <div className="hidden md:block relative h-14 w-44">
+              <Image
+                src="/images/logo-desktop.png"
+                alt="Z360 Virtual Tours"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
           </Link>
 

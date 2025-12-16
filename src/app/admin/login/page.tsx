@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Eye, Lock, Mail, AlertCircle } from 'lucide-react'
+import Image from 'next/image'
+import { Lock, Mail, AlertCircle } from 'lucide-react'
 import { Button, Card, Input } from '@/components/ui'
 import { motion } from 'framer-motion'
 
@@ -51,11 +52,16 @@ export default function AdminLoginPage() {
         <Card className="p-8">
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-gold/20 flex items-center justify-center mx-auto mb-4">
-              <Eye className="w-8 h-8 text-gold" />
+            <div className="relative h-20 w-32 mx-auto mb-4">
+              <Image
+                src="/images/logo-mobile.png"
+                alt="Z360 Virtual Tours"
+                fill
+                className="object-contain"
+              />
             </div>
-            <h1 className="text-h2 font-bold text-cream">
-              Z<span className="text-gold">360</span> Admin
+            <h1 className="text-h3 font-bold text-cream">
+              Admin Panel
             </h1>
             <p className="text-body text-cream-muted mt-2">
               Sign in to manage your virtual tours

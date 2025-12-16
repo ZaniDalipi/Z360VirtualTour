@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Eye, Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react'
+import Image from 'next/image'
+import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react'
 
 const footerLinks = {
   services: [
@@ -36,13 +37,14 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-gold/20 flex items-center justify-center">
-                <Eye className="w-6 h-6 text-gold" />
-              </div>
-              <div>
-                <span className="text-xl font-bold text-cream">Z<span className="text-gold">360</span></span>
-                <p className="text-[10px] text-cream-muted -mt-1">VIRTUAL TOURS</p>
+            <Link href="/" className="block mb-4">
+              <div className="relative h-14 w-36">
+                <Image
+                  src="/images/logo-desktop.png"
+                  alt="Z360 Virtual Tours"
+                  fill
+                  className="object-contain object-left"
+                />
               </div>
             </Link>
             <p className="text-body text-cream-muted mb-6">
