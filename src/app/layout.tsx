@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
+import { Toaster } from 'react-hot-toast'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Z360 Virtual Tours | Explore Properties Like Never Before',
-  description: 'Premium 360° virtual tour platform for real estate. Experience immersive property exploration with AR capabilities and interactive walkthroughs.',
-  keywords: ['virtual tour', '360 tour', 'real estate', 'property', 'AR', 'immersive'],
+  title: 'Z360 Virtual Tours | Professional 360° Tour Services',
+  description: 'Professional 360° virtual tour services for real estate, businesses, hospitality, and more. Immersive experiences that showcase your space.',
+  keywords: ['virtual tour', '360 tour', 'real estate photography', 'business tour', 'virtual walkthrough', 'immersive tour'],
 }
 
 export default function RootLayout({
@@ -21,6 +22,16 @@ export default function RootLayout({
         <div className="min-h-screen bg-navy">
           {children}
         </div>
+        <Toaster
+          position="bottom-right"
+          toastOptions={{
+            style: {
+              background: '#0A1520',
+              color: '#E8DCC4',
+              border: '1px solid rgba(201, 169, 98, 0.2)',
+            },
+          }}
+        />
       </body>
     </html>
   )

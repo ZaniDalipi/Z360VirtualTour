@@ -1,0 +1,108 @@
+// Prisma Schema for Z360 Virtual Tours Business Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Admin user for authentication
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Tour categories (Real Estate, Business, Hospitality, etc.)
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String?  // Icon name from lucide-react
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  tours       Tour[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Main tour entity
+model Tour {
+  id            String   @id @default(cuid())
+  title         String
+  slug          String   @unique
+  description   String
+  shortDesc     String?  // Short description for cards
+  clientName    String?  // Client/business name
+  location      String?
+  coverImage    String   // Main thumbnail
+  images        String?  // JSON array of additional images
+  tourUrl       String?  // External 360 tour URL (e.g., from Kuula, Matterport)
+  tourEmbed     String?  // Embed code for 360 viewer
+  categoryId    String
+  category      Category @relation(fields: [categoryId], references: [id])
+  featured      Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  views         Int      @default(0)
+  completedAt   DateTime? // When the tour project was completed
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// Client testimonials
+model Testimonial {
+  id          String   @id @default(cuid())
+  clientName  String
+  clientTitle String?  // e.g., "CEO at Company"
+  clientImage String?
+  content     String
+  rating      Int      @default(5) // 1-5 stars
+  tourId      String?  // Optional link to a specific tour
+  featured    Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Pricing packages
+model PricingPlan {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  priceLabel  String?  // e.g., "Starting at", "From"
+  features    String   // JSON array of features
+  isPopular   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Contact form submissions
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  service   String?  // Selected service type
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// Site settings (about content, contact info, etc.)
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
