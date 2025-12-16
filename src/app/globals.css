@@ -110,9 +110,10 @@
 
   .btn-icon {
     @apply w-12 h-12 flex items-center justify-center
-           bg-cream/8 border border-cream/15 rounded-md
+           border border-cream/15 rounded-md
            text-cream transition-all duration-200
            hover:bg-gold/10 hover:border-gold/30 hover:text-gold;
+    background-color: rgba(232, 220, 196, 0.08);
   }
 
   /* Input styles */
@@ -154,7 +155,10 @@
   .property-card {
     @apply bg-navy-dark border border-gold/10 rounded-lg overflow-hidden
            shadow-card transition-all duration-300
-           hover:border-gold/25 hover:shadow-glow/20 hover:-translate-y-1;
+           hover:border-gold/25 hover:-translate-y-1;
+  }
+  .property-card:hover {
+    box-shadow: 0 0 20px rgba(201, 169, 98, 0.2);
   }
 
   /* 360 tour hotspot */
