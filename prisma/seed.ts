@@ -6,16 +6,19 @@ const prisma = new PrismaClient()
 async function main() {
   console.log('🌱 Seeding database...')
 
-  // Create admin user
-  const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 10)
+  // Create or update admin user
+  const adminEmail = process.env.ADMIN_EMAIL || 'z360virtualtours@gmail.com'
+  const adminPassword = process.env.ADMIN_PASSWORD || 'Z360Tours@2024!Secure'
+  const hashedPassword = await bcrypt.hash(adminPassword, 12)
 
-  const admin = await prisma.admin.upsert({
-    where: { email: process.env.ADMIN_EMAIL || 'admin@z360tours.com' },
-    update: {},
-    create: {
-      email: process.env.ADMIN_EMAIL || 'admin@z360tours.com',
+  // Delete existing admin users and create fresh
+  await prisma.admin.deleteMany({})
+
+  const admin = await prisma.admin.create({
+    data: {
+      email: adminEmail,
       password: hashedPassword,
-      name: 'Admin',
+      name: 'Z360 Admin',
     },
   })
   console.log('✅ Admin user created:', admin.email)
@@ -158,6 +161,9 @@ async function main() {
     },
   ]
 
+  // Clear existing testimonials first
+  await prisma.testimonial.deleteMany({})
+
   for (const testimonial of testimonials) {
     await prisma.testimonial.create({
       data: testimonial,
@@ -219,6 +225,9 @@ async function main() {
       order: 3,
     },
   ]
+
+  // Clear existing pricing plans first
+  await prisma.pricingPlan.deleteMany({})
 
   for (const plan of pricingPlans) {
     await prisma.pricingPlan.create({
