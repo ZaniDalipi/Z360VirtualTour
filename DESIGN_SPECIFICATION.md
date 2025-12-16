@@ -24,50 +24,90 @@
 
 ## 2. Color System
 
+### Official Brand Colors (From Logo)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Z360 VIRTUAL TOURS - BRAND COLOR PALETTE                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ████████  Deep Navy        #0D1B2A  (Primary Background)   │
+│  ████████  Warm Cream       #E8DCC4  (Logo, Headlines)      │
+│  ████████  Golden Amber     #C9A962  (Accents, Wireframe)   │
+│  ████████  Soft Gold        #D4B896  (Secondary Text)       │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ### Primary Palette (Dark Theme)
 
 ```
 Background Colors:
-├── Deep Black:        #0A0A0B (Primary Background)
-├── Rich Black:        #121214 (Card Background)
-├── Charcoal:          #1A1A1D (Elevated Surfaces)
-└── Dark Gray:         #242428 (Input Fields/Borders)
+├── Deep Navy:         #0D1B2A (Primary Background - from logo)
+├── Navy Dark:         #0A1520 (Card Background)
+├── Navy Medium:       #142536 (Elevated Surfaces)
+└── Navy Light:        #1C3247 (Input Fields/Borders)
 
-Accent Colors:
-├── Electric Blue:     #00D4FF (Primary Accent - CTAs, Active States)
-├── Neon Cyan:         #0DFFF0 (Secondary Accent - Highlights)
-├── Royal Purple:      #7B61FF (Tertiary - AR Elements)
-└── Gradient Primary:  linear-gradient(135deg, #00D4FF 0%, #7B61FF 100%)
+Brand Colors:
+├── Warm Cream:        #E8DCC4 (Primary - Logo, Headlines, CTAs)
+├── Golden Amber:      #C9A962 (Accent - Highlights, Wireframes)
+├── Soft Gold:         #D4B896 (Secondary - Borders, Icons)
+└── Gradient Primary:  linear-gradient(135deg, #E8DCC4 0%, #C9A962 100%)
 
 Text Colors:
-├── Pure White:        #FFFFFF (Headlines, Primary Text)
-├── Light Gray:        #E5E5E7 (Body Text)
-├── Medium Gray:       #9898A0 (Secondary Text, Labels)
-└── Dim Gray:          #5C5C66 (Placeholder Text, Disabled)
+├── Warm Cream:        #E8DCC4 (Headlines, Primary Text)
+├── Soft Cream:        #D4C9B5 (Body Text)
+├── Muted Cream:       #9A9082 (Secondary Text, Labels)
+└── Dim Cream:         #6B6358 (Placeholder Text, Disabled)
 
 Semantic Colors:
-├── Success Green:     #00E676 (Verified, Available)
-├── Warning Amber:     #FFB300 (Featured, Pending)
-├── Error Red:         #FF5252 (Errors, Sold)
-└── Info Blue:         #448AFF (Information)
+├── Success Green:     #4CAF7A (Verified, Available)
+├── Warning Amber:     #C9A962 (Featured, Pending - brand gold)
+├── Error Red:         #D45B5B (Errors, Sold)
+└── Info Blue:         #5B8FD4 (Information)
 
 360° Tour UI Colors:
-├── Hotspot Glow:      rgba(0, 212, 255, 0.6)
-├── AR Overlay:        rgba(123, 97, 255, 0.3)
-└── Navigation Ring:   rgba(255, 255, 255, 0.15)
+├── Hotspot Glow:      rgba(201, 169, 98, 0.6) (Golden glow)
+├── AR Overlay:        rgba(232, 220, 196, 0.2) (Cream overlay)
+└── Navigation Ring:   rgba(232, 220, 196, 0.15)
+└── Wireframe Grid:    rgba(201, 169, 98, 0.4) (Golden mesh)
+```
+
+### Logo Specifications
+```
+Logo Mark:
+├── Primary "Z":       Bold serif, Warm Cream #E8DCC4
+├── 360° Icon:         Camera/pin shape with circular arrows
+├── Icon Fill:         Warm Cream #E8DCC4
+└── 360 Text:          Inside circular arrow element
+
+Tagline:
+├── Text:              "360 VIRTUAL TOURS"
+├── Color:             Warm Cream #E8DCC4
+├── Typography:        All caps, wide tracking
+
+Background Elements:
+├── Buildings:         Line art, Golden Amber #C9A962 outline
+├── Wireframe Grid:    3D mesh terrain, Golden Amber gradient
+└── Grid Opacity:      40-60% for depth effect
 ```
 
 ### Glassmorphism Effects
 ```css
 /* Primary Glass Card */
-background: rgba(26, 26, 29, 0.7);
+background: rgba(13, 27, 42, 0.8);
 backdrop-filter: blur(20px);
-border: 1px solid rgba(255, 255, 255, 0.08);
+border: 1px solid rgba(232, 220, 196, 0.1);
 
 /* Elevated Glass */
-background: rgba(36, 36, 40, 0.8);
+background: rgba(20, 37, 54, 0.85);
 backdrop-filter: blur(30px);
-border: 1px solid rgba(255, 255, 255, 0.12);
+border: 1px solid rgba(201, 169, 98, 0.15);
+
+/* Golden Accent Glass */
+background: rgba(201, 169, 98, 0.1);
+backdrop-filter: blur(20px);
+border: 1px solid rgba(201, 169, 98, 0.3);
 ```
 
 ---
@@ -640,25 +680,26 @@ Hotspot Popup (When tapped):
 ┌─────────────────────────────────┐
 │         Start 360° Tour         │
 └─────────────────────────────────┘
-- Background: Gradient (Electric Blue → Royal Purple)
-- Text: White, Semibold, 16px
+- Background: Warm Cream #E8DCC4 (solid) or Gradient (#E8DCC4 → #C9A962)
+- Text: Deep Navy #0D1B2A, Semibold, 16px
 - Height: 56px
 - Border Radius: 12px
-- Shadow: 0 8px 32px rgba(0, 212, 255, 0.3)
-- Hover: Scale 1.02, increased shadow
-- Active: Scale 0.98
+- Shadow: 0 8px 32px rgba(201, 169, 98, 0.3)
+- Hover: Scale 1.02, golden glow effect
+- Active: Scale 0.98, darker cream #D4C9B5
 ```
 
-#### Secondary Button
+#### Secondary Button (Outline)
 ```
 ┌─────────────────────────────────┐
 │           AR View               │
 └─────────────────────────────────┘
-- Background: rgba(255, 255, 255, 0.08)
-- Border: 1px solid rgba(255, 255, 255, 0.15)
-- Text: White, Medium, 16px
+- Background: transparent
+- Border: 1.5px solid rgba(232, 220, 196, 0.4)
+- Text: Warm Cream #E8DCC4, Medium, 16px
 - Height: 56px
 - Border Radius: 12px
+- Hover: Border #C9A962, background rgba(201, 169, 98, 0.1)
 ```
 
 #### Icon Button
@@ -667,8 +708,11 @@ Hotspot Popup (When tapped):
 │  ❤️  │
 └─────┘
 - Size: 48px × 48px
-- Background: rgba(255, 255, 255, 0.08)
+- Background: rgba(232, 220, 196, 0.08)
+- Border: 1px solid rgba(232, 220, 196, 0.15)
+- Icon Color: Warm Cream #E8DCC4
 - Border Radius: 12px
+- Active: Golden Amber #C9A962
 ```
 
 ### 6.2 Cards
@@ -689,11 +733,15 @@ Hotspot Popup (When tapped):
 │ 🛏 3  •  🚿 2  •  📐 1,850 sqft │
 └─────────────────────────────────┘
 
-- Background: #121214
+- Background: Navy Dark #0A1520
+- Border: 1px solid rgba(201, 169, 98, 0.1)
 - Border Radius: 16px
 - Image Radius: 16px 16px 0 0
 - Padding: 16px
-- Shadow: 0 4px 24px rgba(0, 0, 0, 0.4)
+- Shadow: 0 4px 24px rgba(0, 0, 0, 0.5)
+- Title: Warm Cream #E8DCC4
+- Price: Golden Amber #C9A962
+- Meta: Soft Cream #D4C9B5
 ```
 
 #### Feature Card (Tour Options)
@@ -708,10 +756,13 @@ Hotspot Popup (When tapped):
 │  in 360°        │
 └─────────────────┘
 
-- Background: Glassmorphism
-- Border: 1px solid rgba(0, 212, 255, 0.3)
+- Background: rgba(20, 37, 54, 0.6)
+- Border: 1px solid rgba(201, 169, 98, 0.25)
 - Border Radius: 16px
-- Hover: Border glow effect
+- Icon: Golden Amber #C9A962
+- Title: Warm Cream #E8DCC4
+- Description: Soft Cream #D4C9B5
+- Hover: Border glow with golden amber
 ```
 
 ### 6.3 Input Fields
@@ -720,12 +771,14 @@ Hotspot Popup (When tapped):
 │ 🔍  Search location, price...   │
 └─────────────────────────────────┘
 
-- Background: #242428
-- Border: 1px solid #3A3A40
-- Focus Border: #00D4FF
+- Background: Navy Medium #142536
+- Border: 1px solid rgba(232, 220, 196, 0.15)
+- Focus Border: Golden Amber #C9A962
 - Height: 52px
 - Border Radius: 12px
-- Placeholder: #5C5C66
+- Text: Warm Cream #E8DCC4
+- Placeholder: Dim Cream #6B6358
+- Icon: Soft Gold #D4B896
 ```
 
 ### 6.4 Chips/Tags
@@ -734,8 +787,9 @@ Hotspot Popup (When tapped):
 │ 🏠 Houses│  │ 🏢 Apts  │  │ 🏡 Villas│
 └──────────┘  └──────────┘  └──────────┘
 
-- Active: Background #00D4FF, Text #0A0A0B
-- Inactive: Background #242428, Text #E5E5E7
+- Active: Background Warm Cream #E8DCC4, Text Deep Navy #0D1B2A
+- Inactive: Background Navy Medium #142536, Text Soft Cream #D4C9B5
+- Inactive Border: 1px solid rgba(232, 220, 196, 0.2)
 - Height: 36px
 - Border Radius: 18px (pill)
 - Padding: 0 16px
@@ -744,15 +798,17 @@ Hotspot Popup (When tapped):
 ### 6.5 360° Tour Hotspots
 ```
        ╭─────╮
-       │  ◉  │  ← Pulsing glow animation
+       │  ◉  │  ← Pulsing golden glow animation
        ╰─────╯
 
 - Size: 32px
-- Background: rgba(0, 212, 255, 0.2)
-- Border: 2px solid #00D4FF
-- Glow: 0 0 20px rgba(0, 212, 255, 0.6)
+- Background: rgba(201, 169, 98, 0.25)
+- Border: 2px solid Golden Amber #C9A962
+- Glow: 0 0 20px rgba(201, 169, 98, 0.6)
 - Animation: Pulse scale 1.0 → 1.2
 - On Hover: Expand to show label
+- Label Background: Navy Dark #0A1520
+- Label Text: Warm Cream #E8DCC4
 ```
 
 ### 6.6 Navigation Bar
@@ -762,11 +818,12 @@ Hotspot Popup (When tapped):
 │ Home  Search  Map   Saved Profile│
 └─────────────────────────────────┘
 
-- Background: #121214
+- Background: Navy Dark #0A1520
 - Height: 84px (including safe area)
-- Active Icon: #00D4FF
-- Inactive Icon: #5C5C66
-- Border Top: 1px solid #242428
+- Active Icon: Warm Cream #E8DCC4
+- Active Label: Warm Cream #E8DCC4
+- Inactive Icon: Muted Cream #9A9082
+- Border Top: 1px solid rgba(201, 169, 98, 0.15)
 ```
 
 ### 6.7 Bottom Sheet
@@ -779,10 +836,11 @@ Hotspot Popup (When tapped):
 │                                 │
 └─────────────────────────────────┘
 
-- Background: #1A1A1D
+- Background: Navy Medium #142536
 - Border Radius: 24px 24px 0 0
-- Drag Indicator: 40px × 4px, #5C5C66
-- Backdrop: Black 60% opacity
+- Border Top: 1px solid rgba(201, 169, 98, 0.2)
+- Drag Indicator: 40px × 4px, Soft Gold #D4B896
+- Backdrop: Deep Navy 70% opacity
 ```
 
 ---
@@ -836,7 +894,9 @@ Hotspot Popup (When tapped):
 └─────────────────────────────────┘
 
 - Shimmer animation: left to right gradient
-- Color: #242428 → #3A3A40 → #242428
+- Base Color: Navy Medium #142536
+- Shimmer Color: Navy Light #1C3247 with golden tint
+- Gradient: #142536 → rgba(201, 169, 98, 0.1) → #142536
 - Duration: 1.5s infinite
 ```
 
@@ -1142,6 +1202,45 @@ Property Detail → Schedule Tour → Select Type → Pick Date → Pick Time �
 
 ---
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Last Updated:** December 2024
 **Author:** Z360VirtualTours Design Team
+
+---
+
+## Appendix: Quick Color Reference
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Z360 VIRTUAL TOURS - QUICK COLOR REFERENCE                 │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  BACKGROUNDS                                                │
+│  ─────────────────────────────────────────────────          │
+│  #0D1B2A  Deep Navy      Primary background                 │
+│  #0A1520  Navy Dark      Cards, navigation                  │
+│  #142536  Navy Medium    Elevated surfaces, inputs          │
+│  #1C3247  Navy Light     Borders, dividers                  │
+│                                                             │
+│  BRAND                                                      │
+│  ─────────────────────────────────────────────────          │
+│  #E8DCC4  Warm Cream     Logo, headlines, primary CTAs      │
+│  #C9A962  Golden Amber   Accents, hotspots, highlights      │
+│  #D4B896  Soft Gold      Secondary icons, borders           │
+│                                                             │
+│  TEXT                                                       │
+│  ─────────────────────────────────────────────────          │
+│  #E8DCC4  Warm Cream     Headlines, primary text            │
+│  #D4C9B5  Soft Cream     Body text                          │
+│  #9A9082  Muted Cream    Secondary text, labels             │
+│  #6B6358  Dim Cream      Placeholders, disabled             │
+│                                                             │
+│  SEMANTIC                                                   │
+│  ─────────────────────────────────────────────────          │
+│  #4CAF7A  Success Green  Available, verified                │
+│  #C9A962  Warning Amber  Featured, pending (brand gold)     │
+│  #D45B5B  Error Red      Errors, sold                       │
+│  #5B8FD4  Info Blue      Information                        │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
