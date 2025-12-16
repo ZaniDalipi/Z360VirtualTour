@@ -23,8 +23,7 @@
     "tailwind-merge": "^2.2.0",
     "bcryptjs": "^2.4.3",
     "jose": "^5.2.0",
-    "cookies-next": "^4.1.0",
-    "react-hot-toast": "^2.4.1"
+    "cookies-next": "^4.1.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
