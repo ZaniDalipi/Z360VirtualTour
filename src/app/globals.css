@@ -96,23 +96,26 @@
 
   /* Custom button styles */
   .btn-primary {
-    @apply bg-cream text-navy font-semibold px-6 py-3 rounded-md
+    @apply bg-cream font-semibold px-6 py-3 rounded-md
            shadow-button transition-all duration-200
            hover:scale-[1.02] hover:shadow-glow
            active:scale-[0.98] active:bg-cream-soft;
+    color: #0D1B2A;
   }
 
   .btn-secondary {
-    @apply bg-transparent border-[1.5px] border-gold/40 text-navy font-medium
+    @apply bg-transparent border-[1.5px] border-gold/40 font-medium
            px-6 py-3 rounded-md transition-all duration-200
            hover:border-gold hover:bg-gold/10;
+    color: #0D1B2A;
   }
 
   .btn-icon {
     @apply w-12 h-12 flex items-center justify-center
            bg-navy-light/50 border border-gold/20 rounded-md
-           text-navy transition-all duration-200
+           transition-all duration-200
            hover:bg-gold/20 hover:border-gold/40;
+    color: #0D1B2A;
   }
 
   /* Input styles */
