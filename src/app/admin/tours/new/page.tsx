@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Save, Image as ImageIcon } from 'lucide-react'
+import { ArrowLeft, Save, Image as ImageIcon, Upload, X } from 'lucide-react'
 import Link from 'next/link'
 import { Card, Button, Input } from '@/components/ui'
 import { motion } from 'framer-motion'
@@ -16,6 +16,9 @@ export default function NewTourPage() {
   const router = useRouter()
   const [categories, setCategories] = useState<Category[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -63,6 +66,44 @@ export default function NewTourPage() {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '')
       setFormData((prev) => ({ ...prev, slug }))
+    }
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    setUploadError('')
+
+    try {
+      const uploadFormData = new FormData()
+      uploadFormData.append('file', file)
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setFormData((prev) => ({ ...prev, coverImage: data.url }))
+      } else {
+        setUploadError(data.error || 'Failed to upload image')
+      }
+    } catch (error) {
+      console.error('Upload failed:', error)
+      setUploadError('Failed to upload image')
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({ ...prev, coverImage: '' }))
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
@@ -237,25 +278,79 @@ export default function NewTourPage() {
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-cream mb-2">
-                    Cover Image URL *
+                    Cover Image *
                   </label>
+
+                  {/* File Upload */}
+                  <div className="mb-3">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                      id="coverImageUpload"
+                    />
+                    <label
+                      htmlFor="coverImageUpload"
+                      className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed
+                                  cursor-pointer transition-all ${
+                                    isUploading
+                                      ? 'border-gold/50 bg-gold/5'
+                                      : 'border-gold/30 hover:border-gold/50 hover:bg-navy-light/30'
+                                  }`}
+                    >
+                      {isUploading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+                          <span className="text-cream-muted">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="w-5 h-5 text-gold" />
+                          <span className="text-cream">Upload from PC</span>
+                        </>
+                      )}
+                    </label>
+                    {uploadError && (
+                      <p className="mt-2 text-sm text-red-400">{uploadError}</p>
+                    )}
+                  </div>
+
+                  {/* Or use URL */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex-1 h-px bg-gold/20" />
+                    <span className="text-xs text-cream-muted">or paste URL</span>
+                    <div className="flex-1 h-px bg-gold/20" />
+                  </div>
+
                   <Input
                     name="coverImage"
                     value={formData.coverImage}
                     onChange={handleChange}
                     placeholder="https://example.com/image.jpg"
-                    required
                   />
+
+                  {/* Preview */}
                   {formData.coverImage && (
-                    <div className="mt-3 relative w-40 h-24 rounded-lg overflow-hidden border border-gold/20">
-                      <img
-                        src={formData.coverImage}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none'
-                        }}
-                      />
+                    <div className="mt-3 relative inline-block">
+                      <div className="w-40 h-24 rounded-lg overflow-hidden border border-gold/20">
+                        <img
+                          src={formData.coverImage}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none'
+                          }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute -top-2 -right-2 p-1 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
                     </div>
                   )}
                 </div>

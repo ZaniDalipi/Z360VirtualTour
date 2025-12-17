@@ -34,3 +34,7 @@ next-env.d.ts
 .vscode
 *.swp
 *.swo
+
+# Uploads (user uploaded images)
+public/uploads/*
+!public/uploads/.gitkeep
