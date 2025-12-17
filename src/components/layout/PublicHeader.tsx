@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui'
@@ -19,31 +18,14 @@ export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 bg-navy/95 backdrop-blur-lg border-b border-gold/10">
+    <header className="sticky top-0 z-50 bg-navy border-b border-gold/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            {/* Mobile Logo */}
-            <div className="block md:hidden relative h-12 w-12">
-              <Image
-                src="/images/logo-mobile.svg"
-                alt="Z360 Virtual Tours"
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
-            {/* Desktop Logo */}
-            <div className="hidden md:block relative h-12 w-32">
-              <Image
-                src="/images/logo-desktop.svg"
-                alt="Z360 Virtual Tours"
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-2xl font-bold text-cream">Z</span>
+            <span className="text-xl font-semibold text-gold">360</span>
+            <span className="hidden sm:inline text-sm text-cream-soft">Virtual Tours</span>
           </Link>
 
           {/* Desktop Navigation */}
