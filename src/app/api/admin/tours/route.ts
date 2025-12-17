@@ -47,16 +47,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Convert images array to JSON string if it's an array
+    let imagesJson = null
+    if (data.images) {
+      if (Array.isArray(data.images)) {
+        imagesJson = data.images.length > 0 ? JSON.stringify(data.images) : null
+      } else if (typeof data.images === 'string') {
+        imagesJson = data.images
+      }
+    }
+
     const tour = await prisma.tour.create({
       data: {
         title: data.title,
         slug: data.slug,
-        description: data.description || null,
+        description: data.description || '',
         shortDesc: data.shortDescription || data.shortDesc || null,
         clientName: data.clientName || null,
         location: data.location || null,
         coverImage: data.coverImage,
-        images: data.images || [],
+        images: imagesJson,
         tourUrl: data.tourUrl || null,
         tourEmbed: data.tourEmbed || null,
         categoryId: data.categoryId,
