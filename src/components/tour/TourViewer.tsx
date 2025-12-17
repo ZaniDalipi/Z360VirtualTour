@@ -209,7 +209,7 @@ export function TourViewer({ rooms, initialRoom, onRoomChange }: TourViewerProps
               {activeHotspot.type === 'navigation' && activeHotspot.target && (
                 <button
                   onClick={() => navigateToRoom(activeHotspot.target!)}
-                  className="mt-3 w-full bg-gold/20 text-gold py-2 rounded-lg hover:bg-gold/30 transition-colors"
+                  className="mt-3 w-full bg-gold text-navy font-medium py-2 rounded-lg hover:bg-gold-soft transition-colors"
                 >
                   Go to {activeHotspot.label}
                 </button>

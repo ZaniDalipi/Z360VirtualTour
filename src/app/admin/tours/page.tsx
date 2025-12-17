@@ -143,7 +143,7 @@ export default function AdminToursPage() {
                       {tour.title}
                     </h3>
                     {tour.featured && (
-                      <span className="px-2 py-0.5 text-xs rounded-full bg-gold/20 text-gold">
+                      <span className="px-2 py-0.5 text-xs rounded-full bg-gold text-navy font-medium">
                         Featured
                       </span>
                     )}

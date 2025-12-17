@@ -99,7 +99,7 @@ export default function ProfilePage() {
                   </div>
                   <div className="flex items-center gap-2">
                     {item.badge && (
-                      <span className="bg-gold/20 text-gold text-caption px-2 py-0.5 rounded-full">
+                      <span className="bg-gold text-navy text-caption px-2 py-0.5 rounded-full font-medium">
                         {item.badge}
                       </span>
                     )}

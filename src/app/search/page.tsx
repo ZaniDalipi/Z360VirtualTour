@@ -108,13 +108,13 @@ export default function SearchPage() {
             <div className="flex border border-cream/15 rounded-md overflow-hidden">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-gold/20 text-gold' : 'text-cream-muted hover:bg-cream/5'}`}
+                className={`p-2 ${viewMode === 'grid' ? 'bg-gold text-navy' : 'text-cream-muted hover:bg-cream/5'}`}
               >
                 <Grid className="w-5 h-5" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-gold/20 text-gold' : 'text-cream-muted hover:bg-cream/5'}`}
+                className={`p-2 ${viewMode === 'list' ? 'bg-gold text-navy' : 'text-cream-muted hover:bg-cream/5'}`}
               >
                 <List className="w-5 h-5" />
               </button>

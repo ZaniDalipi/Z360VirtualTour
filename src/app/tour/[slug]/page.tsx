@@ -163,7 +163,7 @@ export default function TourDetailPage() {
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <span className="px-3 py-1 rounded-full bg-gold/20 text-gold text-sm">
+                  <span className="px-3 py-1 rounded-full bg-gold text-navy text-sm font-medium">
                     {tour.category.name}
                   </span>
                 </div>

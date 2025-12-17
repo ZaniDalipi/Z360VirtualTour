@@ -15,9 +15,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary: 'bg-cream text-navy hover:scale-[1.02] hover:shadow-glow active:scale-[0.98] active:bg-cream-soft shadow-button',
-      secondary: 'bg-transparent border-[1.5px] border-cream/40 text-cream hover:border-gold hover:bg-gold/10',
+      secondary: 'bg-transparent border-[1.5px] border-gold/40 text-gold hover:border-gold hover:bg-gold/10 hover:text-cream',
       ghost: 'bg-transparent text-cream hover:bg-cream/10',
-      icon: 'bg-cream/8 border border-cream/15 text-cream hover:bg-gold/10 hover:border-gold/30 hover:text-gold',
+      icon: 'bg-navy-light/50 border border-gold/20 text-cream hover:bg-gold/20 hover:border-gold/40 hover:text-gold',
     }
 
     const sizes = {

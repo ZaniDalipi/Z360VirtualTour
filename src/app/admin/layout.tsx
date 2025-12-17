@@ -134,7 +134,7 @@ export default function AdminLayout({
                   className={cn(
                     'flex items-center gap-3 px-4 py-3 rounded-xl text-body transition-colors',
                     isActive
-                      ? 'bg-gold/20 text-gold'
+                      ? 'bg-gold text-navy font-medium'
                       : 'text-cream-muted hover:text-cream hover:bg-gold/10'
                   )}
                   onClick={() => setSidebarOpen(false)}
