@@ -52,7 +52,7 @@ export function PublicHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-body text-cream-soft hover:text-cream transition-colors"
+                className="text-body text-cream hover:text-gold transition-colors font-medium"
               >
                 {link.label}
               </Link>
@@ -88,7 +88,7 @@ export function PublicHeader() {
             <Link
               key={link.href}
               href={link.href}
-              className="block px-4 py-3 text-body text-cream-soft hover:text-cream hover:bg-gold/10 rounded-lg transition-colors"
+              className="block px-4 py-3 text-body text-cream font-medium hover:text-gold hover:bg-gold/10 rounded-lg transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               {link.label}
