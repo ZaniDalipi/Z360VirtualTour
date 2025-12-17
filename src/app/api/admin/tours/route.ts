@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
         title: data.title,
         slug: data.slug,
         description: data.description || null,
-        shortDescription: data.shortDescription || null,
+        shortDesc: data.shortDescription || data.shortDesc || null,
         clientName: data.clientName || null,
         location: data.location || null,
         coverImage: data.coverImage,
