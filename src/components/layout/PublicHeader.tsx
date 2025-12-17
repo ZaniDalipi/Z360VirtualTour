@@ -18,14 +18,14 @@ export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 bg-navy border-b border-gold/20">
+    <header className="sticky top-0 z-50 bg-[#0A1520] border-b border-[#C9A962]/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-cream">Z</span>
-            <span className="text-xl font-semibold text-gold">360</span>
-            <span className="hidden sm:inline text-sm text-cream-soft">Virtual Tours</span>
+            <span className="text-2xl font-bold text-[#E8DCC4]">Z</span>
+            <span className="text-xl font-semibold text-[#C9A962]">360</span>
+            <span className="hidden sm:inline text-sm text-[#E8DCC4]">Virtual Tours</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -34,7 +34,7 @@ export function PublicHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-body text-cream hover:text-gold transition-colors font-medium"
+                className="text-[#E8DCC4] hover:text-[#C9A962] transition-colors font-medium"
               >
                 {link.label}
               </Link>
@@ -50,7 +50,7 @@ export function PublicHeader() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-cream"
+            className="md:hidden p-2 text-[#E8DCC4]"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -61,16 +61,16 @@ export function PublicHeader() {
       {/* Mobile Menu */}
       <div
         className={cn(
-          'md:hidden border-t border-gold/10 overflow-hidden transition-all duration-300',
+          'md:hidden border-t border-[#C9A962]/20 overflow-hidden transition-all duration-300',
           mobileMenuOpen ? 'max-h-96' : 'max-h-0'
         )}
       >
-        <nav className="px-4 py-4 space-y-1 bg-navy-dark">
+        <nav className="px-4 py-4 space-y-1 bg-[#0A1520]">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="block px-4 py-3 text-body text-cream font-medium hover:text-gold hover:bg-gold/10 rounded-lg transition-colors"
+              className="block px-4 py-3 text-[#E8DCC4] font-medium hover:text-[#C9A962] hover:bg-[#C9A962]/10 rounded-lg transition-colors"
               onClick={() => setMobileMenuOpen(false)}
             >
               {link.label}
