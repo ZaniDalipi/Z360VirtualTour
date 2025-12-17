@@ -25,9 +25,9 @@ export function PublicHeader() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             {/* Mobile Logo */}
-            <div className="block md:hidden relative h-12 w-20">
+            <div className="block md:hidden relative h-12 w-12">
               <Image
-                src="/images/logo-mobile.png"
+                src="/images/logo-mobile.svg"
                 alt="Z360 Virtual Tours"
                 fill
                 className="object-contain"
@@ -35,9 +35,9 @@ export function PublicHeader() {
               />
             </div>
             {/* Desktop Logo */}
-            <div className="hidden md:block relative h-14 w-44">
+            <div className="hidden md:block relative h-12 w-32">
               <Image
-                src="/images/logo-desktop.png"
+                src="/images/logo-desktop.svg"
                 alt="Z360 Virtual Tours"
                 fill
                 className="object-contain"

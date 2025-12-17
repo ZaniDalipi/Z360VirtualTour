@@ -38,9 +38,9 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-1">
             <Link href="/" className="block mb-4">
-              <div className="relative h-14 w-36">
+              <div className="relative h-12 w-32">
                 <Image
-                  src="/images/logo-desktop.png"
+                  src="/images/logo-desktop.svg"
                   alt="Z360 Virtual Tours"
                   fill
                   className="object-contain object-left"

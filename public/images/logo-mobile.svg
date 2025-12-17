@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 280" fill="none">
+  <defs>
+    <linearGradient id="gridGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#C9A962;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#C9A962;stop-opacity:0.1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="200" height="280" fill="#0D1B2A"/>
+
+  <!-- Z Letter -->
+  <text x="45" y="95" font-family="Georgia, serif" font-size="72" font-weight="bold" fill="#E8DCC4" font-style="italic">Z</text>
+
+  <!-- Camera/Location Icon -->
+  <g transform="translate(95, 35)">
+    <rect x="5" y="0" width="45" height="55" rx="8" fill="#E8DCC4"/>
+    <circle cx="27" cy="22" r="10" fill="#0D1B2A"/>
+    <circle cx="27" cy="22" r="5" fill="#E8DCC4"/>
+  </g>
+
+  <!-- 360 with circular arrow -->
+  <g transform="translate(100, 55)">
+    <!-- Circular arrow -->
+    <path d="M45 25C45 36 36 45 25 45C14 45 5 36 5 25C5 14 14 5 25 5"
+          stroke="#E8DCC4" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <polygon points="25,0 30,8 20,8" fill="#E8DCC4"/>
+    <!-- 360 text -->
+    <text x="25" y="30" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#E8DCC4" text-anchor="middle">360</text>
+  </g>
+
+  <!-- 360 VIRTUAL TOURS text -->
+  <text x="100" y="145" font-family="Arial, sans-serif" font-size="14" font-weight="600" fill="#E8DCC4" text-anchor="middle" letter-spacing="3">360 VIRTUAL TOURS</text>
+
+  <!-- Buildings silhouette -->
+  <g transform="translate(25, 170)" stroke="#C9A962" stroke-width="1" fill="none" opacity="0.6">
+    <!-- House 1 -->
+    <path d="M0 50 L0 30 L15 15 L30 30 L30 50"/>
+    <rect x="10" y="35" width="10" height="15"/>
+
+    <!-- Building -->
+    <rect x="45" y="20" width="35" height="30"/>
+    <rect x="50" y="25" width="5" height="5"/>
+    <rect x="60" y="25" width="5" height="5"/>
+    <rect x="70" y="25" width="5" height="5"/>
+    <rect x="50" y="35" width="5" height="5"/>
+    <rect x="60" y="35" width="5" height="5"/>
+    <rect x="70" y="35" width="5" height="5"/>
+
+    <!-- House 2 -->
+    <path d="M95 50 L95 30 L110 15 L125 30 L125 50"/>
+    <rect x="105" y="35" width="10" height="15"/>
+  </g>
+
+  <!-- Grid wave pattern -->
+  <g transform="translate(0, 220)" stroke="#C9A962" stroke-width="0.5" fill="none" opacity="0.4">
+    <path d="M0 30 Q50 10 100 30 T200 30"/>
+    <path d="M0 40 Q50 20 100 40 T200 40"/>
+    <path d="M0 50 Q50 30 100 50 T200 50"/>
+    <!-- Vertical lines -->
+    <line x1="20" y1="25" x2="20" y2="55"/>
+    <line x1="40" y1="20" x2="40" y2="55"/>
+    <line x1="60" y1="18" x2="60" y2="55"/>
+    <line x1="80" y1="20" x2="80" y2="55"/>
+    <line x1="100" y1="25" x2="100" y2="55"/>
+    <line x1="120" y1="30" x2="120" y2="55"/>
+    <line x1="140" y1="28" x2="140" y2="55"/>
+    <line x1="160" y1="22" x2="160" y2="55"/>
+    <line x1="180" y1="20" x2="180" y2="55"/>
+  </g>
+</svg>

@@ -52,9 +52,9 @@ export default function AdminLoginPage() {
         <Card className="p-8">
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="relative h-20 w-32 mx-auto mb-4">
+            <div className="relative h-20 w-20 mx-auto mb-4">
               <Image
-                src="/images/logo-mobile.png"
+                src="/images/logo-mobile.svg"
                 alt="Z360 Virtual Tours"
                 fill
                 className="object-contain"
