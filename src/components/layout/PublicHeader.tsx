@@ -18,14 +18,17 @@ export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0A1520] border-b border-[#C9A962]/30">
+    <header
+      className="sticky top-0 z-50 border-b"
+      style={{ backgroundColor: '#0A1520', borderColor: 'rgba(201, 169, 98, 0.3)' }}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-[#E8DCC4]">Z</span>
-            <span className="text-xl font-semibold text-[#C9A962]">360</span>
-            <span className="hidden sm:inline text-sm text-[#E8DCC4]">Virtual Tours</span>
+            <span className="text-2xl font-bold" style={{ color: '#E8DCC4' }}>Z</span>
+            <span className="text-xl font-semibold" style={{ color: '#C9A962' }}>360</span>
+            <span className="hidden sm:inline text-sm" style={{ color: '#E8DCC4' }}>Virtual Tours</span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -34,7 +37,8 @@ export function PublicHeader() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-[#E8DCC4] hover:text-[#C9A962] transition-colors font-medium"
+                className="font-medium transition-colors hover:opacity-80"
+                style={{ color: '#E8DCC4' }}
               >
                 {link.label}
               </Link>
@@ -50,7 +54,8 @@ export function PublicHeader() {
 
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden p-2 text-[#E8DCC4]"
+            className="md:hidden p-2"
+            style={{ color: '#E8DCC4' }}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -61,16 +66,18 @@ export function PublicHeader() {
       {/* Mobile Menu */}
       <div
         className={cn(
-          'md:hidden border-t border-[#C9A962]/20 overflow-hidden transition-all duration-300',
+          'md:hidden overflow-hidden transition-all duration-300',
           mobileMenuOpen ? 'max-h-96' : 'max-h-0'
         )}
+        style={{ backgroundColor: '#0A1520', borderTop: '1px solid rgba(201, 169, 98, 0.2)' }}
       >
-        <nav className="px-4 py-4 space-y-1 bg-[#0A1520]">
+        <nav className="px-4 py-4 space-y-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="block px-4 py-3 text-[#E8DCC4] font-medium hover:text-[#C9A962] hover:bg-[#C9A962]/10 rounded-lg transition-colors"
+              className="block px-4 py-3 font-medium rounded-lg transition-colors hover:opacity-80"
+              style={{ color: '#E8DCC4' }}
               onClick={() => setMobileMenuOpen(false)}
             >
               {link.label}
