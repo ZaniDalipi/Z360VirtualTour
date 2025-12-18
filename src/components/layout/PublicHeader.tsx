@@ -16,117 +16,128 @@ export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 9999,
-        backgroundColor: '#0A1520',
-        borderBottom: '1px solid rgba(201, 169, 98, 0.3)',
-        WebkitBackfaceVisibility: 'hidden',
-        backfaceVisibility: 'hidden',
-        transform: 'translateZ(0)',
-      }}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#E8DCC4' }}>Z</span>
-            <span style={{ fontSize: '1.25rem', fontWeight: '600', color: '#C9A962' }}>360</span>
-            <span className="hidden sm:inline" style={{ fontSize: '0.875rem', color: '#E8DCC4' }}>Virtual Tours</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                style={{
-                  color: '#E8DCC4',
-                  fontWeight: 500,
-                  textDecoration: 'none',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.8'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <Link href="/contact">
-              <button
-                style={{
-                  backgroundColor: '#C9A962',
-                  color: '#0A1520',
-                  padding: '0.5rem 1.5rem',
-                  borderRadius: '0.375rem',
-                  fontWeight: 500,
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
-                onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
-              >
-                Get a Quote
-              </button>
-            </Link>
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            style={{ color: '#E8DCC4', background: 'none', border: 'none', cursor: 'pointer' }}
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-      </div>
-
-      {/* Mobile Menu */}
-      <div
-        className={`md:hidden overflow-hidden transition-all duration-300 ${
-          mobileMenuOpen ? 'max-h-96' : 'max-h-0'
-        }`}
-        style={{ backgroundColor: '#0A1520', borderTop: mobileMenuOpen ? '1px solid rgba(201, 169, 98, 0.2)' : 'none' }}
+    <>
+      {/* Fixed Header */}
+      <header
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999,
+          backgroundColor: '#0A1520',
+          borderBottom: '1px solid rgba(201, 169, 98, 0.3)',
+        }}
       >
-        <nav className="px-4 py-4 space-y-1">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="block px-4 py-3 rounded-lg"
-              style={{ color: '#E8DCC4', fontWeight: 500, textDecoration: 'none' }}
-              onClick={() => setMobileMenuOpen(false)}
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
+            {/* Logo */}
+            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
+              <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#E8DCC4' }}>Z</span>
+              <span style={{ fontSize: '1.25rem', fontWeight: '600', color: '#C9A962' }}>360</span>
+              <span style={{ fontSize: '0.875rem', color: '#E8DCC4' }}>Virtual Tours</span>
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }} className="hidden md:flex">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  style={{
+                    color: '#E8DCC4',
+                    fontWeight: 500,
+                    textDecoration: 'none',
+                  }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* CTA Button - Desktop */}
+            <div className="hidden md:block">
+              <Link href="/contact" style={{ textDecoration: 'none' }}>
+                <button
+                  style={{
+                    backgroundColor: '#C9A962',
+                    color: '#0A1520',
+                    padding: '0.5rem 1.5rem',
+                    borderRadius: '0.375rem',
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Get a Quote
+                </button>
+              </Link>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="md:hidden"
+              style={{ color: '#E8DCC4', background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {link.label}
-            </Link>
-          ))}
-          <div className="pt-2 px-4">
-            <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
-              <button
-                style={{
-                  width: '100%',
-                  backgroundColor: '#C9A962',
-                  color: '#0A1520',
-                  padding: '0.75rem',
-                  borderRadius: '0.375rem',
-                  fontWeight: 500,
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                Get a Quote
-              </button>
-            </Link>
+              {mobileMenuOpen ? <X style={{ width: '24px', height: '24px' }} /> : <Menu style={{ width: '24px', height: '24px' }} />}
+            </button>
           </div>
-        </nav>
-      </div>
-    </header>
+        </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div
+            style={{
+              backgroundColor: '#0A1520',
+              borderTop: '1px solid rgba(201, 169, 98, 0.2)',
+              padding: '1rem',
+            }}
+            className="md:hidden"
+          >
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  style={{
+                    color: '#E8DCC4',
+                    fontWeight: 500,
+                    textDecoration: 'none',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '0.5rem',
+                    display: 'block',
+                  }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div style={{ paddingTop: '0.5rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
+                <Link href="/contact" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none' }}>
+                  <button
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#C9A962',
+                      color: '#0A1520',
+                      padding: '0.75rem',
+                      borderRadius: '0.375rem',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Get a Quote
+                  </button>
+                </Link>
+              </div>
+            </nav>
+          </div>
+        )}
+      </header>
+
+      {/* Spacer to push content below fixed header */}
+      <div style={{ height: '64px' }} />
+    </>
   )
 }

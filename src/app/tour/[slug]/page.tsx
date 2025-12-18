@@ -141,7 +141,7 @@ export default function TourDetailPage() {
       <PublicHeader />
 
       {/* Hero Section with Cover Image */}
-      <section className="relative h-[70vh] min-h-[500px] max-h-[800px]">
+      <section className="relative h-[70vh] min-h-[500px] max-h-[800px]" style={{ marginTop: '-64px', paddingTop: '64px' }}>
         {/* Background Image */}
         <div className="absolute inset-0">
           <Image
