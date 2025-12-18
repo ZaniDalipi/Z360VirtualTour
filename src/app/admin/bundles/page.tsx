@@ -202,9 +202,9 @@ export default function BundlesAdminPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-2xl max-h-[90vh] overflow-y-auto px-4"
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <Card className="p-6">
+              <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-h3 font-semibold text-cream">
                     {editingId ? 'Edit Bundle' : 'Create Bundle'}

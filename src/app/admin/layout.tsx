@@ -30,7 +30,8 @@ const sidebarLinks = [
   { href: '/admin/testimonials', icon: MessageSquare, label: 'Testimonials' },
   { href: '/admin/pricing', icon: DollarSign, label: 'Pricing' },
   { href: '/admin/messages', icon: Mail, label: 'Messages' },
-  { href: '/admin/bookings', icon: CalendarCheck, label: 'Bookings', divider: true },
+  { href: '/admin/schedule', icon: CalendarDays, label: 'My Schedule', divider: true },
+  { href: '/admin/bookings', icon: CalendarCheck, label: 'All Bookings' },
   { href: '/admin/bundles', icon: Users, label: 'Travel Bundles' },
   { href: '/admin/booking-settings', icon: Settings, label: 'Booking Settings' },
 ]

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CalendarCheck, Mail, Phone, MapPin, Clock, DollarSign, Eye, Check, X, AlertCircle } from 'lucide-react'
+import { CalendarCheck, Mail, Phone, MapPin, Clock, DollarSign, Eye, Check, X, AlertCircle, Calendar } from 'lucide-react'
 import { Card, Button } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -62,6 +62,8 @@ export default function BookingsAdminPage() {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [unreadCount, setUnreadCount] = useState(0)
+  const [confirmingDate, setConfirmingDate] = useState(false)
+  const [selectedDate, setSelectedDate] = useState('')
 
   useEffect(() => {
     fetchBookings()
@@ -116,6 +118,34 @@ export default function BookingsAdminPage() {
       setSelectedBooking(null)
     } catch (error) {
       console.error('Failed to delete booking:', error)
+    }
+  }
+
+  const handleConfirmBooking = async (id: string) => {
+    if (!selectedDate) {
+      alert('Please select a confirmed date')
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/admin/bookings/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'confirmed',
+          confirmedDate: selectedDate
+        }),
+      })
+
+      if (res.ok) {
+        fetchBookings()
+        const updated = await res.json()
+        setSelectedBooking(updated)
+        setConfirmingDate(false)
+        setSelectedDate('')
+      }
+    } catch (error) {
+      console.error('Failed to confirm booking:', error)
     }
   }
 
@@ -244,6 +274,12 @@ export default function BookingsAdminPage() {
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-4 text-sm text-cream-muted">
+                      {booking.clientPhone && (
+                        <span className="flex items-center gap-1 text-gold">
+                          <Phone className="w-3.5 h-3.5" />
+                          {booking.clientPhone}
+                        </span>
+                      )}
                       <span className="flex items-center gap-1">
                         <Mail className="w-3.5 h-3.5" />
                         {booking.clientEmail}
@@ -443,14 +479,61 @@ export default function BookingsAdminPage() {
                       {statusLabels[selectedBooking.status]}
                     </span>
                   </div>
+
+                  {/* Date Confirmation Flow */}
+                  {confirmingDate && selectedBooking.status === 'quote_sent' && (
+                    <div className="mb-4 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                      <p className="text-sm text-cream mb-2 flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-green-400" />
+                        Select confirmed date for this booking:
+                      </p>
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg bg-navy border border-gold/20 text-cream text-sm mb-2"
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleConfirmBooking(selectedBooking.id)}
+                          disabled={!selectedDate}
+                        >
+                          <Check className="w-4 h-4 mr-1" />
+                          Confirm Date
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            setConfirmingDate(false)
+                            setSelectedDate('')
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex flex-wrap gap-2">
                     {selectedBooking.status === 'quote_requested' && (
                       <Button size="sm" onClick={() => handleStatusChange(selectedBooking.id, 'quote_sent')}>
                         Mark Quote Sent
                       </Button>
                     )}
-                    {selectedBooking.status === 'quote_sent' && (
-                      <Button size="sm" onClick={() => handleStatusChange(selectedBooking.id, 'confirmed')}>
+                    {selectedBooking.status === 'quote_sent' && !confirmingDate && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setConfirmingDate(true)
+                          // Pre-fill with preferred date if available
+                          if (selectedBooking.preferredDate) {
+                            setSelectedDate(selectedBooking.preferredDate.split('T')[0])
+                          }
+                        }}
+                      >
+                        <Calendar className="w-4 h-4 mr-1" />
                         Confirm Booking
                       </Button>
                     )}
@@ -482,21 +565,32 @@ export default function BookingsAdminPage() {
                 </Card>
 
                 {/* Actions */}
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    className="flex-1"
-                    onClick={() => window.open(`mailto:${selectedBooking.clientEmail}`)}
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email Client
-                  </Button>
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2">
+                    {selectedBooking.clientPhone && (
+                      <Button
+                        className="flex-1"
+                        onClick={() => window.open(`tel:${selectedBooking.clientPhone}`)}
+                      >
+                        <Phone className="w-4 h-4 mr-2" />
+                        Call Client
+                      </Button>
+                    )}
+                    <Button
+                      variant="secondary"
+                      className="flex-1"
+                      onClick={() => window.open(`mailto:${selectedBooking.clientEmail}`)}
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      Email
+                    </Button>
+                  </div>
                   <Button
                     variant="secondary"
                     className="text-red-400 hover:bg-red-500/10"
                     onClick={() => handleDelete(selectedBooking.id)}
                   >
-                    Delete
+                    Delete Booking
                   </Button>
                 </div>
               </div>

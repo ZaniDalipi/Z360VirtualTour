@@ -465,7 +465,7 @@ export default function ContactPage() {
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Phone Number
+                            Phone Number *
                           </label>
                           <Input
                             type="tel"
@@ -473,7 +473,11 @@ export default function ContactPage() {
                             value={formData.phone}
                             onChange={handleChange}
                             placeholder="+389 70 123 456"
+                            required
                           />
+                          <p className="text-xs text-cream-muted mt-1">
+                            We'll contact you to confirm your booking
+                          </p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
