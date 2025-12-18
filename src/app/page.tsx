@@ -5,10 +5,11 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   Eye, Star, Home, Building2, Hotel, Car, GraduationCap, Heart,
-  Play, ArrowRight, Quote, Plus
+  Play, ArrowRight, Quote
 } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
+import { FeaturedCarousel } from '@/components/home'
 import { motion } from 'framer-motion'
 
 // Icon mapping for categories
@@ -180,59 +181,14 @@ export default function HomePage() {
               )}
             </motion.div>
 
-            {/* Hero Image */}
+            {/* Hero Carousel */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="relative hidden lg:block"
             >
-              <div className="relative aspect-square">
-                <div className="absolute inset-4 rounded-2xl overflow-hidden border border-gold/20">
-                  {tours.length > 0 ? (
-                    <>
-                      <Image
-                        src={tours[0].coverImage}
-                        alt={tours[0].title}
-                        fill
-                        className="object-cover"
-                        priority
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-navy/80 to-transparent" />
-
-                      {/* Play Button Overlay */}
-                      <Link
-                        href={tours[0].tourUrl || `/tour/${tours[0].slug}`}
-                        target={tours[0].tourUrl ? '_blank' : undefined}
-                        rel={tours[0].tourUrl ? 'noopener noreferrer' : undefined}
-                        className="absolute inset-0 flex items-center justify-center"
-                      >
-                        <div className="w-20 h-20 rounded-full bg-gold/90 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-glow">
-                          <Play className="w-8 h-8 text-navy ml-1" fill="currentColor" />
-                        </div>
-                      </Link>
-
-                      <div className="absolute bottom-4 left-4 right-4">
-                        <p className="text-caption text-cream-muted">Featured Tour</p>
-                        <p className="text-h4 font-semibold text-cream">{tours[0].title}</p>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="absolute inset-0 bg-navy-medium flex items-center justify-center">
-                      <div className="text-center p-8">
-                        <div className="w-20 h-20 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4">
-                          <Play className="w-8 h-8 text-gold" />
-                        </div>
-                        <p className="text-cream-muted">Your featured tours will appear here</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Decorative Elements */}
-                <div className="absolute -top-4 -right-4 w-24 h-24 border border-gold/30 rounded-2xl" />
-                <div className="absolute -bottom-4 -left-4 w-32 h-32 border border-gold/20 rounded-2xl" />
-              </div>
+              <FeaturedCarousel tours={tours} />
             </motion.div>
           </div>
         </div>
