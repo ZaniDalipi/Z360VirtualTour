@@ -101,9 +101,9 @@ export function PublicHeader() {
                 </button>
               </Link>
 
-              {/* Mobile/Tablet Menu Button */}
+              {/* Tablet Menu Button - Hidden on mobile (uses bottom nav) and desktop (uses full nav) */}
               <button
-                className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg border border-cream/15 text-cream hover:border-gold/30 hover:text-gold transition-colors"
+                className="hidden md:flex lg:hidden items-center justify-center w-10 h-10 rounded-lg border border-cream/15 text-cream hover:border-gold/30 hover:text-gold transition-colors"
                 onClick={() => setMobileMenuOpen(true)}
                 aria-label="Open menu"
                 aria-expanded={mobileMenuOpen}

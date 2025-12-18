@@ -102,11 +102,11 @@ export default function HomePage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-navy">
+    <div className="min-h-screen bg-navy overflow-x-hidden">
       <PublicHeader />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-x-hidden">
         {/* Background Elements */}
         <div className="absolute inset-0 bg-gradient-radial opacity-30" />
         <div
@@ -120,38 +120,38 @@ export default function HomePage() {
           }}
         />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
+        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="text-center lg:text-left"
+              className="text-center lg:text-left w-full"
             >
-              <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
-                <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold" />
-                <span className="text-xs sm:text-caption text-gold">Professional 360° Virtual Tours</span>
+              <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-3 py-1.5 mb-4 sm:mb-6">
+                <Eye className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+                <span className="text-xs text-gold whitespace-nowrap">Professional 360° Virtual Tours</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-display-xl xl:text-[64px] font-bold text-cream leading-tight mb-4 sm:mb-6">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-display-xl font-bold text-cream leading-tight mb-4 sm:mb-6">
                 Bring Your Space
                 <span className="text-gold"> to Life</span>
               </h1>
 
-              <p className="text-sm sm:text-base md:text-body-lg text-cream-soft mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0">
+              <p className="text-sm sm:text-base text-cream-soft mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0">
                 Immersive 360° virtual tours for real estate, businesses, hospitality, and more.
-                Captivate your audience and showcase every detail of your space.
+                Captivate your audience and showcase every detail.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 sm:gap-4 w-full">
                 <Link href="/tours" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto flex items-center justify-center gap-2">
+                  <Button size="lg" className="w-full flex items-center justify-center gap-2">
                     <Play className="w-4 h-4 sm:w-5 sm:h-5" />
                     View Portfolio
                   </Button>
                 </Link>
                 <Link href="/contact" className="w-full sm:w-auto">
-                  <Button variant="secondary" size="lg" className="w-full sm:w-auto">
+                  <Button variant="secondary" size="lg" className="w-full">
                     Get a Free Quote
                   </Button>
                 </Link>
