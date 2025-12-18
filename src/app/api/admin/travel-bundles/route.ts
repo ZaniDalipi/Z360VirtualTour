@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { travelBundles } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   const admin = await getAdminFromCookies()
@@ -10,7 +10,9 @@ export async function GET() {
   }
 
   try {
-    const bundles = travelBundles.findMany()
+    const bundles = await prisma.travelBundle.findMany({
+      orderBy: { scheduledDate: 'asc' },
+    })
     return NextResponse.json(bundles)
   } catch (error) {
     console.error('Failed to fetch travel bundles:', error)
@@ -31,20 +33,23 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
-    const bundle = travelBundles.create({
-      name: data.name,
-      city: data.city,
-      region: data.region,
-      scheduledDate: data.scheduledDate,
-      maxParticipants: parseInt(data.maxParticipants) || 10,
-      distanceKm: data.distanceKm ? parseFloat(data.distanceKm) : null,
-      totalTravelCost: data.totalTravelCost ? parseFloat(data.totalTravelCost) : null,
-      perPersonTravelFee: data.perPersonTravelFee ? parseFloat(data.perPersonTravelFee) : null,
-      discountPercent: parseFloat(data.discountPercent) || 0,
-      description: data.description,
-      status: data.status || 'open',
-      isActive: data.isActive ?? true,
-      registrationDeadline: data.registrationDeadline,
+    const bundle = await prisma.travelBundle.create({
+      data: {
+        name: data.name,
+        city: data.city,
+        region: data.region || null,
+        scheduledDate: new Date(data.scheduledDate),
+        maxParticipants: parseInt(data.maxParticipants) || 10,
+        currentCount: 0,
+        distanceKm: data.distanceKm ? parseFloat(data.distanceKm) : null,
+        totalTravelCost: data.totalTravelCost ? parseFloat(data.totalTravelCost) : null,
+        perPersonTravelFee: data.perPersonTravelFee ? parseFloat(data.perPersonTravelFee) : null,
+        discountPercent: parseFloat(data.discountPercent) || 0,
+        description: data.description || null,
+        status: data.status || 'open',
+        isActive: data.isActive ?? true,
+        registrationDeadline: data.registrationDeadline ? new Date(data.registrationDeadline) : null,
+      },
     })
 
     return NextResponse.json(bundle, { status: 201 })

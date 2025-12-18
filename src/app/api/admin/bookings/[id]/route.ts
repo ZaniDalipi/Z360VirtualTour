@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { bookings, travelBundles } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
@@ -14,7 +14,15 @@ export async function GET(
 
   try {
     const { id } = await params
-    const booking = bookings.findUnique(id)
+    const booking = await prisma.booking.findUnique({
+      where: { id },
+      include: {
+        pricingPlan: true,
+        urgencyTier: true,
+        travelZone: true,
+        travelBundle: true,
+      },
+    })
 
     if (!booking) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
@@ -22,7 +30,10 @@ export async function GET(
 
     // Mark as read
     if (!booking.isRead) {
-      bookings.update(id, { isRead: true })
+      await prisma.booking.update({
+        where: { id },
+        data: { isRead: true },
+      })
     }
 
     return NextResponse.json(booking)
@@ -50,44 +61,53 @@ export async function PUT(
     const data = await request.json()
 
     // If confirming a booking with a bundle, increment bundle count
-    const existingBooking = bookings.findUnique(id)
+    const existingBooking = await prisma.booking.findUnique({ where: { id } })
     if (data.status === 'confirmed' && existingBooking?.status !== 'confirmed' && data.travelBundleId) {
-      travelBundles.incrementCount(data.travelBundleId)
+      await prisma.travelBundle.update({
+        where: { id: data.travelBundleId },
+        data: { currentCount: { increment: 1 } },
+      })
     }
 
-    const booking = bookings.update(id, {
-      clientName: data.clientName,
-      clientEmail: data.clientEmail,
-      clientPhone: data.clientPhone,
-      companyName: data.companyName,
-      propertyAddress: data.propertyAddress,
-      propertyCity: data.propertyCity,
-      estimatedDistance: data.estimatedDistance !== undefined ? parseFloat(data.estimatedDistance) : undefined,
-      serviceType: data.serviceType,
-      projectDescription: data.projectDescription,
-      specialRequests: data.specialRequests,
-      pricingPlanId: data.pricingPlanId,
-      urgencyTierId: data.urgencyTierId,
-      preferredDate: data.preferredDate,
-      alternateDate: data.alternateDate,
-      deadlineDate: data.deadlineDate,
-      confirmedDate: data.confirmedDate,
-      isFlexible: data.isFlexible,
-      travelZoneId: data.travelZoneId,
-      travelBundleId: data.travelBundleId,
-      basePrice: data.basePrice !== undefined ? parseFloat(data.basePrice) : undefined,
-      urgencySurcharge: data.urgencySurcharge !== undefined ? parseFloat(data.urgencySurcharge) : undefined,
-      travelFee: data.travelFee !== undefined ? parseFloat(data.travelFee) : undefined,
-      bundleDiscount: data.bundleDiscount !== undefined ? parseFloat(data.bundleDiscount) : undefined,
-      totalQuote: data.totalQuote !== undefined ? parseFloat(data.totalQuote) : undefined,
-      depositAmount: data.depositAmount !== undefined ? parseFloat(data.depositAmount) : undefined,
-      depositPaid: data.depositPaid,
-      internalNotes: data.internalNotes,
-      status: data.status,
-      isRead: data.isRead,
-      quoteSentAt: data.quoteSentAt,
-      confirmedAt: data.confirmedAt,
-      completedAt: data.completedAt,
+    // Build update data object, only including defined values
+    const updateData: Record<string, unknown> = {}
+
+    if (data.clientName !== undefined) updateData.clientName = data.clientName
+    if (data.clientEmail !== undefined) updateData.clientEmail = data.clientEmail
+    if (data.clientPhone !== undefined) updateData.clientPhone = data.clientPhone
+    if (data.companyName !== undefined) updateData.companyName = data.companyName
+    if (data.propertyAddress !== undefined) updateData.propertyAddress = data.propertyAddress
+    if (data.propertyCity !== undefined) updateData.propertyCity = data.propertyCity
+    if (data.estimatedDistance !== undefined) updateData.estimatedDistance = parseFloat(data.estimatedDistance)
+    if (data.serviceType !== undefined) updateData.serviceType = data.serviceType
+    if (data.projectDescription !== undefined) updateData.projectDescription = data.projectDescription
+    if (data.specialRequests !== undefined) updateData.specialRequests = data.specialRequests
+    if (data.pricingPlanId !== undefined) updateData.pricingPlanId = data.pricingPlanId
+    if (data.urgencyTierId !== undefined) updateData.urgencyTierId = data.urgencyTierId
+    if (data.preferredDate !== undefined) updateData.preferredDate = data.preferredDate ? new Date(data.preferredDate) : null
+    if (data.alternateDate !== undefined) updateData.alternateDate = data.alternateDate ? new Date(data.alternateDate) : null
+    if (data.deadlineDate !== undefined) updateData.deadlineDate = data.deadlineDate ? new Date(data.deadlineDate) : null
+    if (data.confirmedDate !== undefined) updateData.confirmedDate = data.confirmedDate ? new Date(data.confirmedDate) : null
+    if (data.isFlexible !== undefined) updateData.isFlexible = data.isFlexible
+    if (data.travelZoneId !== undefined) updateData.travelZoneId = data.travelZoneId
+    if (data.travelBundleId !== undefined) updateData.travelBundleId = data.travelBundleId
+    if (data.basePrice !== undefined) updateData.basePrice = parseFloat(data.basePrice)
+    if (data.urgencySurcharge !== undefined) updateData.urgencySurcharge = parseFloat(data.urgencySurcharge)
+    if (data.travelFee !== undefined) updateData.travelFee = parseFloat(data.travelFee)
+    if (data.bundleDiscount !== undefined) updateData.bundleDiscount = parseFloat(data.bundleDiscount)
+    if (data.totalQuote !== undefined) updateData.totalQuote = parseFloat(data.totalQuote)
+    if (data.depositAmount !== undefined) updateData.depositAmount = parseFloat(data.depositAmount)
+    if (data.depositPaid !== undefined) updateData.depositPaid = data.depositPaid
+    if (data.internalNotes !== undefined) updateData.internalNotes = data.internalNotes
+    if (data.status !== undefined) updateData.status = data.status
+    if (data.isRead !== undefined) updateData.isRead = data.isRead
+    if (data.quoteSentAt !== undefined) updateData.quoteSentAt = data.quoteSentAt ? new Date(data.quoteSentAt) : null
+    if (data.confirmedAt !== undefined) updateData.confirmedAt = data.confirmedAt ? new Date(data.confirmedAt) : null
+    if (data.completedAt !== undefined) updateData.completedAt = data.completedAt ? new Date(data.completedAt) : null
+
+    const booking = await prisma.booking.update({
+      where: { id },
+      data: updateData,
     })
 
     return NextResponse.json(booking)
@@ -112,7 +132,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    bookings.delete(id)
+    await prisma.booking.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete booking:', error)

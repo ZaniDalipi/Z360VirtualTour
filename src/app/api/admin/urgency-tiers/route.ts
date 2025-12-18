@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { urgencyTiers } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   const admin = await getAdminFromCookies()
@@ -10,7 +10,9 @@ export async function GET() {
   }
 
   try {
-    const tiers = urgencyTiers.findMany()
+    const tiers = await prisma.urgencyTier.findMany({
+      orderBy: { order: 'asc' },
+    })
     return NextResponse.json(tiers)
   } catch (error) {
     console.error('Failed to fetch urgency tiers:', error)
@@ -31,15 +33,17 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
-    const tier = urgencyTiers.create({
-      name: data.name,
-      displayName: data.displayName,
-      description: data.description,
-      minLeadDays: parseInt(data.minLeadDays) || 1,
-      maxLeadDays: data.maxLeadDays ? parseInt(data.maxLeadDays) : null,
-      surchargePercent: parseFloat(data.surchargePercent) || 0,
-      isActive: data.isActive ?? true,
-      order: parseInt(data.order) || 0,
+    const tier = await prisma.urgencyTier.create({
+      data: {
+        name: data.name,
+        displayName: data.displayName,
+        description: data.description || null,
+        minLeadDays: parseInt(data.minLeadDays) || 1,
+        maxLeadDays: data.maxLeadDays ? parseInt(data.maxLeadDays) : null,
+        surchargePercent: parseFloat(data.surchargePercent) || 0,
+        isActive: data.isActive ?? true,
+        order: parseInt(data.order) || 0,
+      },
     })
 
     return NextResponse.json(tier, { status: 201 })

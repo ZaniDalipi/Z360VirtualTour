@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { bookings } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   const admin = await getAdminFromCookies()
@@ -20,26 +20,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const booking = bookings.create({
-      clientName: data.clientName,
-      clientEmail: data.clientEmail,
-      clientPhone: data.clientPhone || null,
-      companyName: data.companyName || null,
-      propertyAddress: data.propertyAddress,
-      propertyCity: data.propertyCity || null,
-      estimatedDistance: data.estimatedDistance || null,
-      serviceType: data.serviceType || null,
-      projectDescription: data.projectDescription || null,
-      specialRequests: data.specialRequests || null,
-      preferredDate: data.preferredDate || null,
-      alternateDate: data.alternateDate || null,
-      deadlineDate: data.deadlineDate || null,
-      basePrice: data.basePrice || null,
-      totalQuote: data.totalQuote || null,
-      depositAmount: data.depositAmount || null,
-      internalNotes: data.internalNotes || null,
-      status: data.status || 'quote_requested',
-      isRead: true, // Admin-created bookings are already "read"
+    const booking = await prisma.booking.create({
+      data: {
+        clientName: data.clientName,
+        clientEmail: data.clientEmail,
+        clientPhone: data.clientPhone || null,
+        companyName: data.companyName || null,
+        propertyAddress: data.propertyAddress,
+        propertyCity: data.propertyCity || null,
+        estimatedDistance: data.estimatedDistance || null,
+        serviceType: data.serviceType || null,
+        projectDescription: data.projectDescription || null,
+        specialRequests: data.specialRequests || null,
+        preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
+        alternateDate: data.alternateDate ? new Date(data.alternateDate) : null,
+        deadlineDate: data.deadlineDate ? new Date(data.deadlineDate) : null,
+        basePrice: data.basePrice || null,
+        totalQuote: data.totalQuote || null,
+        depositAmount: data.depositAmount || null,
+        internalNotes: data.internalNotes || null,
+        status: data.status || 'quote_requested',
+        isRead: true, // Admin-created bookings are already "read"
+      },
     })
 
     return NextResponse.json(booking, { status: 201 })
@@ -66,23 +68,21 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit')
     const offset = searchParams.get('offset')
 
-    const allBookings = bookings.findMany({
-      where: {
-        status,
-        isRead: isRead !== null ? isRead === 'true' : undefined,
-      },
-      limit: limit ? parseInt(limit) : undefined,
-      offset: offset ? parseInt(offset) : undefined,
-    })
+    const where = {
+      ...(status && { status }),
+      ...(isRead !== null && { isRead: isRead === 'true' }),
+    }
 
-    const total = bookings.count({
-      where: {
-        status,
-        isRead: isRead !== null ? isRead === 'true' : undefined,
-      },
-    })
-
-    const unreadCount = bookings.count({ where: { isRead: false } })
+    const [allBookings, total, unreadCount] = await Promise.all([
+      prisma.booking.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: limit ? parseInt(limit) : undefined,
+        skip: offset ? parseInt(offset) : undefined,
+      }),
+      prisma.booking.count({ where }),
+      prisma.booking.count({ where: { isRead: false } }),
+    ])
 
     return NextResponse.json({
       bookings: allBookings,

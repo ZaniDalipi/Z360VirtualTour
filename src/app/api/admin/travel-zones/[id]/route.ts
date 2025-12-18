@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { travelZones } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
@@ -14,7 +14,7 @@ export async function GET(
 
   try {
     const { id } = await params
-    const zone = travelZones.findUnique(id)
+    const zone = await prisma.travelZone.findUnique({ where: { id } })
 
     if (!zone) {
       return NextResponse.json({ error: 'Zone not found' }, { status: 404 })
@@ -44,16 +44,20 @@ export async function PUT(
     const { id } = await params
     const data = await request.json()
 
-    const zone = travelZones.update(id, {
-      name: data.name,
-      description: data.description,
-      minDistanceKm: data.minDistanceKm !== undefined ? parseFloat(data.minDistanceKm) : undefined,
-      maxDistanceKm: data.maxDistanceKm !== undefined ? (data.maxDistanceKm ? parseFloat(data.maxDistanceKm) : null) : undefined,
-      flatFee: data.flatFee !== undefined ? (data.flatFee ? parseFloat(data.flatFee) : null) : undefined,
-      perKmRate: data.perKmRate !== undefined ? (data.perKmRate ? parseFloat(data.perKmRate) : null) : undefined,
-      isIncluded: data.isIncluded,
-      isActive: data.isActive,
-      order: data.order !== undefined ? parseInt(data.order) : undefined,
+    const updateData: Record<string, unknown> = {}
+    if (data.name !== undefined) updateData.name = data.name
+    if (data.description !== undefined) updateData.description = data.description
+    if (data.minDistanceKm !== undefined) updateData.minDistanceKm = parseFloat(data.minDistanceKm)
+    if (data.maxDistanceKm !== undefined) updateData.maxDistanceKm = data.maxDistanceKm ? parseFloat(data.maxDistanceKm) : null
+    if (data.flatFee !== undefined) updateData.flatFee = data.flatFee ? parseFloat(data.flatFee) : null
+    if (data.perKmRate !== undefined) updateData.perKmRate = data.perKmRate ? parseFloat(data.perKmRate) : null
+    if (data.isIncluded !== undefined) updateData.isIncluded = data.isIncluded
+    if (data.isActive !== undefined) updateData.isActive = data.isActive
+    if (data.order !== undefined) updateData.order = parseInt(data.order)
+
+    const zone = await prisma.travelZone.update({
+      where: { id },
+      data: updateData,
     })
 
     return NextResponse.json(zone)
@@ -78,7 +82,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    travelZones.delete(id)
+    await prisma.travelZone.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete travel zone:', error)
