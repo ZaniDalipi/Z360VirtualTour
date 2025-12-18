@@ -2,16 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Search, Compass, Heart, User, Grid3X3 } from 'lucide-react'
+import { Home, Search, Heart, Grid3X3, Mail } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { motion } from 'framer-motion'
 
 const navItems = [
   { href: '/', icon: Home, label: 'Home' },
   { href: '/tours', icon: Grid3X3, label: 'Tours' },
   { href: '/search', icon: Search, label: 'Search' },
-  { href: '/saved', icon: Heart, label: 'Saved' },
-  { href: '/profile', icon: User, label: 'Profile' },
+  { href: '/contact', icon: Mail, label: 'Contact' },
 ]
 
 export function Navbar() {
@@ -38,30 +36,23 @@ export function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'relative flex flex-col items-center justify-center gap-0.5 py-1.5 px-3 min-w-[56px] rounded-xl transition-all duration-200',
+                  'relative flex flex-col items-center justify-center gap-0.5 py-2 px-4 min-w-[60px] rounded-xl transition-colors duration-150',
                   isActive
                     ? 'text-gold'
-                    : 'text-cream-muted active:scale-95'
+                    : 'text-cream-muted active:text-cream'
                 )}
               >
-                {/* Active indicator */}
+                {/* Active indicator - simple background */}
                 {isActive && (
-                  <motion.div
-                    layoutId="navbar-indicator"
-                    className="absolute inset-0 bg-gold/10 rounded-xl"
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
-                  />
+                  <div className="absolute inset-0 bg-gold/10 rounded-xl" />
                 )}
 
                 <Icon
-                  className={cn(
-                    'relative z-10 w-5 h-5 transition-transform duration-200',
-                    isActive && 'scale-110'
-                  )}
+                  className="relative z-10 w-5 h-5"
                   strokeWidth={isActive ? 2.5 : 2}
                 />
                 <span className={cn(
-                  'relative z-10 text-[10px] font-medium transition-colors',
+                  'relative z-10 text-[10px] font-medium',
                   isActive ? 'text-gold' : 'text-cream-dim'
                 )}>
                   {item.label}
@@ -84,9 +75,9 @@ export function TabBar() {
 
   const tabs = [
     { href: '/', icon: Home, label: 'Home' },
-    { href: '/tours', icon: Compass, label: 'Explore' },
-    { href: '/saved', icon: Heart, label: 'Saved' },
-    { href: '/profile', icon: User, label: 'Profile' },
+    { href: '/tours', icon: Grid3X3, label: 'Tours' },
+    { href: '/search', icon: Search, label: 'Search' },
+    { href: '/contact', icon: Mail, label: 'Contact' },
   ]
 
   return (
@@ -104,10 +95,10 @@ export function TabBar() {
                 key={tab.href}
                 href={tab.href}
                 className={cn(
-                  'flex flex-col items-center justify-center gap-1 py-2 px-4 rounded-xl transition-all duration-200',
+                  'flex flex-col items-center justify-center gap-1 py-2 px-4 rounded-xl transition-colors duration-150',
                   isActive
                     ? 'text-gold bg-gold/15'
-                    : 'text-cream-muted hover:text-cream-soft active:scale-95'
+                    : 'text-cream-muted active:text-cream-soft'
                 )}
               >
                 <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
