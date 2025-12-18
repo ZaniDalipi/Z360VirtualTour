@@ -226,10 +226,11 @@ export default function FinancesAdminPage() {
     }).format(amount)
   }
 
+  // European date format (DD/MM/YYYY)
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
     })
   }

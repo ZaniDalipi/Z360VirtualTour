@@ -91,9 +91,26 @@ export async function PUT(
       data.confirmedAt = new Date().toISOString()
     }
 
-    // Set completedAt timestamp when status changes to completed
+    // Set workStartedAt when status changes to in_progress
+    if (data.status === 'in_progress' && existingBooking.status !== 'in_progress') {
+      data.workStartedAt = new Date().toISOString()
+    }
+
+    // Set completedAt and calculate work duration when status changes to completed
     if (data.status === 'completed' && existingBooking.status !== 'completed') {
-      data.completedAt = new Date().toISOString()
+      const now = new Date()
+      data.completedAt = now.toISOString()
+      data.workEndedAt = now.toISOString()
+
+      // Calculate work duration if we have a start time
+      const workStart = data.workStartedAt
+        ? new Date(data.workStartedAt)
+        : existingBooking.workStartedAt
+
+      if (workStart) {
+        const durationMs = now.getTime() - new Date(workStart).getTime()
+        data.workDurationMinutes = Math.round(durationMs / (1000 * 60))
+      }
     }
 
     // Build update data object, only including defined values
@@ -134,6 +151,9 @@ export async function PUT(
     if (data.quoteSentAt !== undefined) updateData.quoteSentAt = data.quoteSentAt ? new Date(data.quoteSentAt) : null
     if (data.confirmedAt !== undefined) updateData.confirmedAt = data.confirmedAt ? new Date(data.confirmedAt) : null
     if (data.completedAt !== undefined) updateData.completedAt = data.completedAt ? new Date(data.completedAt) : null
+    if (data.workStartedAt !== undefined) updateData.workStartedAt = data.workStartedAt ? new Date(data.workStartedAt) : null
+    if (data.workEndedAt !== undefined) updateData.workEndedAt = data.workEndedAt ? new Date(data.workEndedAt) : null
+    if (data.workDurationMinutes !== undefined) updateData.workDurationMinutes = data.workDurationMinutes
 
     const booking = await prisma.booking.update({
       where: { id },

@@ -1,7 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { CalendarDays, Phone, Mail, MapPin, Clock, Check, ChevronRight, User, Building2, AlertCircle } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import {
+  CalendarDays, Phone, Mail, MapPin, Clock, Check, ChevronRight,
+  User, Building2, AlertCircle, Play, Square, ArrowLeft, Timer,
+  RefreshCw
+} from 'lucide-react'
 import { Card, Button } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -15,13 +19,19 @@ interface ScheduledBooking {
   propertyCity: string | null
   estimatedDistance: number | null
   preferredDate: string | null
+  preferredTime: string | null
   alternateDate: string | null
+  alternateTime: string | null
   deadlineDate: string | null
   confirmedDate: string | null
+  confirmedTime: string | null
   totalQuote: number | null
   status: string
   projectDescription: string | null
   createdAt: string
+  workStartedAt: string | null
+  workEndedAt: string | null
+  workDurationMinutes: number | null
 }
 
 const statusColors: Record<string, string> = {
@@ -36,16 +46,151 @@ const statusLabels: Record<string, string> = {
   in_progress: 'In Progress',
 }
 
+// Status flow for navigation
+const statusFlow = ['confirmed', 'scheduled', 'in_progress', 'completed']
+
+// European date format helper
+const formatDateEU = (dateStr: string | null) => {
+  if (!dateStr) return null
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+}
+
+const formatFullDateEU = (dateStr: string | null) => {
+  if (!dateStr) return '-'
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+const formatTime = (timeStr: string | null) => {
+  if (!timeStr) return ''
+  return timeStr
+}
+
+// Timer component for active work
+function WorkTimer({ startTime }: { startTime: string }) {
+  const [elapsed, setElapsed] = useState(0)
+
+  useEffect(() => {
+    const start = new Date(startTime).getTime()
+
+    const updateElapsed = () => {
+      const now = Date.now()
+      setElapsed(Math.floor((now - start) / 1000))
+    }
+
+    updateElapsed()
+    const interval = setInterval(updateElapsed, 1000)
+
+    return () => clearInterval(interval)
+  }, [startTime])
+
+  const hours = Math.floor(elapsed / 3600)
+  const minutes = Math.floor((elapsed % 3600) / 60)
+  const seconds = elapsed % 60
+
+  return (
+    <div className="flex items-center gap-2 text-indigo-400 font-mono text-lg">
+      <Timer className="w-5 h-5 animate-pulse" />
+      <span>
+        {hours.toString().padStart(2, '0')}:
+        {minutes.toString().padStart(2, '0')}:
+        {seconds.toString().padStart(2, '0')}
+      </span>
+    </div>
+  )
+}
+
+// Confirmation Dialog
+function ConfirmDialog({
+  isOpen,
+  title,
+  message,
+  confirmText,
+  cancelText = 'Cancel',
+  onConfirm,
+  onCancel,
+  variant = 'default',
+}: {
+  isOpen: boolean
+  title: string
+  message: string
+  confirmText: string
+  cancelText?: string
+  onConfirm: () => void
+  onCancel: () => void
+  variant?: 'default' | 'warning' | 'success'
+}) {
+  if (!isOpen) return null
+
+  const variantStyles = {
+    default: 'bg-gold hover:bg-gold/90',
+    warning: 'bg-orange-500 hover:bg-orange-600',
+    success: 'bg-green-600 hover:bg-green-700',
+  }
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+        onClick={onCancel}
+      />
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          className="w-full max-w-md pointer-events-auto"
+        >
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-cream mb-2">{title}</h3>
+            <p className="text-cream-muted mb-6">{message}</p>
+            <div className="flex gap-3">
+              <Button
+                className={`flex-1 ${variantStyles[variant]} text-navy`}
+                onClick={onConfirm}
+              >
+                {confirmText}
+              </Button>
+              <Button variant="secondary" onClick={onCancel}>
+                {cancelText}
+              </Button>
+            </div>
+          </Card>
+        </motion.div>
+      </div>
+    </>
+  )
+}
+
 export default function SchedulePage() {
   const [bookings, setBookings] = useState<ScheduledBooking[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean
+    bookingId: string
+    newStatus: string
+    title: string
+    message: string
+    variant: 'default' | 'warning' | 'success'
+  } | null>(null)
+  const [isSyncing, setIsSyncing] = useState(false)
 
-  useEffect(() => {
-    fetchScheduledBookings()
-  }, [])
-
-  const fetchScheduledBookings = async () => {
+  const fetchScheduledBookings = useCallback(async () => {
     try {
       // Fetch confirmed, scheduled, and in_progress bookings
       const [confirmedRes, scheduledRes, inProgressRes] = await Promise.all([
@@ -82,6 +227,63 @@ export default function SchedulePage() {
     } finally {
       setIsLoading(false)
     }
+  }, [])
+
+  useEffect(() => {
+    fetchScheduledBookings()
+  }, [fetchScheduledBookings])
+
+  const getPreviousStatus = (currentStatus: string): string | null => {
+    const currentIndex = statusFlow.indexOf(currentStatus)
+    if (currentIndex > 0) {
+      return statusFlow[currentIndex - 1]
+    }
+    return null
+  }
+
+  const showStatusConfirmation = (
+    bookingId: string,
+    newStatus: string,
+    isGoingBack = false
+  ) => {
+    let title = ''
+    let message = ''
+    let variant: 'default' | 'warning' | 'success' = 'default'
+
+    if (isGoingBack) {
+      title = 'Go Back?'
+      message = `Are you sure you want to change the status back to "${statusLabels[newStatus] || newStatus}"?`
+      variant = 'warning'
+    } else {
+      switch (newStatus) {
+        case 'scheduled':
+          title = 'Mark as Scheduled?'
+          message = 'This will mark the booking as scheduled and ready for work.'
+          break
+        case 'in_progress':
+          title = 'Start Work?'
+          message = 'This will start the work timer. Make sure you are ready to begin.'
+          variant = 'warning'
+          break
+        case 'completed':
+          title = 'Complete Work?'
+          message = 'This will stop the timer and mark this job as completed. The income will be recorded in finances.'
+          variant = 'success'
+          break
+        default:
+          title = 'Change Status?'
+          message = `Change status to "${newStatus}"?`
+      }
+    }
+
+    setConfirmDialog({
+      isOpen: true,
+      bookingId,
+      newStatus,
+      title,
+      message,
+      variant,
+    })
   }
 
   const handleStatusChange = async (id: string, newStatus: string) => {
@@ -100,23 +302,26 @@ export default function SchedulePage() {
     }
   }
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return null
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-    })
+  const confirmStatusChange = () => {
+    if (confirmDialog) {
+      handleStatusChange(confirmDialog.bookingId, confirmDialog.newStatus)
+      setConfirmDialog(null)
+    }
   }
 
-  const formatFullDate = (dateStr: string | null) => {
-    if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
+  const syncBundles = async () => {
+    setIsSyncing(true)
+    try {
+      const res = await fetch('/api/admin/bundles/sync', { method: 'POST' })
+      if (res.ok) {
+        const data = await res.json()
+        alert(`Synced ${data.updates.length} bundle(s)`)
+      }
+    } catch (error) {
+      console.error('Failed to sync bundles:', error)
+    } finally {
+      setIsSyncing(false)
+    }
   }
 
   const isUrgent = (booking: ScheduledBooking) => {
@@ -125,6 +330,16 @@ export default function SchedulePage() {
     const today = new Date()
     const diffDays = Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
     return diffDays <= 3
+  }
+
+  const formatWorkDuration = (minutes: number | null) => {
+    if (!minutes) return '-'
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    if (hours > 0) {
+      return `${hours}h ${mins}m`
+    }
+    return `${mins}m`
   }
 
   // Group bookings by date
@@ -153,15 +368,41 @@ export default function SchedulePage() {
 
   return (
     <div className="space-y-6">
+      {/* Confirmation Dialog */}
+      <AnimatePresence>
+        {confirmDialog?.isOpen && (
+          <ConfirmDialog
+            isOpen={confirmDialog.isOpen}
+            title={confirmDialog.title}
+            message={confirmDialog.message}
+            confirmText="Yes, Continue"
+            onConfirm={confirmStatusChange}
+            onCancel={() => setConfirmDialog(null)}
+            variant={confirmDialog.variant}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Header */}
-      <div>
-        <h1 className="text-h2 font-bold text-cream flex items-center gap-2">
-          <CalendarDays className="w-8 h-8 text-gold" />
-          My Schedule
-        </h1>
-        <p className="text-body text-cream-muted">
-          Confirmed bookings and upcoming work - {bookings.length} jobs to complete
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-h2 font-bold text-cream flex items-center gap-2">
+            <CalendarDays className="w-8 h-8 text-gold" />
+            My Schedule
+          </h1>
+          <p className="text-body text-cream-muted">
+            Confirmed bookings and upcoming work - {bookings.length} jobs to complete
+          </p>
+        </div>
+        <Button
+          variant="secondary"
+          onClick={syncBundles}
+          disabled={isSyncing}
+          className="text-sm"
+        >
+          <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+          Sync Bundles
+        </Button>
       </div>
 
       {/* Stats */}
@@ -206,7 +447,7 @@ export default function SchedulePage() {
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-cream">
-                    {dateKey === 'Unscheduled' ? 'Date TBD' : formatFullDate(dateKey)}
+                    {dateKey === 'Unscheduled' ? 'Date TBD' : formatFullDateEU(dateKey)}
                   </h2>
                   <p className="text-sm text-cream-muted">
                     {dateBookings.length} booking{dateBookings.length !== 1 ? 's' : ''}
@@ -225,7 +466,7 @@ export default function SchedulePage() {
                     <Card
                       className={`overflow-hidden transition-all ${
                         isUrgent(booking) ? 'border-orange-500/50' : ''
-                      }`}
+                      } ${booking.status === 'in_progress' ? 'border-indigo-500/50 bg-indigo-500/5' : ''}`}
                     >
                       {/* Main Info */}
                       <div
@@ -246,6 +487,13 @@ export default function SchedulePage() {
                               </span>
                             </div>
 
+                            {/* Active timer for in_progress */}
+                            {booking.status === 'in_progress' && booking.workStartedAt && (
+                              <div className="mb-2">
+                                <WorkTimer startTime={booking.workStartedAt} />
+                              </div>
+                            )}
+
                             {/* Quick contact */}
                             <div className="flex flex-wrap items-center gap-4 text-sm">
                               {booking.clientPhone && (
@@ -262,6 +510,12 @@ export default function SchedulePage() {
                                 <MapPin className="w-4 h-4" />
                                 {booking.propertyCity || booking.propertyAddress}
                               </span>
+                              {booking.confirmedTime && (
+                                <span className="flex items-center gap-1 text-gold">
+                                  <Clock className="w-4 h-4" />
+                                  {formatTime(booking.confirmedTime)}
+                                </span>
+                              )}
                             </div>
                           </div>
 
@@ -317,29 +571,54 @@ export default function SchedulePage() {
                                 </div>
                               </div>
 
-                              {/* Dates */}
+                              {/* Dates - European format */}
                               <div className="grid sm:grid-cols-3 gap-4 text-sm">
                                 {booking.confirmedDate && (
                                   <div>
                                     <p className="text-xs text-cream-muted mb-1">Confirmed Date</p>
-                                    <p className="text-green-400 font-medium">{formatDate(booking.confirmedDate)}</p>
+                                    <p className="text-green-400 font-medium">
+                                      {formatDateEU(booking.confirmedDate)}
+                                      {booking.confirmedTime && (
+                                        <span className="ml-2">at {booking.confirmedTime}</span>
+                                      )}
+                                    </p>
                                   </div>
                                 )}
                                 {booking.preferredDate && (
                                   <div>
                                     <p className="text-xs text-cream-muted mb-1">Preferred</p>
-                                    <p className="text-cream">{formatDate(booking.preferredDate)}</p>
+                                    <p className="text-cream">
+                                      {formatDateEU(booking.preferredDate)}
+                                      {booking.preferredTime && (
+                                        <span className="ml-2">at {booking.preferredTime}</span>
+                                      )}
+                                    </p>
                                   </div>
                                 )}
                                 {booking.deadlineDate && (
                                   <div>
                                     <p className="text-xs text-cream-muted mb-1">Deadline</p>
                                     <p className={`font-medium ${isUrgent(booking) ? 'text-orange-400' : 'text-cream'}`}>
-                                      {formatDate(booking.deadlineDate)}
+                                      {formatDateEU(booking.deadlineDate)}
                                     </p>
                                   </div>
                                 )}
                               </div>
+
+                              {/* Work Duration (if completed previously or in progress) */}
+                              {(booking.workDurationMinutes || booking.workStartedAt) && (
+                                <div className="flex items-center gap-4 p-3 rounded-lg bg-indigo-500/10">
+                                  <Timer className="w-5 h-5 text-indigo-400" />
+                                  <div>
+                                    <p className="text-xs text-cream-muted">Work Duration</p>
+                                    <p className="text-indigo-400 font-medium">
+                                      {booking.workDurationMinutes
+                                        ? formatWorkDuration(booking.workDurationMinutes)
+                                        : 'In progress...'}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
 
                               {/* Notes */}
                               {booking.projectDescription && (
@@ -351,8 +630,27 @@ export default function SchedulePage() {
                                 </div>
                               )}
 
-                              {/* Actions */}
+                              {/* Actions with Go Back option */}
                               <div className="flex flex-wrap gap-2 pt-2">
+                                {/* Go Back Button */}
+                                {getPreviousStatus(booking.status) && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="text-cream-muted hover:text-cream"
+                                    onClick={() =>
+                                      showStatusConfirmation(
+                                        booking.id,
+                                        getPreviousStatus(booking.status)!,
+                                        true
+                                      )
+                                    }
+                                  >
+                                    <ArrowLeft className="w-4 h-4 mr-1" />
+                                    Back to {statusLabels[getPreviousStatus(booking.status)!]}
+                                  </Button>
+                                )}
+
                                 {booking.clientPhone && (
                                   <Button
                                     size="sm"
@@ -371,11 +669,12 @@ export default function SchedulePage() {
                                   Email
                                 </Button>
 
+                                {/* Forward Status Buttons */}
                                 {booking.status === 'confirmed' && (
                                   <Button
                                     size="sm"
                                     variant="secondary"
-                                    onClick={() => handleStatusChange(booking.id, 'scheduled')}
+                                    onClick={() => showStatusConfirmation(booking.id, 'scheduled')}
                                   >
                                     Mark Scheduled
                                   </Button>
@@ -383,9 +682,10 @@ export default function SchedulePage() {
                                 {booking.status === 'scheduled' && (
                                   <Button
                                     size="sm"
-                                    variant="secondary"
-                                    onClick={() => handleStatusChange(booking.id, 'in_progress')}
+                                    className="bg-indigo-600 hover:bg-indigo-700"
+                                    onClick={() => showStatusConfirmation(booking.id, 'in_progress')}
                                   >
+                                    <Play className="w-4 h-4 mr-2" />
                                     Start Work
                                   </Button>
                                 )}
@@ -393,10 +693,10 @@ export default function SchedulePage() {
                                   <Button
                                     size="sm"
                                     className="bg-green-600 hover:bg-green-700"
-                                    onClick={() => handleStatusChange(booking.id, 'completed')}
+                                    onClick={() => showStatusConfirmation(booking.id, 'completed')}
                                   >
-                                    <Check className="w-4 h-4 mr-2" />
-                                    Complete
+                                    <Square className="w-4 h-4 mr-2" />
+                                    Stop & Complete
                                   </Button>
                                 )}
                               </div>

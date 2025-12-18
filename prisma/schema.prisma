@@ -243,6 +243,11 @@ model Booking {
   quoteSentAt         DateTime?           // When quote was sent
   confirmedAt         DateTime?           // When client confirmed
   completedAt         DateTime?           // When project completed
+
+  // Work session tracking
+  workStartedAt       DateTime?           // When work actually started
+  workEndedAt         DateTime?           // When work actually ended
+  workDurationMinutes Int?                // Total minutes worked
 }
 
 // Booking settings (singleton-style config)

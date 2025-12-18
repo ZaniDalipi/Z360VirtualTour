@@ -258,21 +258,22 @@ export default function BookingsAdminPage() {
     }
   }
 
+  // European date format (DD/MM/YYYY)
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString('en-GB', {
       weekday: 'short',
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
-      month: 'short',
-      day: 'numeric',
     })
   }
 
   const formatDateTime = (dateStr: string) => {
-    return new Date(dateStr).toLocaleString('en-US', {
+    return new Date(dateStr).toLocaleString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
-      month: 'short',
-      day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
     })
@@ -607,7 +608,7 @@ export default function BookingsAdminPage() {
                           </span>
                         )}
                         <span className="text-xs text-cream-muted">
-                          {new Date(booking.createdAt).toLocaleDateString()}
+                          {new Date(booking.createdAt).toLocaleDateString('en-GB')}
                         </span>
                         {expandedId === booking.id ? (
                           <ChevronUp className="w-5 h-5 text-cream-muted" />
