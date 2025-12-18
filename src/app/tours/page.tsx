@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { Search, Play, MapPin, Grid, List, Eye, Star, ArrowUpRight } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Input, Chip } from '@/components/ui'
@@ -106,12 +107,33 @@ interface Category {
 }
 
 export default function ToursPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const categoryFromUrl = searchParams.get('category')
+
   const [tours, setTours] = useState<Tour[]>(placeholderTours)
   const [categories, setCategories] = useState<Category[]>(placeholderCategories)
-  const [activeCategory, setActiveCategory] = useState('all')
+  const [activeCategory, setActiveCategory] = useState(categoryFromUrl || 'all')
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [isLoading, setIsLoading] = useState(true)
+
+  // Update active category when URL changes
+  useEffect(() => {
+    if (categoryFromUrl) {
+      setActiveCategory(categoryFromUrl)
+    }
+  }, [categoryFromUrl])
+
+  // Update URL when category changes
+  const handleCategoryChange = (slug: string) => {
+    setActiveCategory(slug)
+    if (slug === 'all') {
+      router.push('/tours', { scroll: false })
+    } else {
+      router.push(`/tours?category=${slug}`, { scroll: false })
+    }
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -197,7 +219,7 @@ export default function ToursPage() {
                 <Chip
                   key={category.id}
                   active={activeCategory === category.slug}
-                  onClick={() => setActiveCategory(category.slug)}
+                  onClick={() => handleCategoryChange(category.slug)}
                 >
                   {category.name}
                 </Chip>
@@ -358,7 +380,7 @@ export default function ToursPage() {
             <div className="text-center py-16">
               <p className="text-h3 text-cream-muted mb-4">No tours found</p>
               <p className="text-body text-cream-dim mb-6">Try adjusting your search or filters</p>
-              <Button onClick={() => { setActiveCategory('all'); setSearchQuery(''); }}>
+              <Button onClick={() => { handleCategoryChange('all'); setSearchQuery(''); }}>
                 Clear Filters
               </Button>
             </div>
