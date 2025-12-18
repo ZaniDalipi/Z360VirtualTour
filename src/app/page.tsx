@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import {
   Eye, Star, Home, Building2, Hotel, Car, GraduationCap, Heart,
-  Play, ArrowRight, Quote
+  Play, ArrowRight, Quote, Plus
 } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
@@ -20,77 +20,6 @@ const categoryIcons: Record<string, React.ComponentType<{ className?: string }>>
   'education': GraduationCap,
   'healthcare': Heart,
 }
-
-// Placeholder data - shown when no database tours exist
-const placeholderCategories = [
-  { name: 'Real Estate', slug: 'real-estate', tourCount: 0 },
-  { name: 'Business', slug: 'business', tourCount: 0 },
-  { name: 'Hospitality', slug: 'hospitality', tourCount: 0 },
-  { name: 'Automotive', slug: 'automotive', tourCount: 0 },
-  { name: 'Education', slug: 'education', tourCount: 0 },
-  { name: 'Healthcare', slug: 'healthcare', tourCount: 0 },
-]
-
-const placeholderTours = [
-  {
-    id: 'placeholder-1',
-    title: 'Your First Tour',
-    slug: 'placeholder',
-    clientName: 'Add tours from admin panel',
-    location: 'Your location',
-    coverImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
-    category: { name: 'Real Estate' },
-  },
-  {
-    id: 'placeholder-2',
-    title: 'Business Space Tour',
-    slug: 'placeholder',
-    clientName: 'Create via /admin',
-    location: 'Your city',
-    coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
-    category: { name: 'Business' },
-  },
-  {
-    id: 'placeholder-3',
-    title: 'Hospitality Showcase',
-    slug: 'placeholder',
-    clientName: 'Coming soon...',
-    location: 'Your region',
-    coverImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
-    category: { name: 'Hospitality' },
-  },
-]
-
-const placeholderTestimonials = [
-  {
-    id: 'placeholder-1',
-    clientName: 'Your Client Name',
-    clientTitle: 'Client Title',
-    content: 'Add testimonials through the admin panel to showcase your client feedback here.',
-    rating: 5,
-  },
-  {
-    id: 'placeholder-2',
-    clientName: 'Happy Customer',
-    clientTitle: 'Business Owner',
-    content: 'Testimonials help build trust. Add real reviews from your satisfied clients.',
-    rating: 5,
-  },
-  {
-    id: 'placeholder-3',
-    clientName: 'Satisfied Client',
-    clientTitle: 'Property Manager',
-    content: 'Showcase your best reviews here to convert more visitors into clients.',
-    rating: 5,
-  },
-]
-
-const stats = [
-  { value: '500+', label: 'Tours Created' },
-  { value: '200+', label: 'Happy Clients' },
-  { value: '50+', label: 'Cities Covered' },
-  { value: '98%', label: 'Client Satisfaction' },
-]
 
 interface Tour {
   id: string
@@ -118,35 +47,51 @@ interface Testimonial {
   rating: number
 }
 
+interface Stats {
+  totalTours: number
+  totalCategories: number
+  totalViews: number
+}
+
 export default function HomePage() {
-  const [tours, setTours] = useState<Tour[]>(placeholderTours)
-  const [categories, setCategories] = useState<Category[]>(placeholderCategories)
-  const [testimonials] = useState<Testimonial[]>(placeholderTestimonials)
+  const [tours, setTours] = useState<Tour[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([])
+  const [stats, setStats] = useState<Stats>({ totalTours: 0, totalCategories: 0, totalViews: 0 })
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         // Fetch featured tours
-        const toursRes = await fetch('/api/tours?featured=true&limit=3')
+        const toursRes = await fetch('/api/tours?featured=true&limit=6')
         if (toursRes.ok) {
           const toursData = await toursRes.json()
-          if (toursData.length > 0) {
-            setTours(toursData)
-          }
+          setTours(toursData)
         }
 
         // Fetch categories
         const catsRes = await fetch('/api/categories')
         if (catsRes.ok) {
           const catsData = await catsRes.json()
-          if (catsData.length > 0) {
-            setCategories(catsData)
-          }
+          setCategories(catsData)
+        }
+
+        // Fetch testimonials
+        const testimonialsRes = await fetch('/api/testimonials')
+        if (testimonialsRes.ok) {
+          const testimonialsData = await testimonialsRes.json()
+          setTestimonials(testimonialsData)
+        }
+
+        // Fetch stats
+        const statsRes = await fetch('/api/stats')
+        if (statsRes.ok) {
+          const statsData = await statsRes.json()
+          setStats(statsData)
         }
       } catch (error) {
-        // Keep using placeholder data
-        console.log('Using placeholder data')
+        console.error('Failed to fetch data:', error)
       } finally {
         setIsLoading(false)
       }
@@ -210,15 +155,29 @@ export default function HomePage() {
                 </Link>
               </div>
 
-              {/* Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-12 pt-8 border-t border-gold/10">
-                {stats.map((stat) => (
-                  <div key={stat.label}>
-                    <p className="text-h2 font-bold text-gold">{stat.value}</p>
-                    <p className="text-caption text-cream-muted">{stat.label}</p>
-                  </div>
-                ))}
-              </div>
+              {/* Dynamic Stats */}
+              {(stats.totalTours > 0 || stats.totalViews > 0) && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mt-12 pt-8 border-t border-gold/10">
+                  {stats.totalTours > 0 && (
+                    <div>
+                      <p className="text-h2 font-bold text-gold">{stats.totalTours}</p>
+                      <p className="text-caption text-cream-muted">Tours Created</p>
+                    </div>
+                  )}
+                  {categories.length > 0 && (
+                    <div>
+                      <p className="text-h2 font-bold text-gold">{categories.length}</p>
+                      <p className="text-caption text-cream-muted">Categories</p>
+                    </div>
+                  )}
+                  {stats.totalViews > 0 && (
+                    <div>
+                      <p className="text-h2 font-bold text-gold">{stats.totalViews.toLocaleString()}</p>
+                      <p className="text-caption text-cream-muted">Total Views</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </motion.div>
 
             {/* Hero Image */}
@@ -230,31 +189,44 @@ export default function HomePage() {
             >
               <div className="relative aspect-square">
                 <div className="absolute inset-4 rounded-2xl overflow-hidden border border-gold/20">
-                  <Image
-                    src={tours[0]?.coverImage || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80'}
-                    alt="Virtual Tour Preview"
-                    fill
-                    className="object-cover"
-                    priority
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-navy/80 to-transparent" />
+                  {tours.length > 0 ? (
+                    <>
+                      <Image
+                        src={tours[0].coverImage}
+                        alt={tours[0].title}
+                        fill
+                        className="object-cover"
+                        priority
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-navy/80 to-transparent" />
 
-                  {/* Play Button Overlay */}
-                  <Link
-                    href={tours[0]?.tourUrl || (tours[0]?.slug && tours[0]?.slug !== 'placeholder' ? `/tour/${tours[0].slug}` : '/tours')}
-                    target={tours[0]?.tourUrl ? '_blank' : undefined}
-                    rel={tours[0]?.tourUrl ? 'noopener noreferrer' : undefined}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    <div className="w-20 h-20 rounded-full bg-gold/90 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-glow">
-                      <Play className="w-8 h-8 text-navy ml-1" fill="currentColor" />
+                      {/* Play Button Overlay */}
+                      <Link
+                        href={tours[0].tourUrl || `/tour/${tours[0].slug}`}
+                        target={tours[0].tourUrl ? '_blank' : undefined}
+                        rel={tours[0].tourUrl ? 'noopener noreferrer' : undefined}
+                        className="absolute inset-0 flex items-center justify-center"
+                      >
+                        <div className="w-20 h-20 rounded-full bg-gold/90 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-glow">
+                          <Play className="w-8 h-8 text-navy ml-1" fill="currentColor" />
+                        </div>
+                      </Link>
+
+                      <div className="absolute bottom-4 left-4 right-4">
+                        <p className="text-caption text-cream-muted">Featured Tour</p>
+                        <p className="text-h4 font-semibold text-cream">{tours[0].title}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="absolute inset-0 bg-navy-medium flex items-center justify-center">
+                      <div className="text-center p-8">
+                        <div className="w-20 h-20 rounded-full bg-gold/20 flex items-center justify-center mx-auto mb-4">
+                          <Play className="w-8 h-8 text-gold" />
+                        </div>
+                        <p className="text-cream-muted">Your featured tours will appear here</p>
+                      </div>
                     </div>
-                  </Link>
-
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <p className="text-caption text-cream-muted">Featured Tour</p>
-                    <p className="text-h4 font-semibold text-cream">{tours[0]?.title || 'Your Featured Tour'}</p>
-                  </div>
+                  )}
                 </div>
 
                 {/* Decorative Elements */}
@@ -266,174 +238,182 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Categories Section */}
-      <section className="py-20 bg-navy-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-display font-bold text-cream mb-4">
-              Industries We Serve
-            </h2>
-            <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-              From real estate to hospitality, we create stunning virtual experiences for every industry
-            </p>
-          </motion.div>
+      {/* Categories Section - Only show if categories exist */}
+      {categories.length > 0 && (
+        <section className="py-20 bg-navy-dark">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-display font-bold text-cream mb-4">
+                Industries We Serve
+              </h2>
+              <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+                From real estate to hospitality, we create stunning virtual experiences for every industry
+              </p>
+            </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {categories.map((category, index) => {
-              const Icon = categoryIcons[category.slug] || Home
-              return (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {categories.map((category, index) => {
+                const Icon = categoryIcons[category.slug] || Home
+                return (
+                  <motion.div
+                    key={category.slug}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                  >
+                    <Link href={`/tours?category=${category.slug}`}>
+                      <Card className="p-6 text-center hover:border-gold/30 transition-all hover:-translate-y-1">
+                        <div className="w-14 h-14 rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-4">
+                          <Icon className="w-7 h-7 text-gold" />
+                        </div>
+                        <h3 className="text-h4 font-semibold text-cream mb-1">{category.name}</h3>
+                        <p className="text-caption text-cream-muted">{category.tourCount} tours</p>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Featured Tours Section - Only show if tours exist */}
+      {tours.length > 0 && (
+        <section className="py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="flex items-end justify-between mb-12"
+            >
+              <div>
+                <h2 className="text-display font-bold text-cream mb-4">
+                  Featured Tours
+                </h2>
+                <p className="text-body-lg text-cream-muted max-w-xl">
+                  Explore some of our recent projects and see the quality we deliver
+                </p>
+              </div>
+              <Link href="/tours" className="hidden md:flex items-center gap-2 text-gold hover:text-gold-soft transition-colors">
+                View All <ArrowRight className="w-5 h-5" />
+              </Link>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {tours.map((tour, index) => (
                 <motion.div
-                  key={category.slug}
+                  key={tour.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
                 >
-                  <Link href={`/tours?category=${category.slug}`}>
-                    <Card className="p-6 text-center hover:border-gold/30 transition-all hover:-translate-y-1">
-                      <div className="w-14 h-14 rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-4">
-                        <Icon className="w-7 h-7 text-gold" />
-                      </div>
-                      <h3 className="text-h4 font-semibold text-cream mb-1">{category.name}</h3>
-                      <p className="text-caption text-cream-muted">{category.tourCount} tours</p>
-                    </Card>
-                  </Link>
-                </motion.div>
-              )
-            })}
-          </div>
-        </div>
-      </section>
+                  <Link href={`/tour/${tour.slug}`}>
+                    <Card className="overflow-hidden group cursor-pointer hover:border-gold/30 transition-all">
+                      <div className="relative h-56">
+                        <Image
+                          src={tour.coverImage}
+                          alt={tour.title}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-navy-dark via-transparent to-transparent" />
 
-      {/* Featured Tours Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="flex items-end justify-between mb-12"
-          >
-            <div>
-              <h2 className="text-display font-bold text-cream mb-4">
-                Featured Tours
-              </h2>
-              <p className="text-body-lg text-cream-muted max-w-xl">
-                Explore some of our recent projects and see the quality we deliver
-              </p>
-            </div>
-            <Link href="/tours" className="hidden md:flex items-center gap-2 text-gold hover:text-gold-soft transition-colors">
-              View All <ArrowRight className="w-5 h-5" />
-            </Link>
-          </motion.div>
+                        {/* Play Button */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center shadow-glow">
+                            <Play className="w-6 h-6 text-navy ml-0.5" fill="currentColor" />
+                          </div>
+                        </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tours.map((tour, index) => (
-              <motion.div
-                key={tour.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Link href={tour.slug === 'placeholder' ? '/admin' : `/tour/${tour.slug}`}>
-                  <Card className="overflow-hidden group cursor-pointer hover:border-gold/30 transition-all">
-                    <div className="relative h-56">
-                      <Image
-                        src={tour.coverImage}
-                        alt={tour.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-navy-dark via-transparent to-transparent" />
-
-                      {/* Play Button */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center shadow-glow">
-                          <Play className="w-6 h-6 text-navy ml-0.5" fill="currentColor" />
+                        {/* Category Badge */}
+                        <div className="absolute top-4 left-4">
+                          <span className="bg-gold text-navy text-caption font-semibold px-3 py-1 rounded-full">
+                            {tour.category.name}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Category Badge */}
-                      <div className="absolute top-4 left-4">
-                        <span className="bg-gold text-navy text-caption font-semibold px-3 py-1 rounded-full">
-                          {tour.category.name}
-                        </span>
+                      <div className="p-5">
+                        <h3 className="text-h3 font-semibold text-cream mb-2 group-hover:text-gold transition-colors">
+                          {tour.title}
+                        </h3>
+                        {tour.clientName && <p className="text-body text-cream-muted mb-1">{tour.clientName}</p>}
+                        {tour.location && <p className="text-caption text-cream-dim">{tour.location}</p>}
                       </div>
-                    </div>
+                    </Card>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
 
-                    <div className="p-5">
-                      <h3 className="text-h3 font-semibold text-cream mb-2 group-hover:text-gold transition-colors">
-                        {tour.title}
-                      </h3>
-                      <p className="text-body text-cream-muted mb-1">{tour.clientName}</p>
-                      <p className="text-caption text-cream-dim">{tour.location}</p>
+            <div className="text-center mt-8 md:hidden">
+              <Link href="/tours">
+                <Button variant="secondary">View All Tours</Button>
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Testimonials Section - Only show if testimonials exist */}
+      {testimonials.length > 0 && (
+        <section className="py-20 bg-navy-dark">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-display font-bold text-cream mb-4">
+                What Our Clients Say
+              </h2>
+              <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+                Don't just take our word for it - hear from businesses we've helped
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {testimonials.map((testimonial, index) => (
+                <motion.div
+                  key={testimonial.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="p-6 h-full">
+                    <Quote className="w-10 h-10 text-gold/30 mb-4" />
+                    <p className="text-body text-cream-soft mb-6 leading-relaxed">
+                      "{testimonial.content}"
+                    </p>
+                    <div className="flex items-center gap-1 mb-4">
+                      {[...Array(testimonial.rating)].map((_, i) => (
+                        <Star key={i} className="w-4 h-4 text-gold fill-gold" />
+                      ))}
+                    </div>
+                    <div>
+                      <p className="text-h4 font-semibold text-cream">{testimonial.clientName}</p>
+                      {testimonial.clientTitle && (
+                        <p className="text-caption text-cream-muted">{testimonial.clientTitle}</p>
+                      )}
                     </div>
                   </Card>
-                </Link>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </div>
           </div>
-
-          <div className="text-center mt-8 md:hidden">
-            <Link href="/tours">
-              <Button variant="secondary">View All Tours</Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-20 bg-navy-dark">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-display font-bold text-cream mb-4">
-              What Our Clients Say
-            </h2>
-            <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-              Don't just take our word for it - hear from businesses we've helped
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="p-6 h-full">
-                  <Quote className="w-10 h-10 text-gold/30 mb-4" />
-                  <p className="text-body text-cream-soft mb-6 leading-relaxed">
-                    "{testimonial.content}"
-                  </p>
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 text-gold fill-gold" />
-                    ))}
-                  </div>
-                  <div>
-                    <p className="text-h4 font-semibold text-cream">{testimonial.clientName}</p>
-                    <p className="text-caption text-cream-muted">{testimonial.clientTitle}</p>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="py-20">
