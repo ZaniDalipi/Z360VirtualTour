@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
   DollarSign, TrendingUp, TrendingDown, PiggyBank, Receipt, Plus,
   Calendar, Filter, Download, X, Check, ChevronDown, ChevronUp,
   Trash2, Edit2, Tag, Wallet, ArrowUpRight, ArrowDownRight,
-  BarChart3, PieChart, Clock, CreditCard, Building2
+  BarChart3, PieChart, Clock, CreditCard, Building2, RefreshCw,
+  CheckCircle, Timer, MapPin, User
 } from 'lucide-react'
 import { Card, Button, Input } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -28,6 +29,38 @@ interface Expense {
   vendor: string | null
   notes: string | null
   isRecurring: boolean
+}
+
+interface CompletedBooking {
+  id: string
+  clientName: string
+  clientEmail: string
+  clientPhone: string | null
+  companyName: string | null
+  propertyAddress: string
+  propertyCity: string | null
+  serviceType: string | null
+  totalQuote: number | null
+  depositAmount: number | null
+  depositPaid: boolean
+  confirmedDate: string | null
+  confirmedTime: string | null
+  completedAt: string | null
+  workStartedAt: string | null
+  workEndedAt: string | null
+  workDurationMinutes: number | null
+  createdAt: string
+}
+
+interface CompletedBookingsData {
+  bookings: CompletedBooking[]
+  total: number
+  stats: {
+    totalRevenue: number
+    totalWorkMinutes: number
+    avgBookingValue: number
+    avgWorkMinutes: number
+  }
 }
 
 interface FinancialStats {
@@ -76,11 +109,15 @@ export default function FinancesAdminPage() {
   const [stats, setStats] = useState<FinancialStats | null>(null)
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [categories, setCategories] = useState<ExpenseCategory[]>([])
+  const [completedBookings, setCompletedBookings] = useState<CompletedBookingsData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [period, setPeriod] = useState('month')
   const [showExpenseForm, setShowExpenseForm] = useState(false)
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null)
   const [showCategoryForm, setShowCategoryForm] = useState(false)
+  const [activeTab, setActiveTab] = useState<'overview' | 'completed'>('overview')
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
 
   const [expenseForm, setExpenseForm] = useState({
     description: '',
@@ -98,17 +135,19 @@ export default function FinancesAdminPage() {
     color: '#6B7280',
   })
 
-  useEffect(() => {
-    fetchData()
-  }, [period])
+  const fetchData = useCallback(async (showRefreshIndicator = false) => {
+    if (showRefreshIndicator) {
+      setIsRefreshing(true)
+    } else {
+      setIsLoading(true)
+    }
 
-  const fetchData = async () => {
-    setIsLoading(true)
     try {
-      const [statsRes, expensesRes, categoriesRes] = await Promise.all([
+      const [statsRes, expensesRes, categoriesRes, completedRes] = await Promise.all([
         fetch(`/api/admin/finances?period=${period}`),
         fetch('/api/admin/expenses'),
         fetch('/api/admin/expense-categories'),
+        fetch(`/api/admin/bookings/completed?period=${period}`),
       ])
 
       if (statsRes.ok) {
@@ -127,11 +166,36 @@ export default function FinancesAdminPage() {
           setExpenseForm(prev => ({ ...prev, categoryId: cats[0].id }))
         }
       }
+
+      if (completedRes.ok) {
+        setCompletedBookings(await completedRes.json())
+      }
+
+      setLastUpdated(new Date())
     } catch (error) {
       console.error('Failed to fetch data:', error)
     } finally {
       setIsLoading(false)
+      setIsRefreshing(false)
     }
+  }, [period, expenseForm.categoryId])
+
+  // Initial fetch and period changes
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchData(true)
+    }, 30000)
+
+    return () => clearInterval(interval)
+  }, [fetchData])
+
+  const handleRefresh = () => {
+    fetchData(true)
   }
 
   const handleCreateExpense = async (e: React.FormEvent) => {
@@ -240,6 +304,26 @@ export default function FinancesAdminPage() {
     ? Math.max(...stats.monthlyIncome.map(m => Math.max(m.income, m.expenses)))
     : 0
 
+  // Format work duration
+  const formatWorkDuration = (minutes: number | null) => {
+    if (!minutes) return '-'
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    if (hours > 0) {
+      return `${hours}h ${mins}m`
+    }
+    return `${mins}m`
+  }
+
+  // Format last updated time
+  const formatLastUpdated = () => {
+    if (!lastUpdated) return ''
+    return lastUpdated.toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
   if (isLoading && !stats) {
     return (
       <div className="space-y-6">
@@ -261,9 +345,22 @@ export default function FinancesAdminPage() {
           <h1 className="text-h2 font-bold text-cream">Finances</h1>
           <p className="text-body text-cream-muted">
             Track your income, expenses, and profitability
+            {lastUpdated && (
+              <span className="ml-2 text-xs">
+                • Updated {formatLastUpdated()}
+              </span>
+            )}
           </p>
         </div>
         <div className="flex gap-3">
+          <Button
+            variant="secondary"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="px-3"
+          >
+            <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          </Button>
           <select
             value={period}
             onChange={(e) => setPeriod(e.target.value)}
@@ -281,9 +378,38 @@ export default function FinancesAdminPage() {
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Income */}
+      {/* Tabs */}
+      <div className="flex gap-2 border-b border-gold/20 pb-2">
+        <button
+          onClick={() => setActiveTab('overview')}
+          className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
+            activeTab === 'overview'
+              ? 'bg-gold/20 text-gold border-b-2 border-gold'
+              : 'text-cream-muted hover:text-cream'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4 inline mr-2" />
+          Overview
+        </button>
+        <button
+          onClick={() => setActiveTab('completed')}
+          className={`px-4 py-2 rounded-t-lg text-sm font-medium transition-colors ${
+            activeTab === 'completed'
+              ? 'bg-gold/20 text-gold border-b-2 border-gold'
+              : 'text-cream-muted hover:text-cream'
+          }`}
+        >
+          <CheckCircle className="w-4 h-4 inline mr-2" />
+          Completed Jobs ({completedBookings?.total || 0})
+        </button>
+      </div>
+
+      {/* Overview Tab Content */}
+      {activeTab === 'overview' && (
+        <>
+          {/* Summary Cards */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Total Income */}
         <Card className="p-6">
           <div className="flex items-start justify-between">
             <div>
@@ -539,6 +665,158 @@ export default function FinancesAdminPage() {
           </div>
         )}
       </Card>
+        </>
+      )}
+
+      {/* Completed Jobs Tab Content */}
+      {activeTab === 'completed' && (
+        <>
+          {/* Completed Jobs Stats */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-cream-muted">Total Revenue</p>
+                  <p className="text-2xl font-bold text-green-400 mt-1">
+                    {formatCurrency(completedBookings?.stats.totalRevenue || 0)}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                  <DollarSign className="w-5 h-5 text-green-400" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-cream-muted">Completed Jobs</p>
+                  <p className="text-2xl font-bold text-gold mt-1">
+                    {completedBookings?.total || 0}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-gold/20 flex items-center justify-center">
+                  <CheckCircle className="w-5 h-5 text-gold" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-cream-muted">Avg Booking Value</p>
+                  <p className="text-2xl font-bold text-blue-400 mt-1">
+                    {formatCurrency(completedBookings?.stats.avgBookingValue || 0)}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                  <BarChart3 className="w-5 h-5 text-blue-400" />
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm text-cream-muted">Total Work Time</p>
+                  <p className="text-2xl font-bold text-purple-400 mt-1">
+                    {formatWorkDuration(completedBookings?.stats.totalWorkMinutes || 0)}
+                  </p>
+                  <p className="text-xs text-cream-muted mt-1">
+                    Avg: {formatWorkDuration(completedBookings?.stats.avgWorkMinutes || 0)}/job
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                  <Timer className="w-5 h-5 text-purple-400" />
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Completed Bookings List */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-cream flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-gold" />
+                All Completed Jobs
+              </h3>
+            </div>
+
+            {!completedBookings?.bookings.length ? (
+              <div className="text-center py-8">
+                <CheckCircle className="w-12 h-12 text-cream-muted mx-auto mb-4" />
+                <p className="text-cream-muted">No completed jobs yet</p>
+                <p className="text-sm text-cream-dim mt-2">
+                  Jobs will appear here once marked as completed
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {completedBookings.bookings.map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="p-4 rounded-lg bg-navy hover:bg-navy-medium/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="font-semibold text-cream truncate">
+                            {booking.clientName}
+                          </h4>
+                          {booking.companyName && (
+                            <span className="text-xs text-cream-muted">
+                              ({booking.companyName})
+                            </span>
+                          )}
+                          <span className="text-xs px-2 py-0.5 rounded bg-green-500/20 text-green-400 border border-green-500/30">
+                            Completed
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-4 text-sm">
+                          <span className="flex items-center gap-1 text-cream-muted">
+                            <MapPin className="w-4 h-4" />
+                            {booking.propertyCity || booking.propertyAddress}
+                          </span>
+                          {booking.serviceType && (
+                            <span className="flex items-center gap-1 text-cream-muted">
+                              <Tag className="w-4 h-4" />
+                              {booking.serviceType}
+                            </span>
+                          )}
+                          {booking.completedAt && (
+                            <span className="flex items-center gap-1 text-cream-muted">
+                              <Calendar className="w-4 h-4" />
+                              {formatDate(booking.completedAt)}
+                            </span>
+                          )}
+                          {booking.workDurationMinutes && (
+                            <span className="flex items-center gap-1 text-purple-400">
+                              <Timer className="w-4 h-4" />
+                              {formatWorkDuration(booking.workDurationMinutes)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-xl font-bold text-green-400">
+                          {formatCurrency(booking.totalQuote || 0)}
+                        </p>
+                        {booking.depositPaid && booking.depositAmount && (
+                          <p className="text-xs text-cream-muted">
+                            Deposit: {formatCurrency(booking.depositAmount)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </>
+      )}
 
       {/* Add/Edit Expense Modal */}
       <AnimatePresence>
