@@ -287,7 +287,7 @@ export default function HomePage() {
                         />
 
                         {/* Gradient Overlays */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/40 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-navy-dark via-navy-dark/60 via-30% to-transparent" />
                         <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 transition-colors duration-500" />
 
                         {/* Play Button - Always visible but enhanced on hover */}
