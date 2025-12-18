@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react'
+import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter, Star, Map } from 'lucide-react'
 
 const footerLinks = {
   services: [
@@ -14,6 +14,7 @@ const footerLinks = {
   company: [
     { label: 'About Us', href: '/about' },
     { label: 'Portfolio', href: '/tours' },
+    { label: 'Testimonials', href: '/testimonials' },
     { label: 'Pricing', href: '/pricing' },
     { label: 'Contact', href: '/contact' },
   ],
