@@ -10,19 +10,19 @@ const contactInfo = [
   {
     icon: MapPin,
     label: 'Location',
-    value: 'Available for on-site visits',
-    subtext: 'Local & travel projects',
+    value: 'Balkans',
+    subtext: 'Available for on-site visits',
   },
   {
     icon: Phone,
     label: 'Phone',
-    value: '+1 (555) 360-TOUR',
+    value: '+389 71 967 915',
     subtext: 'Mon-Fri 9am-6pm',
   },
   {
     icon: Mail,
     label: 'Email',
-    value: 'hello@z360tours.com',
+    value: 'z360virtualtours@gmail.com',
     subtext: 'We reply within 24 hours',
   },
   {
@@ -193,7 +193,7 @@ export default function ContactPage() {
                           name="name"
                           value={formData.name}
                           onChange={handleChange}
-                          placeholder="John Smith"
+                          placeholder="Marko Petrovski"
                           required
                         />
                       </div>
@@ -206,7 +206,7 @@ export default function ContactPage() {
                           name="email"
                           value={formData.email}
                           onChange={handleChange}
-                          placeholder="john@example.com"
+                          placeholder="marko@example.com"
                           required
                         />
                       </div>
@@ -222,7 +222,7 @@ export default function ContactPage() {
                           name="phone"
                           value={formData.phone}
                           onChange={handleChange}
-                          placeholder="+1 (555) 123-4567"
+                          placeholder="+389 70 123 456"
                         />
                       </div>
                       <div>
@@ -233,7 +233,7 @@ export default function ContactPage() {
                           name="company"
                           value={formData.company}
                           onChange={handleChange}
-                          placeholder="Your company or property name"
+                          placeholder="Hotel Skopje, Restaurant Ohrid..."
                         />
                       </div>
                     </div>
