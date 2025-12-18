@@ -25,10 +25,12 @@ export async function GET(
       return NextResponse.json({ error: 'Tour not found' }, { status: 404 })
     }
 
-    // Increment view count
-    await prisma.tour.update({
+    // Increment view count (non-blocking - don't fail request if database is read-only)
+    prisma.tour.update({
       where: { id: tour.id },
       data: { views: tour.views + 1 },
+    }).catch((err) => {
+      console.warn('Could not increment view count:', err.message)
     })
 
     return NextResponse.json(tour)
