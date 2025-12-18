@@ -29,9 +29,10 @@ async function sendEmailNotification(submission: {
     })
 
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'z360virtualtours@gmail.com',
+      from: `"${submission.name}" <${process.env.EMAIL_USER || 'z360virtualtours@gmail.com'}>`,
+      replyTo: `"${submission.name}" <${submission.email}>`,
       to: 'z360virtualtours@gmail.com',
-      subject: `New Contact Form Submission from ${submission.name}`,
+      subject: `New Inquiry from ${submission.name} - ${submission.service || 'Virtual Tour'}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #C9A962; border-bottom: 2px solid #C9A962; padding-bottom: 10px;">
