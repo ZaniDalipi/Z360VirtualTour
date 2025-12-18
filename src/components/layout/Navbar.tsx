@@ -9,7 +9,7 @@ const navItems = [
   { href: '/', icon: Home, label: 'Home' },
   { href: '/tours', icon: Grid3X3, label: 'Tours' },
   { href: '/search', icon: Search, label: 'Search' },
-  { href: '/contact', icon: Mail, label: 'Contact' },
+  { href: '/contact', icon: Mail, label: 'Work with Us' },
 ]
 
 export function Navbar() {
@@ -26,7 +26,7 @@ export function TabBar() {
     { href: '/', icon: Home, label: 'Home' },
     { href: '/tours', icon: Grid3X3, label: 'Tours' },
     { href: '/search', icon: Search, label: 'Search' },
-    { href: '/contact', icon: Mail, label: 'Contact' },
+    { href: '/contact', icon: Mail, label: 'Work with Us' },
   ]
 
   return (

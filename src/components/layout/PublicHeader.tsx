@@ -12,7 +12,7 @@ const navLinks = [
   { href: '/tours', label: 'Portfolio' },
   { href: '/testimonials', label: 'Testimonials' },
   { href: '/pricing', label: 'Pricing' },
-  { href: '/contact', label: 'Contact' },
+  { href: '/contact', label: 'Work with Us' },
 ]
 
 export function PublicHeader() {

@@ -15,7 +15,7 @@ const footerLinks = {
     { label: 'Portfolio', href: '/tours' },
     { label: 'Testimonials', href: '/testimonials' },
     { label: 'Pricing', href: '/pricing' },
-    { label: 'Contact', href: '/contact' },
+    { label: 'Work with Us', href: '/contact' },
   ],
   legal: [
     { label: 'Privacy Policy', href: '/privacy' },
