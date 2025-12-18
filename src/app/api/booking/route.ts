@@ -218,7 +218,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create booking
+    // Create booking with relation connections
     const booking = await prisma.booking.create({
       data: {
         clientName: data.clientName,
@@ -231,15 +231,12 @@ export async function POST(request: NextRequest) {
         serviceType: data.serviceType || planName || null,
         projectDescription: data.projectDescription || null,
         specialRequests: data.specialRequests || null,
-        pricingPlanId: data.pricingPlanId || null,
-        urgencyTierId: data.urgencyTierId || null,
         preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
         preferredTime: data.preferredTime || null,
         alternateDate: data.alternateDate ? new Date(data.alternateDate) : null,
         alternateTime: data.alternateTime || null,
         deadlineDate: data.deadlineDate ? new Date(data.deadlineDate) : null,
         isFlexible: data.isFlexible ?? true,
-        travelBundleId: data.travelBundleId || null,
         basePrice: quote.basePrice,
         urgencySurcharge: quote.urgencySurchargeAmount,
         travelFee: quote.travelFee,
@@ -247,6 +244,16 @@ export async function POST(request: NextRequest) {
         totalQuote: quote.total,
         depositAmount: quote.depositAmount,
         status: 'quote_requested',
+        // Use connect syntax for relations
+        ...(data.pricingPlanId && {
+          pricingPlan: { connect: { id: data.pricingPlanId } }
+        }),
+        ...(data.urgencyTierId && {
+          urgencyTier: { connect: { id: data.urgencyTierId } }
+        }),
+        ...(data.travelBundleId && {
+          travelBundle: { connect: { id: data.travelBundleId } }
+        }),
       },
     })
 
