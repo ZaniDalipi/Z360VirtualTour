@@ -60,13 +60,40 @@ export async function PUT(
     const { id } = await params
     const data = await request.json()
 
-    // If confirming a booking with a bundle, increment bundle count
+    // Get existing booking to check for status changes and bundle updates
     const existingBooking = await prisma.booking.findUnique({ where: { id } })
-    if (data.status === 'confirmed' && existingBooking?.status !== 'confirmed' && data.travelBundleId) {
-      await prisma.travelBundle.update({
-        where: { id: data.travelBundleId },
-        data: { currentCount: { increment: 1 } },
-      })
+
+    if (!existingBooking) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+    }
+
+    // Handle bundle participant count updates
+    const bundleId = existingBooking.travelBundleId
+    if (bundleId) {
+      // If confirming a booking with a bundle, increment bundle count
+      if (data.status === 'confirmed' && existingBooking.status !== 'confirmed') {
+        await prisma.travelBundle.update({
+          where: { id: bundleId },
+          data: { currentCount: { increment: 1 } },
+        })
+      }
+      // If cancelling a confirmed booking, decrement bundle count
+      if (data.status === 'cancelled' && existingBooking.status === 'confirmed') {
+        await prisma.travelBundle.update({
+          where: { id: bundleId },
+          data: { currentCount: { decrement: 1 } },
+        })
+      }
+    }
+
+    // Set confirmedAt timestamp when status changes to confirmed
+    if (data.status === 'confirmed' && existingBooking.status !== 'confirmed') {
+      data.confirmedAt = new Date().toISOString()
+    }
+
+    // Set completedAt timestamp when status changes to completed
+    if (data.status === 'completed' && existingBooking.status !== 'completed') {
+      data.completedAt = new Date().toISOString()
     }
 
     // Build update data object, only including defined values
@@ -135,6 +162,20 @@ export async function DELETE(
 
   try {
     const { id } = await params
+
+    // Get booking to check if we need to update bundle count
+    const booking = await prisma.booking.findUnique({ where: { id } })
+
+    if (booking) {
+      // If deleting a confirmed booking with a bundle, decrement bundle count
+      if (booking.status === 'confirmed' && booking.travelBundleId) {
+        await prisma.travelBundle.update({
+          where: { id: booking.travelBundleId },
+          data: { currentCount: { decrement: 1 } },
+        })
+      }
+    }
+
     await prisma.booking.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {

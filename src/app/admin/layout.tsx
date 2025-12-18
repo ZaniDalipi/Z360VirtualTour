@@ -21,6 +21,7 @@ import {
   MapPin,
   Users,
   CalendarCheck,
+  Wallet,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -36,6 +37,7 @@ const sidebarLinks = [
   { href: '/admin/blocked-dates', icon: CalendarX, label: 'Blocked Dates' },
   { href: '/admin/bundles', icon: Users, label: 'Travel Bundles' },
   { href: '/admin/booking-settings', icon: Settings, label: 'Booking Settings' },
+  { href: '/admin/finances', icon: Wallet, label: 'Finances', divider: true },
 ]
 
 export default function AdminLayout({

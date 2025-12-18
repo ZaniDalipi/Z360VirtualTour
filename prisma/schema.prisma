@@ -280,3 +280,55 @@ model BookingSettings {
 
   updatedAt             DateTime @updatedAt
 }
+
+// ==========================================
+// EXPENSE & FINANCIAL TRACKING
+// ==========================================
+
+// Expense categories
+model ExpenseCategory {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String    @unique  // "Travel", "Equipment", "Software", "Marketing", etc.
+  description String?
+  color       String?   // Hex color for charts
+  icon        String?   // Icon name from lucide-react
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  expenses    Expense[]
+}
+
+// Individual expense entries
+model Expense {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  description String                    // What was the expense for
+  amount      Float                     // Expense amount in EUR
+  date        DateTime                  // Date of expense
+  categoryId  String          @db.ObjectId
+  category    ExpenseCategory @relation(fields: [categoryId], references: [id])
+  vendor      String?                   // Who was paid (supplier, vendor name)
+  receiptUrl  String?                   // Link to receipt image/document
+  notes       String?                   // Additional notes
+  isRecurring Boolean         @default(false)
+  recurringFrequency String?            // "weekly", "monthly", "yearly"
+  bookingId   String?         @db.ObjectId  // Optional link to a booking (travel expense, etc.)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+// Financial reports/snapshots (for historical tracking)
+model FinancialReport {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  reportType    String             // "weekly", "monthly", "yearly"
+  periodStart   DateTime           // Start of reporting period
+  periodEnd     DateTime           // End of reporting period
+  totalIncome   Float              // Total income for the period
+  totalExpenses Float              // Total expenses for the period
+  netProfit     Float              // Income - Expenses
+  bookingsCount Int                // Number of completed bookings
+  avgBookingValue Float?           // Average booking value
+  topCategory   String?            // Category with most income
+  expensesByCategory String?       // JSON: {"Travel": 500, "Equipment": 200, ...}
+  notes         String?            // Admin notes for the period
+  createdAt     DateTime @default(now())
+}
