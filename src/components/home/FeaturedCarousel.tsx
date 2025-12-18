@@ -281,28 +281,24 @@ export function FeaturedCarousel({ tours }: FeaturedCarouselProps) {
           {/* Navigation arrows - always visible with animation */}
           {tours.length > 1 && (
             <>
-              <motion.button
-                whileHover={{ scale: 1.1, x: -3 }}
-                whileTap={{ scale: 0.9 }}
+              <button
                 onClick={(e) => {
                   e.preventDefault()
                   goToPrev()
                 }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-navy/70 backdrop-blur-md border border-gold/30 flex items-center justify-center text-cream hover:bg-gold hover:text-navy transition-colors z-10"
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-navy/70 backdrop-blur-md border border-gold/30 flex items-center justify-center text-cream hover:bg-gold hover:text-navy transition-all duration-200 z-10 active:scale-95"
               >
                 <ChevronLeft className="w-6 h-6" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1, x: 3 }}
-                whileTap={{ scale: 0.9 }}
+              </button>
+              <button
                 onClick={(e) => {
                   e.preventDefault()
                   goToNext()
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-navy/70 backdrop-blur-md border border-gold/30 flex items-center justify-center text-cream hover:bg-gold hover:text-navy transition-colors z-10"
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-navy/70 backdrop-blur-md border border-gold/30 flex items-center justify-center text-cream hover:bg-gold hover:text-navy transition-all duration-200 z-10 active:scale-95"
               >
                 <ChevronRight className="w-6 h-6" />
-              </motion.button>
+              </button>
             </>
           )}
         </div>
