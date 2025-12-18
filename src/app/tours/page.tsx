@@ -291,7 +291,7 @@ export default function ToursPage() {
                         >
                           <div className="relative">
                             {/* Pulse ring */}
-                            <div className="absolute inset-0 w-20 h-20 rounded-full bg-gold/30 animate-ping" />
+                            <div className="absolute -inset-2 rounded-full bg-gold/30 animate-ping" />
                             <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-gold to-gold-soft flex items-center justify-center shadow-xl shadow-gold/30 backdrop-blur-sm">
                               <Play className="w-8 h-8 text-navy ml-1" fill="currentColor" />
                             </div>

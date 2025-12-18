@@ -293,7 +293,7 @@ export default function HomePage() {
                         {/* Play Button - Always visible but enhanced on hover */}
                         <div className="absolute inset-0 flex items-center justify-center">
                           <div className="relative transform transition-all duration-300 group-hover:scale-110">
-                            <div className="absolute inset-0 w-16 h-16 rounded-full bg-gold/20 animate-pulse" />
+                            <div className="absolute -inset-2 rounded-full bg-gold/20 animate-pulse" />
                             <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-gold to-gold-soft
                                             flex items-center justify-center shadow-lg group-hover:shadow-gold/40
                                             backdrop-blur-sm border border-gold/20">
