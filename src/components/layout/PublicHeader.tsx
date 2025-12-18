@@ -50,16 +50,11 @@ export function PublicHeader() {
             {/* Logo */}
             <Link
               href="/"
-              className="flex items-center gap-2 group"
+              className="flex items-center gap-1.5"
             >
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg bg-gold/20 flex items-center justify-center group-hover:bg-gold/30 transition-colors">
-                <Eye className="w-5 h-5 md:w-6 md:h-6 text-gold" />
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl md:text-2xl font-bold text-cream">Z</span>
-                <span className="text-lg md:text-xl font-bold text-gold">360</span>
-                <span className="hidden sm:inline text-sm text-cream-soft ml-1">Virtual Tours</span>
-              </div>
+              <span className="text-2xl font-bold text-cream">Z</span>
+              <span className="text-xl font-semibold text-gold">360</span>
+              <span className="text-sm text-cream-soft ml-0.5">Virtual Tours</span>
             </Link>
 
             {/* Desktop Navigation */}
