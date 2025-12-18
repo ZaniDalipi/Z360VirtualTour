@@ -190,6 +190,7 @@ export async function POST(request: NextRequest) {
       urgencyTierId: data.urgencyTierId,
       distanceKm,
       bundleId: data.travelBundleId,
+      userCity: data.propertyCity,  // Pass user's city for bundle eligibility check
     })
 
     // If joining a bundle, validate it

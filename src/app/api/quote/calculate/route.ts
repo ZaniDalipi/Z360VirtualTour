@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       urgencyTierId: data.urgencyTierId,
       distanceKm,
       bundleId: data.bundleId,
+      userCity: data.city,  // Pass user's city for bundle eligibility check
     })
 
     return NextResponse.json({

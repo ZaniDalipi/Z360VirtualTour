@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 
-// City distance lookup (approximate from Skopje)
+// City distance lookup (approximate from Skopje - base location)
 export const cityDistances: Record<string, number> = {
   'Skopje': 0,
   'Tetovo': 45,
@@ -20,8 +20,65 @@ export const cityDistances: Record<string, number> = {
   'Kicevo': 110,
   'Kratovo': 100,
   'Resen': 160,
+  // International cities (approximate from Skopje)
+  'Tirana': 200,
+  'Pristina': 90,
+  'Sofia': 250,
+  'Thessaloniki': 240,
+  'Belgrade': 430,
 }
 
+// City-to-city distance matrix for bundle eligibility
+// Format: 'CityA-CityB': distance in km (cities are alphabetically sorted)
+export const cityToCityDistances: Record<string, number> = {
+  // Ohrid region
+  'Ohrid-Struga': 15,
+  'Ohrid-Resen': 35,
+  'Bitola-Ohrid': 70,
+  'Kicevo-Ohrid': 60,
+  'Ohrid-Prilep': 100,
+  // Bitola region
+  'Bitola-Prilep': 45,
+  'Bitola-Resen': 35,
+  // Tetovo-Gostivar region
+  'Gostivar-Tetovo': 25,
+  'Debar-Gostivar': 65,
+  'Kicevo-Tetovo': 65,
+  // Skopje region
+  'Kumanovo-Skopje': 40,
+  'Skopje-Tetovo': 45,
+  'Skopje-Veles': 55,
+  // Strumica-Gevgelija region
+  'Gevgelija-Strumica': 50,
+  'Strumica-Shtip': 65,
+  // Central/Eastern
+  'Kavadarci-Veles': 50,
+  'Kavadarci-Prilep': 40,
+  'Shtip-Veles': 45,
+  'Kochani-Shtip': 35,
+  'Kratovo-Kumanovo': 60,
+  // International
+  'Pristina-Skopje': 90,
+  'Skopje-Sofia': 250,
+  'Skopje-Thessaloniki': 240,
+  'Skopje-Tirana': 200,
+  'Ohrid-Tirana': 130,
+  'Struga-Tirana': 120,
+  'Debar-Tirana': 100,
+  'Bitola-Thessaloniki': 160,
+  'Gevgelija-Thessaloniki': 90,
+  'Kumanovo-Pristina': 60,
+  'Tetovo-Pristina': 80,
+  'Skopje-Belgrade': 430,
+  'Kumanovo-Sofia': 230,
+}
+
+// Maximum distance (km) from bundle city to qualify for bundle discount
+export const BUNDLE_MAX_DISTANCE_KM = 50
+
+/**
+ * Get distance from Skopje to a city
+ */
 export function getDistanceByCity(city: string): number | null {
   const normalizedCity = city.trim().toLowerCase()
   for (const [key, distance] of Object.entries(cityDistances)) {
@@ -30,6 +87,64 @@ export function getDistanceByCity(city: string): number | null {
     }
   }
   return null
+}
+
+/**
+ * Normalize city name for lookup
+ */
+function normalizeCity(city: string): string {
+  return city.trim().charAt(0).toUpperCase() + city.trim().slice(1).toLowerCase()
+}
+
+/**
+ * Get distance between two cities
+ * Returns null if distance is not found
+ */
+export function getDistanceBetweenCities(cityA: string, cityB: string): number | null {
+  const normA = normalizeCity(cityA)
+  const normB = normalizeCity(cityB)
+
+  // Same city = 0 distance
+  if (normA.toLowerCase() === normB.toLowerCase()) {
+    return 0
+  }
+
+  // Sort alphabetically for consistent key lookup
+  const [first, second] = [normA, normB].sort()
+  const key = `${first}-${second}`
+
+  // Check direct lookup
+  if (cityToCityDistances[key] !== undefined) {
+    return cityToCityDistances[key]
+  }
+
+  // Fallback: Calculate approximate distance using distances from Skopje
+  // This uses triangle approximation (may be less accurate)
+  const distA = getDistanceByCity(cityA)
+  const distB = getDistanceByCity(cityB)
+
+  if (distA !== null && distB !== null) {
+    // Rough approximation: absolute difference gives minimum, sum gives maximum
+    // We use an average which is reasonable for most cases
+    return Math.abs(distA - distB)
+  }
+
+  return null
+}
+
+/**
+ * Check if a user's city is within range of a bundle's city
+ * Returns true if eligible for bundle discount
+ */
+export function isCityWithinBundleRange(userCity: string, bundleCity: string, maxDistanceKm: number = BUNDLE_MAX_DISTANCE_KM): boolean {
+  const distance = getDistanceBetweenCities(userCity, bundleCity)
+
+  // If we can't determine distance, be conservative and don't allow bundle discount
+  if (distance === null) {
+    return false
+  }
+
+  return distance <= maxDistanceKm
 }
 
 export interface QuoteCalculation {
@@ -52,6 +167,7 @@ export async function calculateQuote(params: {
   urgencyTierId?: string | null
   distanceKm?: number | null
   bundleId?: string | null
+  userCity?: string | null  // User's property city for bundle eligibility check
 }): Promise<QuoteCalculation> {
   // Get booking settings
   const settings = await prisma.bookingSettings.findUnique({
@@ -84,7 +200,22 @@ export async function calculateQuote(params: {
     if (bundle) {
       bundleName = bundle.name
       travelFee = bundle.perPersonTravelFee || 0
-      bundleDiscount = params.pricingPlanPrice * (bundle.discountPercent / 100)
+
+      // Only apply bundle discount if user's city is within the bundle's geographic range
+      // If user's city is too far from bundle city, they don't qualify for the discount
+      const userCity = params.userCity
+      const bundleCity = bundle.city
+
+      if (userCity && bundleCity) {
+        const isEligible = isCityWithinBundleRange(userCity, bundleCity)
+        if (isEligible) {
+          bundleDiscount = params.pricingPlanPrice * (bundle.discountPercent / 100)
+        }
+        // If not eligible, bundleDiscount stays 0 - they still get shared travel but no discount
+      } else {
+        // If we don't have city info, apply discount as before (backwards compatibility)
+        bundleDiscount = params.pricingPlanPrice * (bundle.discountPercent / 100)
+      }
     }
   } else if (params.distanceKm !== null && params.distanceKm !== undefined) {
     // Calculate based on travel zone
