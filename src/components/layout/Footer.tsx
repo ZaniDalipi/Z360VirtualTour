@@ -101,19 +101,19 @@ export function Footer() {
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-body text-cream-muted">
                 <Mail className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                <a href="mailto:hello@z360tours.com" className="hover:text-cream transition-colors">
-                  hello@z360tours.com
+                <a href="mailto:z360virtualtours@gmail.com" className="hover:text-cream transition-colors">
+                  z360virtualtours@gmail.com
                 </a>
               </li>
               <li className="flex items-start gap-3 text-body text-cream-muted">
                 <Phone className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                <a href="tel:+15553608687" className="hover:text-cream transition-colors">
-                  +1 (555) 360-TOUR
+                <a href="tel:+38971967915" className="hover:text-cream transition-colors">
+                  +389 71 967 915
                 </a>
               </li>
               <li className="flex items-start gap-3 text-body text-cream-muted">
                 <MapPin className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                <span>Available Nationwide</span>
+                <span>Balkans</span>
               </li>
             </ul>
           </div>
