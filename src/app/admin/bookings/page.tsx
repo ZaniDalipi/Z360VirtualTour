@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react'
 import {
   CalendarCheck, Mail, Phone, MapPin, Clock, DollarSign,
   Check, X, AlertCircle, Calendar, ChevronDown, ChevronUp,
-  Trash2, Building2, FileText, Route, Users, Tag
+  Trash2, Building2, FileText, Route, Users, Tag, Plus
 } from 'lucide-react'
-import { Card, Button } from '@/components/ui'
+import { Card, Button, Input } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface Booking {
@@ -72,6 +72,20 @@ export default function BookingsAdminPage() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [confirmingDate, setConfirmingDate] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState('')
+  const [showForm, setShowForm] = useState(false)
+  const [formData, setFormData] = useState({
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    companyName: '',
+    propertyAddress: '',
+    propertyCity: '',
+    projectDescription: '',
+    preferredDate: '',
+    totalQuote: '',
+    internalNotes: '',
+    status: 'quote_requested',
+  })
 
   useEffect(() => {
     fetchBookings()
@@ -95,6 +109,48 @@ export default function BookingsAdminPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    try {
+      const res = await fetch('/api/admin/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          totalQuote: formData.totalQuote ? parseFloat(formData.totalQuote) : null,
+        }),
+      })
+
+      if (res.ok) {
+        fetchBookings()
+        resetForm()
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Failed to create booking')
+      }
+    } catch (error) {
+      console.error('Failed to create booking:', error)
+    }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      clientName: '',
+      clientEmail: '',
+      clientPhone: '',
+      companyName: '',
+      propertyAddress: '',
+      propertyCity: '',
+      projectDescription: '',
+      preferredDate: '',
+      totalQuote: '',
+      internalNotes: '',
+      status: 'quote_requested',
+    })
+    setShowForm(false)
   }
 
   const handleStatusChange = async (id: string, newStatus: string) => {
@@ -233,7 +289,206 @@ export default function BookingsAdminPage() {
               : 'Manage booking requests and quotes'}
           </p>
         </div>
+        <Button onClick={() => setShowForm(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          Add Booking
+        </Button>
       </div>
+
+      {/* Add Booking Form Modal */}
+      <AnimatePresence>
+        {showForm && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+              onClick={resetForm}
+            />
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-2xl max-h-[90vh] overflow-y-auto pointer-events-auto"
+              >
+                <Card className="p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-h3 font-semibold text-cream">Add Booking</h2>
+                    <button
+                      onClick={resetForm}
+                      className="p-2 rounded-lg text-cream-muted hover:text-cream hover:bg-gold/10"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Client Info */}
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-cream mb-2">
+                          Client Name *
+                        </label>
+                        <Input
+                          value={formData.clientName}
+                          onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
+                          placeholder="John Smith"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-cream mb-2">
+                          Email *
+                        </label>
+                        <Input
+                          type="email"
+                          value={formData.clientEmail}
+                          onChange={(e) => setFormData({ ...formData, clientEmail: e.target.value })}
+                          placeholder="john@example.com"
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-cream mb-2">
+                          Phone
+                        </label>
+                        <Input
+                          value={formData.clientPhone}
+                          onChange={(e) => setFormData({ ...formData, clientPhone: e.target.value })}
+                          placeholder="+1 234 567 890"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-cream mb-2">
+                          Company
+                        </label>
+                        <Input
+                          value={formData.companyName}
+                          onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                          placeholder="Company Name"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Property Info */}
+                    <div>
+                      <label className="block text-sm font-medium text-cream mb-2">
+                        Property Address *
+                      </label>
+                      <Input
+                        value={formData.propertyAddress}
+                        onChange={(e) => setFormData({ ...formData, propertyAddress: e.target.value })}
+                        placeholder="123 Main St, City"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-cream mb-2">
+                          City
+                        </label>
+                        <Input
+                          value={formData.propertyCity}
+                          onChange={(e) => setFormData({ ...formData, propertyCity: e.target.value })}
+                          placeholder="City"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-cream mb-2">
+                          Preferred Date
+                        </label>
+                        <Input
+                          type="date"
+                          value={formData.preferredDate}
+                          onChange={(e) => setFormData({ ...formData, preferredDate: e.target.value })}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quote */}
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-cream mb-2">
+                          Total Quote (€)
+                        </label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={formData.totalQuote}
+                          onChange={(e) => setFormData({ ...formData, totalQuote: e.target.value })}
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-cream mb-2">
+                          Status
+                        </label>
+                        <select
+                          value={formData.status}
+                          onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                          className="w-full px-4 py-3 rounded-xl bg-navy border border-gold/20 text-cream
+                                     focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50"
+                        >
+                          {Object.entries(statusLabels).map(([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <label className="block text-sm font-medium text-cream mb-2">
+                        Project Description
+                      </label>
+                      <textarea
+                        value={formData.projectDescription}
+                        onChange={(e) => setFormData({ ...formData, projectDescription: e.target.value })}
+                        placeholder="Details about the project..."
+                        rows={3}
+                        className="w-full px-4 py-3 rounded-xl bg-navy border border-gold/20 text-cream
+                                   placeholder:text-cream-muted focus:outline-none focus:ring-2
+                                   focus:ring-gold/50 focus:border-gold/50 resize-none"
+                      />
+                    </div>
+
+                    {/* Internal Notes */}
+                    <div>
+                      <label className="block text-sm font-medium text-cream mb-2">
+                        Internal Notes
+                      </label>
+                      <textarea
+                        value={formData.internalNotes}
+                        onChange={(e) => setFormData({ ...formData, internalNotes: e.target.value })}
+                        placeholder="Notes for internal use only..."
+                        rows={2}
+                        className="w-full px-4 py-3 rounded-xl bg-navy border border-gold/20 text-cream
+                                   placeholder:text-cream-muted focus:outline-none focus:ring-2
+                                   focus:ring-gold/50 focus:border-gold/50 resize-none"
+                      />
+                    </div>
+
+                    <div className="flex gap-3 pt-4">
+                      <Button type="submit" className="flex-1">
+                        Create Booking
+                      </Button>
+                      <Button type="button" variant="secondary" onClick={resetForm}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </form>
+                </Card>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">

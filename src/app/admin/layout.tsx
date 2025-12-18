@@ -16,6 +16,7 @@ import {
   X,
   Eye,
   CalendarDays,
+  CalendarX,
   Clock,
   MapPin,
   Users,
@@ -32,6 +33,7 @@ const sidebarLinks = [
   { href: '/admin/messages', icon: Mail, label: 'Messages' },
   { href: '/admin/schedule', icon: CalendarDays, label: 'My Schedule', divider: true },
   { href: '/admin/bookings', icon: CalendarCheck, label: 'All Bookings' },
+  { href: '/admin/blocked-dates', icon: CalendarX, label: 'Blocked Dates' },
   { href: '/admin/bundles', icon: Users, label: 'Travel Bundles' },
   { href: '/admin/booking-settings', icon: Settings, label: 'Booking Settings' },
 ]
