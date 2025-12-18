@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { PublicHeader, Footer, Navbar } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
-import { FeaturedCarousel } from '@/components/home'
+import { FeaturedCarousel, MobileFeaturedSlider } from '@/components/home'
 import { motion } from 'framer-motion'
 
 // Icon mapping for categories
@@ -193,41 +193,10 @@ export default function HomePage() {
               <FeaturedCarousel tours={tours} />
             </motion.div>
 
-            {/* Mobile Featured Tours Preview */}
+            {/* Mobile Featured Slider */}
             {tours.length > 0 && (
-              <div className="lg:hidden mt-4 w-full overflow-hidden">
-                <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
-                  {tours.slice(0, 3).map((tour, index) => (
-                    <motion.div
-                      key={tour.id}
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex-shrink-0 w-[260px] first:ml-0 snap-start"
-                    >
-                      <Link href={`/tour/${tour.slug}`}>
-                        <div className="relative h-40 rounded-xl overflow-hidden border border-gold/20">
-                          <Image
-                            src={tour.coverImage}
-                            alt={tour.title}
-                            fill
-                            className="object-cover"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/40 to-transparent" />
-                          <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <span className="inline-block bg-gold/90 text-navy text-xs font-bold px-2 py-0.5 rounded mb-1">
-                              {tour.category.name}
-                            </span>
-                            <h3 className="text-sm font-semibold text-cream line-clamp-1">{tour.title}</h3>
-                          </div>
-                          <div className="absolute top-2 right-2 w-8 h-8 rounded-full bg-gold/80 flex items-center justify-center">
-                            <Play className="w-4 h-4 text-navy" fill="currentColor" />
-                          </div>
-                        </div>
-                      </Link>
-                    </motion.div>
-                  ))}
-                </div>
+              <div className="lg:hidden">
+                <MobileFeaturedSlider tours={tours} />
               </div>
             )}
             </div>
