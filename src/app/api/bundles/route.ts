@@ -29,13 +29,26 @@ export async function GET(request: NextRequest) {
       where.city = { contains: city, mode: 'insensitive' }
     }
 
+    // Use select for faster queries
     const bundles = await prisma.travelBundle.findMany({
       where,
       orderBy: { scheduledDate: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        city: true,
+        region: true,
+        scheduledDate: true,
+        maxParticipants: true,
+        currentCount: true,
+        perPersonTravelFee: true,
+        discountPercent: true,
+        description: true,
+        registrationDeadline: true,
+      },
     })
 
-    // Only return public-facing data
-    return NextResponse.json(bundles.map(b => ({
+    const response = NextResponse.json(bundles.map(b => ({
       id: b.id,
       name: b.name,
       city: b.city,
@@ -47,6 +60,11 @@ export async function GET(request: NextRequest) {
       description: b.description,
       registrationDeadline: b.registrationDeadline,
     })))
+
+    // Cache for 60 seconds (bundles don't change frequently)
+    response.headers.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=120')
+
+    return response
   } catch (error) {
     console.error('Failed to fetch bundles:', error)
     return NextResponse.json(

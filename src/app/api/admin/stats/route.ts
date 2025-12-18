@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 30 // Cache for 30 seconds
+
 export async function GET() {
   const admin = await getAdminFromCookies()
 
@@ -10,11 +13,13 @@ export async function GET() {
   }
 
   try {
+    // Use optimized queries with select to reduce data transfer
     const [
       totalTours,
       totalTestimonials,
       unreadMessages,
       tours,
+      viewsAggregate,
     ] = await Promise.all([
       prisma.tour.count(),
       prisma.testimonial.count(),
@@ -22,15 +27,19 @@ export async function GET() {
       prisma.tour.findMany({
         take: 5,
         orderBy: { createdAt: 'desc' },
-        include: { category: true },
+        select: {
+          id: true,
+          title: true,
+          views: true,
+          category: { select: { name: true } },
+        },
       }),
+      prisma.tour.aggregate({ _sum: { views: true } }),
     ])
 
-    const totalViews = tours.reduce((sum, tour) => sum + tour.views, 0)
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       totalTours,
-      totalViews,
+      totalViews: viewsAggregate._sum.views || 0,
       totalTestimonials,
       unreadMessages,
       recentTours: tours.map((tour) => ({
@@ -40,6 +49,11 @@ export async function GET() {
         category: tour.category.name,
       })),
     })
+
+    // Add cache headers for faster subsequent loads
+    response.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60')
+
+    return response
   } catch (error) {
     console.error('Failed to fetch stats:', error)
     return NextResponse.json(

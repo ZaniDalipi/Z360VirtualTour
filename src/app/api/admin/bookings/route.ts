@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status') || undefined
     const isRead = searchParams.get('isRead')
-    const limit = searchParams.get('limit')
+    const limit = searchParams.get('limit') || '20' // Default limit for faster loads
     const offset = searchParams.get('offset')
 
     const where = {
@@ -77,18 +77,48 @@ export async function GET(request: NextRequest) {
       prisma.booking.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        take: limit ? parseInt(limit) : undefined,
+        take: parseInt(limit),
         skip: offset ? parseInt(offset) : undefined,
+        select: {
+          id: true,
+          clientName: true,
+          clientEmail: true,
+          clientPhone: true,
+          companyName: true,
+          propertyAddress: true,
+          propertyCity: true,
+          serviceType: true,
+          preferredDate: true,
+          preferredTime: true,
+          alternateDate: true,
+          alternateTime: true,
+          confirmedDate: true,
+          confirmedTime: true,
+          totalQuote: true,
+          depositAmount: true,
+          depositPaid: true,
+          status: true,
+          isRead: true,
+          createdAt: true,
+          travelBundleId: true,
+          pricingPlanId: true,
+          urgencyTierId: true,
+        },
       }),
       prisma.booking.count({ where }),
       prisma.booking.count({ where: { isRead: false } }),
     ])
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       bookings: allBookings,
       total,
       unreadCount,
     })
+
+    // Cache for 10 seconds
+    response.headers.set('Cache-Control', 'private, max-age=10, stale-while-revalidate=30')
+
+    return response
   } catch (error) {
     console.error('Failed to fetch bookings:', error)
     return NextResponse.json(

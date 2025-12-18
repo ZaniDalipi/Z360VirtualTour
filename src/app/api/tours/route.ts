@@ -17,8 +17,10 @@ export async function GET(request: NextRequest) {
     }
 
     if (category) {
+      // Use select for faster category lookup
       const cat = await prisma.category.findUnique({
         where: { slug: category },
+        select: { id: true },
       })
       if (cat) {
         where.categoryId = cat.id
@@ -29,11 +31,22 @@ export async function GET(request: NextRequest) {
       where.featured = true
     }
 
+    // Use select for faster queries - only fetch needed fields
     const tours = await prisma.tour.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      take: limit ? parseInt(limit) : undefined,
-      include: {
+      take: limit ? parseInt(limit) : 50, // Default limit for faster loads
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        thumbnailUrl: true,
+        embedCode: true,
+        views: true,
+        featured: true,
+        isActive: true,
+        createdAt: true,
         category: {
           select: {
             id: true,
@@ -44,7 +57,12 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(tours)
+    const response = NextResponse.json(tours)
+
+    // Cache for 30 seconds
+    response.headers.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60')
+
+    return response
   } catch (error) {
     console.error('Failed to fetch tours:', error)
     return NextResponse.json(
