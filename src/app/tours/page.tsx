@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, Play, MapPin, Grid, List } from 'lucide-react'
+import { Search, Play, MapPin, Grid, List, Eye, Star, ArrowUpRight } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
-import { Button, Input, Card, Chip } from '@/components/ui'
+import { Button, Input, Chip } from '@/components/ui'
 import { motion } from 'framer-motion'
 
 // Placeholder data - shown when no database tours exist
@@ -230,63 +230,125 @@ export default function ToursPage() {
             {filteredTours.length} tour{filteredTours.length !== 1 ? 's' : ''} found
           </p>
 
-          <div className={`grid gap-6 ${viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+          <div className={`grid gap-8 ${viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
             {filteredTours.map((tour, index) => (
               <motion.div
                 key={tour.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
+                transition={{ delay: index * 0.08, duration: 0.5 }}
+                whileHover={{ y: -8 }}
+                className="group"
               >
                 <Link href={tour.slug === 'placeholder' ? '/admin' : `/tour/${tour.slug}`}>
-                  <Card className={`overflow-hidden group cursor-pointer hover:border-gold/30 transition-all ${viewMode === 'list' ? 'flex' : ''}`}>
-                    <div className={`relative ${viewMode === 'list' ? 'w-64 flex-shrink-0' : 'h-56'}`}>
-                      <div className={viewMode === 'list' ? 'h-full' : ''}>
+                  <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
+                                   group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-gold/10
+                                   ${viewMode === 'list' ? 'flex' : ''}`}>
+
+                    {/* Image Container */}
+                    <div className={`relative overflow-hidden ${viewMode === 'list' ? 'w-72 flex-shrink-0' : 'h-64'}`}>
+                      <div className={viewMode === 'list' ? 'h-full' : 'h-full'}>
                         <Image
                           src={tour.coverImage}
                           alt={tour.title}
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
                         />
                       </div>
-                      <div className="absolute inset-0 bg-gradient-to-t from-navy-dark via-transparent to-transparent" />
 
-                      {/* Play Button */}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center shadow-glow">
-                          <Play className="w-6 h-6 text-navy ml-0.5" fill="currentColor" />
-                        </div>
+                      {/* Gradient Overlays */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/50 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-br from-gold/0 to-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                      {/* Animated Play Button */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <motion.div
+                          initial={{ scale: 0.8, opacity: 0 }}
+                          whileHover={{ scale: 1.1 }}
+                          className="opacity-0 group-hover:opacity-100 transition-all duration-300"
+                        >
+                          <div className="relative">
+                            {/* Pulse ring */}
+                            <div className="absolute inset-0 w-20 h-20 rounded-full bg-gold/30 animate-ping" />
+                            <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-gold to-gold-soft flex items-center justify-center shadow-xl shadow-gold/30 backdrop-blur-sm">
+                              <Play className="w-8 h-8 text-navy ml-1" fill="currentColor" />
+                            </div>
+                          </div>
+                        </motion.div>
                       </div>
 
-                      {/* Category Badge */}
-                      <div className="absolute top-4 left-4">
-                        <span className="bg-gold text-navy text-caption font-semibold px-3 py-1 rounded-full">
+                      {/* Top Badges Row */}
+                      <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
+                        {/* Category Badge */}
+                        <motion.span
+                          initial={{ x: -20, opacity: 0 }}
+                          animate={{ x: 0, opacity: 1 }}
+                          transition={{ delay: index * 0.08 + 0.2 }}
+                          className="bg-gold/90 backdrop-blur-sm text-navy text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg"
+                        >
                           {tour.category.name}
-                        </span>
+                        </motion.span>
+
+                        {tour.featured && (
+                          <motion.span
+                            initial={{ x: 20, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            transition={{ delay: index * 0.08 + 0.3 }}
+                            className="flex items-center gap-1 bg-navy/80 backdrop-blur-sm text-gold text-xs font-bold px-3 py-1.5 rounded-lg border border-gold/40 shadow-lg"
+                          >
+                            <Star className="w-3 h-3 fill-gold" />
+                            Featured
+                          </motion.span>
+                        )}
                       </div>
 
-                      {tour.featured && (
-                        <div className="absolute top-4 right-4">
-                          <span className="bg-navy-dark/80 text-gold text-caption font-semibold px-3 py-1 rounded-full border border-gold/30">
-                            Featured
+                      {/* Bottom Image Overlay Info */}
+                      <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                        <div className="flex items-center gap-3 text-cream/90 text-sm">
+                          <span className="flex items-center gap-1 bg-navy/60 backdrop-blur-sm px-2 py-1 rounded-md">
+                            <Eye className="w-3 h-3" />
+                            360° Tour
+                          </span>
+                          <span className="flex items-center gap-1 bg-navy/60 backdrop-blur-sm px-2 py-1 rounded-md">
+                            <MapPin className="w-3 h-3" />
+                            {tour.location}
                           </span>
                         </div>
-                      )}
+                      </div>
                     </div>
 
-                    <div className={`p-5 ${viewMode === 'list' ? 'flex-1' : ''}`}>
-                      <h3 className="text-h3 font-semibold text-cream mb-2 group-hover:text-gold transition-colors">
-                        {tour.title}
-                      </h3>
+                    {/* Content */}
+                    <div className={`p-6 ${viewMode === 'list' ? 'flex-1 flex flex-col justify-center' : ''}`}>
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <h3 className="text-xl font-bold text-cream group-hover:text-gold transition-colors duration-300 line-clamp-2">
+                          {tour.title}
+                        </h3>
+                        <ArrowUpRight className="w-5 h-5 text-cream-muted group-hover:text-gold group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 flex-shrink-0" />
+                      </div>
+
                       {tour.shortDescription && (
-                        <p className="text-body text-cream-soft mb-3">{tour.shortDescription}</p>
+                        <p className="text-sm text-cream-soft mb-4 line-clamp-2 leading-relaxed">{tour.shortDescription}</p>
                       )}
-                      <p className="text-body text-cream-muted mb-1">{tour.clientName}</p>
-                      <p className="text-caption text-cream-dim flex items-center gap-1">
-                        <MapPin className="w-3 h-3" /> {tour.location}
-                      </p>
+
+                      <div className="flex items-center justify-between pt-4 border-t border-gold/10">
+                        <div>
+                          <p className="text-sm font-medium text-cream">{tour.clientName}</p>
+                          <p className="text-xs text-cream-muted flex items-center gap-1 mt-0.5">
+                            <MapPin className="w-3 h-3" /> {tour.location}
+                          </p>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center group-hover:bg-gold group-hover:scale-110 transition-all duration-300">
+                          <Play className="w-4 h-4 text-gold group-hover:text-navy transition-colors" fill="currentColor" />
+                        </div>
+                      </div>
                     </div>
-                  </Card>
+
+                    {/* Hover Glow Effect */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                      <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
+                      <div className="absolute inset-y-0 -right-px w-px bg-gradient-to-b from-transparent via-gold to-transparent" />
+                    </div>
+                  </div>
                 </Link>
               </motion.div>
             ))}
