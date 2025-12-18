@@ -99,6 +99,7 @@ interface Tour {
   clientName: string | null
   location: string | null
   coverImage: string
+  tourUrl: string | null
   category: { name: string }
 }
 
@@ -239,11 +240,16 @@ export default function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-navy/80 to-transparent" />
 
                   {/* Play Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <Link
+                    href={tours[0]?.tourUrl || (tours[0]?.slug && tours[0]?.slug !== 'placeholder' ? `/tour/${tours[0].slug}` : '/tours')}
+                    target={tours[0]?.tourUrl ? '_blank' : undefined}
+                    rel={tours[0]?.tourUrl ? 'noopener noreferrer' : undefined}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
                     <div className="w-20 h-20 rounded-full bg-gold/90 flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-glow">
                       <Play className="w-8 h-8 text-navy ml-1" fill="currentColor" />
                     </div>
-                  </div>
+                  </Link>
 
                   <div className="absolute bottom-4 left-4 right-4">
                     <p className="text-caption text-cream-muted">Featured Tour</p>
