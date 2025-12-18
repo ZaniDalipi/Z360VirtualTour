@@ -15,6 +15,11 @@ import {
   Menu,
   X,
   Eye,
+  CalendarDays,
+  Clock,
+  MapPin,
+  Users,
+  CalendarCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -25,7 +30,9 @@ const sidebarLinks = [
   { href: '/admin/testimonials', icon: MessageSquare, label: 'Testimonials' },
   { href: '/admin/pricing', icon: DollarSign, label: 'Pricing' },
   { href: '/admin/messages', icon: Mail, label: 'Messages' },
-  { href: '/admin/settings', icon: Settings, label: 'Settings' },
+  { href: '/admin/bookings', icon: CalendarCheck, label: 'Bookings', divider: true },
+  { href: '/admin/bundles', icon: Users, label: 'Travel Bundles' },
+  { href: '/admin/booking-settings', icon: Settings, label: 'Booking Settings' },
 ]
 
 export default function AdminLayout({
@@ -124,24 +131,28 @@ export default function AdminLayout({
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            {sidebarLinks.map((link) => {
+            {sidebarLinks.map((link, index) => {
               const Icon = link.icon
-              const isActive = pathname === link.href
+              const isActive = pathname === link.href || (link.href !== '/admin' && pathname.startsWith(link.href))
               return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    'flex items-center gap-3 px-4 py-3 rounded-xl text-body transition-colors',
-                    isActive
-                      ? 'bg-gold text-navy font-medium'
-                      : 'text-cream-muted hover:text-cream hover:bg-gold/10'
+                <div key={link.href}>
+                  {(link as { divider?: boolean }).divider && (
+                    <div className="my-4 border-t border-gold/10" />
                   )}
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <Icon className="w-5 h-5" />
-                  {link.label}
-                </Link>
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      'flex items-center gap-3 px-4 py-3 rounded-xl text-body transition-colors',
+                      isActive
+                        ? 'bg-gold text-navy font-medium'
+                        : 'text-cream-muted hover:text-cream hover:bg-gold/10'
+                    )}
+                    onClick={() => setSidebarOpen(false)}
+                  >
+                    <Icon className="w-5 h-5" />
+                    {link.label}
+                  </Link>
+                </div>
               )
             })}
           </nav>

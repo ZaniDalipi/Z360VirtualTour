@@ -73,17 +73,18 @@ model Testimonial {
 
 // Pricing packages
 model PricingPlan {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   description String
   price       Float
-  priceLabel  String?  // e.g., "Starting at", "From"
-  features    String   // JSON array of features
-  isPopular   Boolean  @default(false)
-  isActive    Boolean  @default(true)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  priceLabel  String?   // e.g., "Starting at", "From"
+  features    String    // JSON array of features
+  isPopular   Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  bookings    Booking[]
 }
 
 // Contact form submissions
@@ -105,4 +106,173 @@ model SiteSetting {
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// BOOKING & SCHEDULING SYSTEM
+// ==========================================
+
+// Urgency tiers with surcharge percentages
+model UrgencyTier {
+  id                String    @id @default(cuid())
+  name              String    @unique  // "standard", "express", "rush"
+  displayName       String              // "Standard Delivery", "Express", "Rush/Urgent"
+  description       String?             // "7-14 day turnaround"
+  minLeadDays       Int                 // Minimum days until scheduled date
+  maxLeadDays       Int?                // Maximum days (null = unlimited)
+  surchargePercent  Float     @default(0) // e.g., 0, 25, 50 for 0%, 25%, 50%
+  isActive          Boolean   @default(true)
+  order             Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  bookings          Booking[]
+}
+
+// Travel zones for distance-based pricing
+model TravelZone {
+  id                String    @id @default(cuid())
+  name              String              // "Local", "Regional", "Extended"
+  description       String?             // "Within 15km of base location"
+  minDistanceKm     Float     @default(0)
+  maxDistanceKm     Float?              // null = unlimited
+  flatFee           Float?              // Fixed fee (e.g., 20 EUR)
+  perKmRate         Float?              // Per-km rate (e.g., 0.50 EUR/km)
+  isIncluded        Boolean   @default(false) // If true, no extra charge
+  isActive          Boolean   @default(true)
+  order             Int       @default(0)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  bookings          Booking[]
+}
+
+// Travel bundles - group bookings for same city/date
+model TravelBundle {
+  id                String    @id @default(cuid())
+  name              String              // "Ohrid Bundle - January 2025"
+  city              String              // Target city
+  region            String?             // Region/area
+  scheduledDate     DateTime            // When the photographer will be there
+  maxParticipants   Int       @default(10) // Maximum clients in bundle
+  currentCount      Int       @default(0)  // Current participants
+  distanceKm        Float?              // Distance from base
+  totalTravelCost   Float?              // Total travel cost to split
+  perPersonTravelFee Float?             // Calculated: totalTravelCost / participants
+  discountPercent   Float     @default(0)  // Additional discount for bundle participants
+  description       String?             // "Join our Ohrid trip and save on travel!"
+  status            String    @default("open") // open, full, scheduled, completed, cancelled
+  isActive          Boolean   @default(true)
+  registrationDeadline DateTime?        // Last date to join
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  bookings          Booking[]
+}
+
+// Blocked dates (unavailable for booking)
+model BlockedDate {
+  id          String   @id @default(cuid())
+  date        DateTime @unique
+  reason      String?  // "Holiday", "Personal", "Fully Booked"
+  isAllDay    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+// Main booking/quote request entity
+model Booking {
+  id                  String       @id @default(cuid())
+
+  // Client Info
+  clientName          String
+  clientEmail         String
+  clientPhone         String?
+  companyName         String?
+
+  // Project Details
+  propertyAddress     String              // Full address for travel calculation
+  propertyCity        String?
+  estimatedDistance   Float?              // Calculated distance in km
+  serviceType         String?             // Category slug or name
+  projectDescription  String?             // What client wants photographed
+  specialRequests     String?             // Any special needs
+
+  // Pricing Plan
+  pricingPlanId       String?
+  pricingPlan         PricingPlan? @relation(fields: [pricingPlanId], references: [id])
+
+  // Scheduling
+  urgencyTierId       String?
+  urgencyTier         UrgencyTier? @relation(fields: [urgencyTierId], references: [id])
+  preferredDate       DateTime?           // Client's preferred date
+  alternateDate       DateTime?           // Backup date option
+  deadlineDate        DateTime?           // For urgent: must be done by this date
+  confirmedDate       DateTime?           // Admin-confirmed date
+  isFlexible          Boolean   @default(true)
+
+  // Travel
+  travelZoneId        String?
+  travelZone          TravelZone?  @relation(fields: [travelZoneId], references: [id])
+
+  // Bundle (optional - if joining a bundle)
+  travelBundleId      String?
+  travelBundle        TravelBundle? @relation(fields: [travelBundleId], references: [id])
+
+  // Pricing (calculated quote)
+  basePrice           Float?              // From PricingPlan
+  urgencySurcharge    Float?              // Calculated surcharge amount
+  travelFee           Float?              // Calculated travel fee (or bundle share)
+  bundleDiscount      Float?              // Discount from bundle
+  totalQuote          Float?              // Total estimated price
+  depositAmount       Float?              // Required deposit
+  depositPaid         Boolean   @default(false)
+
+  // Admin notes
+  internalNotes       String?             // Admin-only notes
+
+  // Status Tracking
+  status              String    @default("quote_requested")
+  // Status values: quote_requested, quote_sent, pending_confirmation,
+  //                confirmed, scheduled, in_progress, completed, cancelled
+  isRead              Boolean   @default(false)
+
+  // Timestamps
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  quoteSentAt         DateTime?           // When quote was sent
+  confirmedAt         DateTime?           // When client confirmed
+  completedAt         DateTime?           // When project completed
+}
+
+// Booking settings (singleton-style config)
+model BookingSettings {
+  id                    String   @id @default("default")
+
+  // Lead time defaults
+  defaultMinLeadDays    Int      @default(3)
+  maxAdvanceBookingDays Int      @default(90)
+
+  // Business location (for distance calc)
+  businessAddress       String?
+  businessCity          String   @default("Skopje")
+  businessLatitude      Float?
+  businessLongitude     Float?
+
+  // Travel settings
+  includeReturnTrip     Boolean  @default(true)
+  freeDistanceKm        Float    @default(15)
+
+  // Working days
+  workOnWeekends        Boolean  @default(false)
+  workOnSunday          Boolean  @default(false)
+
+  // Quote settings
+  quoteValidDays        Int      @default(14)
+
+  // Deposit settings
+  requireDeposit        Boolean  @default(true)
+  depositPercent        Float    @default(30)
+
+  // Bundle settings
+  minBundleParticipants Int      @default(3)  // Min to activate bundle pricing
+  bundleDiscountPercent Float    @default(10) // Default bundle discount
+
+  updatedAt             DateTime @updatedAt
 }
