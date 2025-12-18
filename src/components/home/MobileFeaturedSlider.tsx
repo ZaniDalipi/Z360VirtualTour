@@ -27,8 +27,8 @@ export function MobileFeaturedSlider({ tours }: MobileFeaturedSliderProps) {
   const containerRef = useRef<HTMLDivElement>(null)
 
   const x = useMotionValue(0)
-  const scale = useTransform(x, [-200, 0, 200], [0.95, 1, 0.95])
-  const rotate = useTransform(x, [-200, 0, 200], [-5, 0, 5])
+  const scale = useTransform(x, [-200, 0, 200], [0.98, 1, 0.98])
+  const rotate = useTransform(x, [-200, 0, 200], [-2, 0, 2])
 
   const goToNext = () => {
     setCurrentIndex((prev) => (prev + 1) % tours.length)
@@ -130,16 +130,20 @@ export function MobileFeaturedSlider({ tours }: MobileFeaturedSliderProps) {
         )}
 
         {/* Main Card */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="popLayout">
           <motion.div
             key={currentIndex}
-            initial={{ opacity: 0, x: 100, scale: 0.9 }}
+            initial={{ opacity: 0, x: 80, scale: 0.95 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, x: -100, scale: 0.9 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            exit={{ opacity: 0, x: -80, scale: 0.95 }}
+            transition={{
+              x: { type: 'tween', duration: 0.4, ease: [0.4, 0, 0.2, 1] },
+              opacity: { duration: 0.35, ease: 'easeInOut' },
+              scale: { duration: 0.35, ease: 'easeOut' }
+            }}
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
+            dragElastic={0.1}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
             style={{ x, scale, rotate }}
@@ -173,9 +177,9 @@ export function MobileFeaturedSlider({ tours }: MobileFeaturedSliderProps) {
 
               {/* Category Badge */}
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.12, duration: 0.35, ease: 'easeOut' }}
                 className="absolute top-3 left-3"
               >
                 <span className="bg-gold text-navy text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
@@ -196,13 +200,13 @@ export function MobileFeaturedSlider({ tours }: MobileFeaturedSliderProps) {
                   {/* Pulsing rings */}
                   <motion.div
                     className="absolute inset-0 rounded-full bg-gold/40"
-                    animate={{ scale: [1, 1.6], opacity: [0.6, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
+                    animate={{ scale: [1, 1.6], opacity: [0.5, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeOut' }}
                   />
                   <motion.div
                     className="absolute inset-0 rounded-full bg-gold/30"
-                    animate={{ scale: [1, 2], opacity: [0.4, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity, delay: 0.4 }}
+                    animate={{ scale: [1, 2], opacity: [0.3, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: 'easeOut', delay: 0.5 }}
                   />
 
                   <motion.div
@@ -216,9 +220,9 @@ export function MobileFeaturedSlider({ tours }: MobileFeaturedSliderProps) {
 
               {/* Tour Info */}
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
+                transition={{ delay: 0.15, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                 className="absolute bottom-0 left-0 right-0 p-4"
               >
                 <h3 className="text-lg font-bold text-cream mb-1 line-clamp-1">

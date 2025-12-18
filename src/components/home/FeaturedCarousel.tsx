@@ -151,32 +151,29 @@ export function FeaturedCarousel({ tours }: FeaturedCarouselProps) {
       {/* Main carousel card */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="relative w-full h-[420px] rounded-2xl overflow-hidden border border-gold/30 shadow-2xl shadow-gold/10">
-          <AnimatePresence initial={false} custom={direction} mode="wait">
+          <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={currentIndex}
               custom={direction}
               initial={{
-                x: direction > 0 ? 400 : -400,
+                x: direction > 0 ? 150 : -150,
                 opacity: 0,
-                rotateY: direction > 0 ? -15 : 15,
-                scale: 0.9
+                scale: 0.95
               }}
               animate={{
                 x: 0,
                 opacity: 1,
-                rotateY: 0,
                 scale: 1
               }}
               exit={{
-                x: direction < 0 ? 400 : -400,
+                x: direction < 0 ? 150 : -150,
                 opacity: 0,
-                rotateY: direction < 0 ? -15 : 15,
-                scale: 0.9
+                scale: 0.95
               }}
               transition={{
-                type: 'spring',
-                stiffness: 200,
-                damping: 25,
+                x: { type: 'tween', duration: 0.5, ease: [0.4, 0, 0.2, 1] },
+                opacity: { duration: 0.4, ease: 'easeInOut' },
+                scale: { duration: 0.4, ease: 'easeOut' }
               }}
               className="absolute inset-0"
             >
@@ -207,9 +204,9 @@ export function FeaturedCarousel({ tours }: FeaturedCarouselProps) {
 
               {/* Category badge with sparkle */}
               <motion.div
-                initial={{ opacity: 0, y: -20, scale: 0.8 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring' }}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15, duration: 0.4, ease: 'easeOut' }}
                 className="absolute top-5 left-5 flex items-center gap-2"
               >
                 <span className="bg-gold text-navy text-sm font-bold px-4 py-2 rounded-full flex items-center gap-2 shadow-lg shadow-gold/30">
@@ -233,19 +230,19 @@ export function FeaturedCarousel({ tours }: FeaturedCarouselProps) {
                   {/* Pulsing rings */}
                   <motion.div
                     className="absolute inset-0 rounded-full bg-gold/30"
-                    animate={{ scale: [1, 1.8], opacity: [0.6, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
+                    animate={{ scale: [1, 1.8], opacity: [0.5, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
                   />
                   <motion.div
                     className="absolute inset-0 rounded-full bg-gold/20"
-                    animate={{ scale: [1, 2.2], opacity: [0.4, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut", delay: 0.3 }}
+                    animate={{ scale: [1, 2.2], opacity: [0.35, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 0.5 }}
                   />
 
                   <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
+                    initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    transition={{ delay: 0.1 }}
+                    transition={{ delay: 0.1, duration: 0.3, ease: 'easeOut' }}
                     className="relative w-24 h-24 rounded-full bg-gold flex items-center justify-center cursor-pointer shadow-2xl shadow-gold/50"
                   >
                     <Play className="w-10 h-10 text-navy ml-1.5" fill="currentColor" />
@@ -255,9 +252,9 @@ export function FeaturedCarousel({ tours }: FeaturedCarouselProps) {
 
               {/* Tour info with slide-up animation */}
               <motion.div
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, type: 'spring' }}
+                transition={{ delay: 0.2, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
                 className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-navy/90 to-transparent"
               >
                 <div className="flex items-center gap-2 mb-2">
