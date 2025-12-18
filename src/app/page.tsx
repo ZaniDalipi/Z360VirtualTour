@@ -106,11 +106,11 @@ export default function HomePage() {
       <PublicHeader />
 
       {/* Hero Section */}
-      <section className="relative overflow-x-hidden">
-        {/* Background Elements */}
-        <div className="absolute inset-0 bg-gradient-radial opacity-30" />
+      <section className="relative w-full" style={{ overflow: 'hidden' }}>
+        {/* Background Elements - contained within section */}
+        <div className="absolute inset-0 bg-gradient-radial opacity-30 pointer-events-none" />
         <div
-          className="absolute inset-0 opacity-5"
+          className="absolute inset-0 opacity-5 pointer-events-none"
           style={{
             backgroundImage: `
               linear-gradient(rgba(201, 169, 98, 0.3) 1px, transparent 1px),
@@ -120,42 +120,43 @@ export default function HomePage() {
           }}
         />
 
-        <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center lg:text-left w-full"
-            >
-              <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-3 py-1.5 mb-4 sm:mb-6">
-                <Eye className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-                <span className="text-xs text-gold whitespace-nowrap">Professional 360° Virtual Tours</span>
-              </div>
+        <div className="relative w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-center lg:text-left"
+              >
+                <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-3 py-1.5 mb-4 sm:mb-6">
+                  <Eye className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+                  <span className="text-xs text-gold">360° Virtual Tours</span>
+                </div>
 
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-display-xl font-bold text-cream leading-tight mb-4 sm:mb-6">
-                Bring Your Space
-                <span className="text-gold"> to Life</span>
-              </h1>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-cream leading-tight mb-4 sm:mb-6">
+                  Bring Your Space
+                  <span className="text-gold"> to Life</span>
+                </h1>
 
-              <p className="text-sm sm:text-base text-cream-soft mb-6 sm:mb-8 max-w-xl mx-auto lg:mx-0">
-                Immersive 360° virtual tours for real estate, businesses, hospitality, and more.
-                Captivate your audience and showcase every detail.
-              </p>
+                <p className="text-sm sm:text-base text-cream-soft mb-6 sm:mb-8">
+                  Immersive 360° virtual tours for real estate, businesses, and hospitality.
+                  Captivate your audience.
+                </p>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center lg:justify-start gap-3 sm:gap-4 w-full">
-                <Link href="/tours" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full flex items-center justify-center gap-2">
-                    <Play className="w-4 h-4 sm:w-5 sm:h-5" />
-                    View Portfolio
-                  </Button>
-                </Link>
-                <Link href="/contact" className="w-full sm:w-auto">
-                  <Button variant="secondary" size="lg" className="w-full">
-                    Get a Free Quote
-                  </Button>
-                </Link>
-              </div>
+                <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
+                  <Link href="/tours" className="block">
+                    <Button size="lg" className="w-full flex items-center justify-center gap-2">
+                      <Play className="w-4 h-4" />
+                      View Portfolio
+                    </Button>
+                  </Link>
+                  <Link href="/contact" className="block">
+                    <Button variant="secondary" size="lg" className="w-full">
+                      Get a Quote
+                    </Button>
+                  </Link>
+                </div>
 
               {/* Dynamic Stats */}
               {(stats.totalTours > 0 || stats.totalViews > 0) && (
@@ -194,15 +195,15 @@ export default function HomePage() {
 
             {/* Mobile Featured Tours Preview */}
             {tours.length > 0 && (
-              <div className="lg:hidden mt-4">
-                <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 snap-x snap-mandatory">
+              <div className="lg:hidden mt-4 w-full overflow-hidden">
+                <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
                   {tours.slice(0, 3).map((tour, index) => (
                     <motion.div
                       key={tour.id}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.1 }}
-                      className="flex-shrink-0 w-[280px] snap-start"
+                      className="flex-shrink-0 w-[260px] first:ml-0 snap-start"
                     >
                       <Link href={`/tour/${tour.slug}`}>
                         <div className="relative h-40 rounded-xl overflow-hidden border border-gold/20">
@@ -229,6 +230,7 @@ export default function HomePage() {
                 </div>
               </div>
             )}
+            </div>
           </div>
         </div>
       </section>
