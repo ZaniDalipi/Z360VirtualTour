@@ -263,49 +263,94 @@ export default function HomePage() {
               </Link>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {tours.map((tour, index) => (
                 <motion.div
                   key={tour.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.1, duration: 0.5 }}
+                  className="group"
                 >
                   <Link href={`/tour/${tour.slug}`}>
-                    <Card className="overflow-hidden group cursor-pointer hover:border-gold/30 transition-all">
-                      <div className="relative h-56">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
+                                    hover:border-gold/40 transition-all duration-500 hover:shadow-2xl hover:shadow-gold/10
+                                    hover:-translate-y-2">
+                      {/* Image Container */}
+                      <div className="relative h-60 overflow-hidden">
                         <Image
                           src={tour.coverImage}
                           alt={tour.title}
                           fill
-                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="object-cover transition-all duration-700 group-hover:scale-110"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-navy-dark via-transparent to-transparent" />
 
-                        {/* Play Button */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center shadow-glow">
-                            <Play className="w-6 h-6 text-navy ml-0.5" fill="currentColor" />
+                        {/* Gradient Overlays */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/40 to-transparent" />
+                        <div className="absolute inset-0 bg-gold/0 group-hover:bg-gold/5 transition-colors duration-500" />
+
+                        {/* Play Button - Always visible but enhanced on hover */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="relative transform transition-all duration-300 group-hover:scale-110">
+                            <div className="absolute inset-0 w-16 h-16 rounded-full bg-gold/20 animate-pulse" />
+                            <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-gold to-gold-soft
+                                            flex items-center justify-center shadow-lg group-hover:shadow-gold/40
+                                            backdrop-blur-sm border border-gold/20">
+                              <Play className="w-7 h-7 text-navy ml-1" fill="currentColor" />
+                            </div>
                           </div>
                         </div>
 
                         {/* Category Badge */}
                         <div className="absolute top-4 left-4">
-                          <span className="bg-gold text-navy text-caption font-semibold px-3 py-1 rounded-full">
+                          <span className="bg-gold/90 backdrop-blur-sm text-navy text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg">
                             {tour.category.name}
+                          </span>
+                        </div>
+
+                        {/* 360° indicator */}
+                        <div className="absolute top-4 right-4">
+                          <span className="bg-navy/70 backdrop-blur-sm text-cream text-xs font-medium px-2.5 py-1 rounded-lg border border-cream/10">
+                            360°
                           </span>
                         </div>
                       </div>
 
+                      {/* Content */}
                       <div className="p-5">
-                        <h3 className="text-h3 font-semibold text-cream mb-2 group-hover:text-gold transition-colors">
+                        <h3 className="text-lg font-bold text-cream mb-2 group-hover:text-gold transition-colors duration-300 line-clamp-1">
                           {tour.title}
                         </h3>
-                        {tour.clientName && <p className="text-body text-cream-muted mb-1">{tour.clientName}</p>}
-                        {tour.location && <p className="text-caption text-cream-dim">{tour.location}</p>}
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1 min-w-0">
+                            {tour.clientName && (
+                              <p className="text-sm text-cream-muted truncate">{tour.clientName}</p>
+                            )}
+                            {tour.location && (
+                              <p className="text-xs text-cream-dim flex items-center gap-1 mt-1">
+                                <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span className="truncate">{tour.location}</span>
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Arrow indicator */}
+                          <div className="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center
+                                          group-hover:bg-gold transition-all duration-300 flex-shrink-0 ml-3">
+                            <ArrowRight className="w-4 h-4 text-gold group-hover:text-navy transition-colors" />
+                          </div>
+                        </div>
                       </div>
-                    </Card>
+
+                      {/* Bottom border glow */}
+                      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/0 to-transparent
+                                      group-hover:via-gold/60 transition-all duration-500" />
+                    </div>
                   </Link>
                 </motion.div>
               ))}
