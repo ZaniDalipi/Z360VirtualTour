@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Star, Edit2, Trash2, X, Check } from 'lucide-react'
+import { Plus, Star, Edit2, Trash2, X, Check, Clock, Filter } from 'lucide-react'
 import { Card, Button, Input } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -17,11 +17,14 @@ interface Testimonial {
   createdAt: string
 }
 
+type FilterType = 'all' | 'pending' | 'approved'
+
 export default function TestimonialsPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [filter, setFilter] = useState<FilterType>('all')
   const [formData, setFormData] = useState({
     clientName: '',
     clientTitle: '',
@@ -128,6 +131,31 @@ export default function TestimonialsPage() {
     )
   }
 
+  const pendingCount = testimonials.filter(t => !t.isActive).length
+  const filteredTestimonials = testimonials.filter(t => {
+    if (filter === 'pending') return !t.isActive
+    if (filter === 'approved') return t.isActive
+    return true
+  })
+
+  const handleApprove = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/testimonials/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: true }),
+      })
+
+      if (res.ok) {
+        setTestimonials(prev =>
+          prev.map(t => (t.id === id ? { ...t, isActive: true } : t))
+        )
+      }
+    } catch (error) {
+      console.error('Failed to approve testimonial:', error)
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -142,6 +170,51 @@ export default function TestimonialsPage() {
           <Plus className="w-4 h-4 mr-2" />
           Add Testimonial
         </Button>
+      </div>
+
+      {/* Pending Alert */}
+      {pendingCount > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-amber-500" />
+            <span className="text-cream">
+              <strong>{pendingCount}</strong> testimonial{pendingCount !== 1 ? 's' : ''} pending approval
+            </span>
+          </div>
+          <button
+            onClick={() => setFilter('pending')}
+            className="text-sm text-amber-500 hover:text-amber-400 font-medium"
+          >
+            View Pending
+          </button>
+        </motion.div>
+      )}
+
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 border-b border-gold/10 pb-4">
+        <Filter className="w-4 h-4 text-cream-muted mr-2" />
+        {(['all', 'pending', 'approved'] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              filter === f
+                ? 'bg-gold text-navy'
+                : 'text-cream-muted hover:text-cream hover:bg-gold/10'
+            }`}
+          >
+            {f.charAt(0).toUpperCase() + f.slice(1)}
+            {f === 'pending' && pendingCount > 0 && (
+              <span className="ml-2 bg-amber-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                {pendingCount}
+              </span>
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Form Modal */}
@@ -285,18 +358,24 @@ export default function TestimonialsPage() {
       </AnimatePresence>
 
       {/* Testimonials Grid */}
-      {testimonials.length === 0 ? (
+      {filteredTestimonials.length === 0 ? (
         <Card className="p-12 text-center">
           <Star className="w-12 h-12 text-cream-muted mx-auto mb-4" />
-          <p className="text-cream-muted mb-4">No testimonials yet</p>
-          <Button onClick={() => setShowForm(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Add Your First Testimonial
-          </Button>
+          <p className="text-cream-muted mb-4">
+            {filter === 'pending' ? 'No pending testimonials' :
+             filter === 'approved' ? 'No approved testimonials' :
+             'No testimonials yet'}
+          </p>
+          {filter === 'all' && (
+            <Button onClick={() => setShowForm(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Your First Testimonial
+            </Button>
+          )}
         </Card>
       ) : (
         <div className="grid md:grid-cols-2 gap-6">
-          {testimonials.map((testimonial) => (
+          {filteredTestimonials.map((testimonial) => (
             <motion.div
               key={testimonial.id}
               initial={{ opacity: 0, y: 10 }}
@@ -304,7 +383,7 @@ export default function TestimonialsPage() {
             >
               <Card
                 className={`p-6 h-full ${
-                  !testimonial.isActive ? 'opacity-50' : ''
+                  !testimonial.isActive ? 'border-amber-500/30 bg-amber-500/5' : ''
                 } ${testimonial.featured ? 'border-gold/40' : ''}`}
               >
                 <div className="flex items-start justify-between mb-4">
@@ -319,8 +398,8 @@ export default function TestimonialsPage() {
                         </span>
                       )}
                       {!testimonial.isActive && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">
-                          Inactive
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400">
+                          Pending
                         </span>
                       )}
                     </div>
@@ -346,15 +425,26 @@ export default function TestimonialsPage() {
                     {new Date(testimonial.createdAt).toLocaleDateString()}
                   </span>
                   <div className="flex items-center gap-2">
+                    {!testimonial.isActive && (
+                      <button
+                        onClick={() => handleApprove(testimonial.id)}
+                        className="p-2 rounded-lg text-green-400 hover:text-green-300 hover:bg-green-500/10"
+                        title="Approve"
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                    )}
                     <button
                       onClick={() => handleEdit(testimonial)}
                       className="p-2 rounded-lg text-cream-muted hover:text-cream hover:bg-gold/10"
+                      title="Edit"
                     >
                       <Edit2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => handleDelete(testimonial.id)}
                       className="p-2 rounded-lg text-cream-muted hover:text-red-400 hover:bg-red-500/10"
+                      title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

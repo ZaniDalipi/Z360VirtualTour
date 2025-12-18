@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { signToken } from '@/lib/auth'
+import { signToken, checkRateLimit, recordLoginAttempt } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
 
@@ -15,14 +15,42 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Find admin by email
-    const admin = await prisma.admin.findUnique({
-      where: { email },
+    // Get client IP for rate limiting
+    const clientIp = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+                     request.headers.get('x-real-ip') ||
+                     'unknown'
+    const rateLimitKey = `${clientIp}:${email.toLowerCase()}`
+
+    // Check rate limit
+    const rateLimit = checkRateLimit(rateLimitKey)
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: `Too many login attempts. Please try again in ${rateLimit.lockoutRemaining} minutes.`,
+          lockout: true,
+          lockoutRemaining: rateLimit.lockoutRemaining
+        },
+        { status: 429 }
+      )
+    }
+
+    // Find admin by email (case-insensitive)
+    const admin = await prisma.admin.findFirst({
+      where: {
+        email: {
+          equals: email,
+          mode: 'insensitive'
+        }
+      },
     })
 
     if (!admin) {
+      recordLoginAttempt(rateLimitKey, false)
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        {
+          error: 'Invalid credentials',
+          remainingAttempts: rateLimit.remainingAttempts - 1
+        },
         { status: 401 }
       )
     }
@@ -31,11 +59,18 @@ export async function POST(request: NextRequest) {
     const isValidPassword = await bcrypt.compare(password, admin.password)
 
     if (!isValidPassword) {
+      recordLoginAttempt(rateLimitKey, false)
       return NextResponse.json(
-        { error: 'Invalid credentials' },
+        {
+          error: 'Invalid credentials',
+          remainingAttempts: rateLimit.remainingAttempts - 1
+        },
         { status: 401 }
       )
     }
+
+    // Record successful login
+    recordLoginAttempt(rateLimitKey, true)
 
     // Create JWT token
     const token = await signToken({
@@ -44,12 +79,12 @@ export async function POST(request: NextRequest) {
       name: admin.name || undefined,
     })
 
-    // Set cookie
+    // Set cookie with secure options
     const cookieStore = await cookies()
     cookieStore.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'strict', // More secure than 'lax'
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     })

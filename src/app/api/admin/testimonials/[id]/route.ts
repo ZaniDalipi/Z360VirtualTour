@@ -46,18 +46,21 @@ export async function PUT(
     const { id } = await params
     const data = await request.json()
 
+    // Build update object with only provided fields (allows partial updates)
+    const updateData: Record<string, unknown> = {}
+
+    if (data.clientName !== undefined) updateData.clientName = data.clientName
+    if (data.clientTitle !== undefined) updateData.clientTitle = data.clientTitle || null
+    if (data.clientImage !== undefined) updateData.clientImage = data.clientImage || null
+    if (data.content !== undefined) updateData.content = data.content
+    if (data.rating !== undefined) updateData.rating = data.rating
+    if (data.tourId !== undefined) updateData.tourId = data.tourId || null
+    if (data.featured !== undefined) updateData.featured = data.featured
+    if (data.isActive !== undefined) updateData.isActive = data.isActive
+
     const testimonial = await prisma.testimonial.update({
       where: { id },
-      data: {
-        clientName: data.clientName,
-        clientTitle: data.clientTitle || null,
-        clientImage: data.clientImage || null,
-        content: data.content,
-        rating: data.rating || 5,
-        tourId: data.tourId || null,
-        featured: data.featured || false,
-        isActive: data.isActive ?? true,
-      },
+      data: updateData,
     })
 
     return NextResponse.json(testimonial)
