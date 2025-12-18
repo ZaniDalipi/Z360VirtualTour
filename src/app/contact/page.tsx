@@ -135,12 +135,27 @@ export default function ContactPage() {
     pricingPlanId: '',
     urgencyTierId: '',
     preferredDate: '',
+    preferredTime: '',
     alternateDate: '',
+    alternateTime: '',
     deadlineDate: '',
     isUrgent: false,
     bundleId: '',
     message: '',
   })
+
+  // Available time slots for booking
+  const timeSlots = [
+    { value: '09:00', label: '9:00 AM' },
+    { value: '10:00', label: '10:00 AM' },
+    { value: '11:00', label: '11:00 AM' },
+    { value: '12:00', label: '12:00 PM' },
+    { value: '13:00', label: '1:00 PM' },
+    { value: '14:00', label: '2:00 PM' },
+    { value: '15:00', label: '3:00 PM' },
+    { value: '16:00', label: '4:00 PM' },
+    { value: '17:00', label: '5:00 PM' },
+  ]
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
@@ -239,7 +254,9 @@ export default function ContactPage() {
           pricingPlanId: formData.pricingPlanId || null,
           urgencyTierId: formData.urgencyTierId || null,
           preferredDate: formData.preferredDate || null,
+          preferredTime: formData.preferredTime || null,
           alternateDate: formData.alternateDate || null,
+          alternateTime: formData.alternateTime || null,
           deadlineDate: formData.isUrgent ? formData.deadlineDate : null,
           travelBundleId: formData.bundleId || null,
           projectDescription: formData.message,
@@ -516,9 +533,15 @@ export default function ContactPage() {
             <p>${selectedTierName}</p>
           </div>
           <div class="info-item">
-            <label>Preferred Date</label>
-            <p>${formData.preferredDate ? new Date(formData.preferredDate).toLocaleDateString() : 'Flexible'}</p>
+            <label>Preferred Date & Time</label>
+            <p>${formData.preferredDate ? new Date(formData.preferredDate).toLocaleDateString() : 'Flexible'}${formData.preferredTime ? ` at ${formData.preferredTime}` : ''}</p>
           </div>
+          ${formData.alternateDate ? `
+          <div class="info-item">
+            <label>Alternate Date & Time</label>
+            <p>${new Date(formData.alternateDate).toLocaleDateString()}${formData.alternateTime ? ` at ${formData.alternateTime}` : ''}</p>
+          </div>
+          ` : ''}
         </div>
       </div>
 
@@ -916,7 +939,9 @@ export default function ContactPage() {
                             pricingPlanId: '',
                             urgencyTierId: '',
                             preferredDate: '',
+                            preferredTime: '',
                             alternateDate: '',
+                            alternateTime: '',
                             deadlineDate: '',
                             isUrgent: false,
                             bundleId: '',
@@ -1079,29 +1104,65 @@ export default function ContactPage() {
                         </div>
                       </div>
 
-                      {/* Dates */}
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-cream mb-2">
-                            Preferred Date
+                      {/* Preferred Date & Time */}
+                      <div className="space-y-4">
+                        <div className="p-4 rounded-xl bg-navy border border-gold/10">
+                          <label className="block text-sm font-medium text-cream mb-3">
+                            Preferred Date & Time
                           </label>
-                          <Input
-                            type="date"
-                            name="preferredDate"
-                            value={formData.preferredDate}
-                            onChange={handleChange}
-                          />
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <Input
+                              type="date"
+                              name="preferredDate"
+                              value={formData.preferredDate}
+                              onChange={handleChange}
+                            />
+                            <select
+                              name="preferredTime"
+                              value={formData.preferredTime}
+                              onChange={handleChange}
+                              className="w-full px-4 py-3 rounded-xl bg-navy-dark border border-gold/20 text-cream
+                                       focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50"
+                            >
+                              <option value="">Select time...</option>
+                              {timeSlots.map((slot) => (
+                                <option key={slot.value} value={slot.value}>
+                                  {slot.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-cream mb-2">
-                            Alternate Date
+
+                        <div className="p-4 rounded-xl bg-navy border border-gold/10">
+                          <label className="block text-sm font-medium text-cream mb-3">
+                            Alternate Date & Time (Optional)
                           </label>
-                          <Input
-                            type="date"
-                            name="alternateDate"
-                            value={formData.alternateDate}
-                            onChange={handleChange}
-                          />
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <Input
+                              type="date"
+                              name="alternateDate"
+                              value={formData.alternateDate}
+                              onChange={handleChange}
+                            />
+                            <select
+                              name="alternateTime"
+                              value={formData.alternateTime}
+                              onChange={handleChange}
+                              className="w-full px-4 py-3 rounded-xl bg-navy-dark border border-gold/20 text-cream
+                                       focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50"
+                            >
+                              <option value="">Select time...</option>
+                              {timeSlots.map((slot) => (
+                                <option key={slot.value} value={slot.value}>
+                                  {slot.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <p className="text-xs text-cream-muted mt-2">
+                            Providing a backup option helps us schedule faster
+                          </p>
                         </div>
                       </div>
 

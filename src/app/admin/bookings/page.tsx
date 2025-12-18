@@ -22,9 +22,12 @@ interface Booking {
   projectDescription: string | null
   specialRequests: string | null
   preferredDate: string | null
+  preferredTime: string | null
   alternateDate: string | null
+  alternateTime: string | null
   deadlineDate: string | null
   confirmedDate: string | null
+  confirmedTime: string | null
   basePrice: number | null
   urgencySurcharge: number | null
   travelFee: number | null
@@ -41,6 +44,19 @@ interface Booking {
   urgencyTierName?: string | null
   travelBundleName?: string | null
 }
+
+// Available time slots for booking
+const timeSlots = [
+  { value: '09:00', label: '9:00 AM' },
+  { value: '10:00', label: '10:00 AM' },
+  { value: '11:00', label: '11:00 AM' },
+  { value: '12:00', label: '12:00 PM' },
+  { value: '13:00', label: '1:00 PM' },
+  { value: '14:00', label: '2:00 PM' },
+  { value: '15:00', label: '3:00 PM' },
+  { value: '16:00', label: '4:00 PM' },
+  { value: '17:00', label: '5:00 PM' },
+]
 
 const statusColors: Record<string, string> = {
   quote_requested: 'bg-blue-500/20 text-blue-400',
@@ -72,6 +88,7 @@ export default function BookingsAdminPage() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [confirmingDate, setConfirmingDate] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState('')
+  const [selectedTime, setSelectedTime] = useState('')
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState({
     clientName: '',
@@ -181,7 +198,8 @@ export default function BookingsAdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: 'confirmed',
-          confirmedDate: selectedDate
+          confirmedDate: selectedDate,
+          confirmedTime: selectedTime || null
         }),
       })
 
@@ -189,6 +207,7 @@ export default function BookingsAdminPage() {
         fetchBookings()
         setConfirmingDate(null)
         setSelectedDate('')
+        setSelectedTime('')
       }
     } catch (error) {
       console.error('Failed to confirm booking:', error)
@@ -682,14 +701,24 @@ export default function BookingsAdminPage() {
                               <div className="space-y-2 text-sm">
                                 {booking.preferredDate && (
                                   <div className="flex justify-between">
-                                    <span className="text-cream-muted">Preferred Date</span>
-                                    <span className="text-cream">{formatDate(booking.preferredDate)}</span>
+                                    <span className="text-cream-muted">Preferred Date & Time</span>
+                                    <span className="text-cream">
+                                      {formatDate(booking.preferredDate)}
+                                      {booking.preferredTime && (
+                                        <span className="text-gold ml-2">at {booking.preferredTime}</span>
+                                      )}
+                                    </span>
                                   </div>
                                 )}
                                 {booking.alternateDate && (
                                   <div className="flex justify-between">
-                                    <span className="text-cream-muted">Alternate Date</span>
-                                    <span className="text-cream">{formatDate(booking.alternateDate)}</span>
+                                    <span className="text-cream-muted">Alternate Date & Time</span>
+                                    <span className="text-cream">
+                                      {formatDate(booking.alternateDate)}
+                                      {booking.alternateTime && (
+                                        <span className="text-gold ml-2">at {booking.alternateTime}</span>
+                                      )}
+                                    </span>
                                   </div>
                                 )}
                                 {booking.deadlineDate && (
@@ -700,8 +729,13 @@ export default function BookingsAdminPage() {
                                 )}
                                 {booking.confirmedDate && (
                                   <div className="flex justify-between">
-                                    <span className="text-cream-muted">Confirmed Date</span>
-                                    <span className="text-green-400 font-medium">{formatDate(booking.confirmedDate)}</span>
+                                    <span className="text-cream-muted">Confirmed Date & Time</span>
+                                    <span className="text-green-400 font-medium">
+                                      {formatDate(booking.confirmedDate)}
+                                      {booking.confirmedTime && (
+                                        <span className="ml-2">at {booking.confirmedTime}</span>
+                                      )}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -789,19 +823,44 @@ export default function BookingsAdminPage() {
                             </div>
                           )}
 
-                          {/* Date Confirmation Flow */}
+                          {/* Date & Time Confirmation Flow */}
                           {confirmingDate === booking.id && booking.status === 'quote_sent' && (
                             <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
                               <p className="text-sm text-cream mb-3 flex items-center gap-2">
                                 <Calendar className="w-4 h-4 text-green-400" />
-                                Select confirmed date for this booking:
+                                Confirm date and time for this booking:
                               </p>
-                              <input
-                                type="date"
-                                value={selectedDate}
-                                onChange={(e) => setSelectedDate(e.target.value)}
-                                className="w-full px-3 py-2 rounded-lg bg-navy border border-gold/20 text-cream text-sm mb-3"
-                              />
+                              <div className="grid sm:grid-cols-2 gap-3 mb-3">
+                                <div>
+                                  <label className="block text-xs text-cream-muted mb-1">Date *</label>
+                                  <input
+                                    type="date"
+                                    value={selectedDate}
+                                    onChange={(e) => setSelectedDate(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg bg-navy border border-gold/20 text-cream text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs text-cream-muted mb-1">Time</label>
+                                  <select
+                                    value={selectedTime}
+                                    onChange={(e) => setSelectedTime(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg bg-navy border border-gold/20 text-cream text-sm"
+                                  >
+                                    <option value="">Select time...</option>
+                                    {timeSlots.map((slot) => (
+                                      <option key={slot.value} value={slot.value}>
+                                        {slot.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                              </div>
+                              {booking.preferredTime && (
+                                <p className="text-xs text-cream-muted mb-3">
+                                  Client's preferred time: <span className="text-gold">{booking.preferredTime}</span>
+                                </p>
+                              )}
                               <div className="flex gap-2">
                                 <Button
                                   size="sm"
@@ -809,7 +868,7 @@ export default function BookingsAdminPage() {
                                   disabled={!selectedDate}
                                 >
                                   <Check className="w-4 h-4 mr-1" />
-                                  Confirm Date
+                                  Confirm Booking
                                 </Button>
                                 <Button
                                   size="sm"
@@ -817,6 +876,7 @@ export default function BookingsAdminPage() {
                                   onClick={() => {
                                     setConfirmingDate(null)
                                     setSelectedDate('')
+                                    setSelectedTime('')
                                   }}
                                 >
                                   Cancel
@@ -839,6 +899,9 @@ export default function BookingsAdminPage() {
                                   setConfirmingDate(booking.id)
                                   if (booking.preferredDate) {
                                     setSelectedDate(booking.preferredDate.split('T')[0])
+                                  }
+                                  if (booking.preferredTime) {
+                                    setSelectedTime(booking.preferredTime)
                                   }
                                 }}
                               >

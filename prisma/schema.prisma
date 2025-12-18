@@ -203,9 +203,12 @@ model Booking {
   urgencyTierId       String?       @db.ObjectId
   urgencyTier         UrgencyTier?  @relation(fields: [urgencyTierId], references: [id])
   preferredDate       DateTime?           // Client's preferred date
+  preferredTime       String?             // Client's preferred time (e.g., "09:00", "14:00")
   alternateDate       DateTime?           // Backup date option
+  alternateTime       String?             // Backup time option
   deadlineDate        DateTime?           // For urgent: must be done by this date
   confirmedDate       DateTime?           // Admin-confirmed date
+  confirmedTime       String?             // Admin-confirmed time
   isFlexible          Boolean   @default(true)
 
   // Travel

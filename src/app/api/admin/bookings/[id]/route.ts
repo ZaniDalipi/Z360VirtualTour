@@ -85,9 +85,12 @@ export async function PUT(
     if (data.pricingPlanId !== undefined) updateData.pricingPlanId = data.pricingPlanId
     if (data.urgencyTierId !== undefined) updateData.urgencyTierId = data.urgencyTierId
     if (data.preferredDate !== undefined) updateData.preferredDate = data.preferredDate ? new Date(data.preferredDate) : null
+    if (data.preferredTime !== undefined) updateData.preferredTime = data.preferredTime || null
     if (data.alternateDate !== undefined) updateData.alternateDate = data.alternateDate ? new Date(data.alternateDate) : null
+    if (data.alternateTime !== undefined) updateData.alternateTime = data.alternateTime || null
     if (data.deadlineDate !== undefined) updateData.deadlineDate = data.deadlineDate ? new Date(data.deadlineDate) : null
     if (data.confirmedDate !== undefined) updateData.confirmedDate = data.confirmedDate ? new Date(data.confirmedDate) : null
+    if (data.confirmedTime !== undefined) updateData.confirmedTime = data.confirmedTime || null
     if (data.isFlexible !== undefined) updateData.isFlexible = data.isFlexible
     if (data.travelZoneId !== undefined) updateData.travelZoneId = data.travelZoneId
     if (data.travelBundleId !== undefined) updateData.travelBundleId = data.travelBundleId
