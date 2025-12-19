@@ -131,7 +131,7 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
             <div className="p-4 border-t border-gold/10 safe-bottom">
               <Link href="/contact" onClick={onClose}>
                 <button className="w-full bg-gold hover:bg-gold-soft text-navy font-semibold py-4 px-6 rounded-xl transition-colors flex items-center justify-center gap-2">
-                  Get a Free Quote
+                  Work With Us
                   <ChevronRight className="w-4 h-4" />
                 </button>
               </Link>

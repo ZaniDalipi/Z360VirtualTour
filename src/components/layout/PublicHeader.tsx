@@ -91,7 +91,7 @@ export function PublicHeader() {
               {/* CTA Button - Desktop */}
               <Link href="/contact" className="hidden lg:block">
                 <button className="bg-gold hover:bg-gold-soft text-navy font-bold px-6 py-2.5 rounded-lg transition-all shadow-lg shadow-gold/20 hover:shadow-xl hover:shadow-gold/30 hover:scale-105">
-                  Get a Free Quote
+                  Work With Us
                 </button>
               </Link>
 

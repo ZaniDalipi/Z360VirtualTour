@@ -147,7 +147,7 @@ export default function HomePage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                   <Link href="/contact" className="block">
                     <Button size="lg" className="w-full flex items-center justify-center gap-2 bg-gold hover:bg-gold-soft text-navy font-bold text-lg shadow-lg shadow-gold/25 hover:shadow-xl hover:shadow-gold/30 transition-all">
-                      Get a Free Quote
+                      Work With Us
                       <ArrowRight className="w-5 h-5" />
                     </Button>
                   </Link>
