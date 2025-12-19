@@ -12,7 +12,6 @@ const navLinks = [
   { href: '/tours', label: 'Portfolio' },
   { href: '/testimonials', label: 'Testimonials' },
   { href: '/pricing', label: 'Pricing' },
-  { href: '/contact', label: 'Work with Us' },
 ]
 
 export function PublicHeader() {
@@ -91,8 +90,8 @@ export function PublicHeader() {
 
               {/* CTA Button - Desktop */}
               <Link href="/contact" className="hidden lg:block">
-                <button className="bg-gold hover:bg-gold-soft text-navy font-semibold px-5 py-2.5 rounded-lg transition-colors">
-                  Get a Quote
+                <button className="bg-gold hover:bg-gold-soft text-navy font-bold px-6 py-2.5 rounded-lg transition-all shadow-lg shadow-gold/20 hover:shadow-xl hover:shadow-gold/30 hover:scale-105">
+                  Get a Free Quote
                 </button>
               </Link>
 

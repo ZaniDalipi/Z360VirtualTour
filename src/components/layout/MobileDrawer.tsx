@@ -18,7 +18,6 @@ const navLinks: NavLink[] = [
   { href: '/tours', label: 'Portfolio', icon: FolderOpen },
   { href: '/testimonials', label: 'Testimonials', icon: MessageSquare },
   { href: '/pricing', label: 'Pricing', icon: DollarSign },
-  { href: '/contact', label: 'Work with Us', icon: Mail },
 ]
 
 interface MobileDrawerProps {
