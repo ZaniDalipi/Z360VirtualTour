@@ -1,16 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
+import { withRetry, withFallback } from '@/lib/db'
 
 export async function GET() {
   try {
-    const testimonials = await prisma.testimonial.findMany({
-      where: { isActive: true },
-      orderBy: [
-        { featured: 'desc' },
-        { createdAt: 'desc' },
-      ],
-      take: 6,
-    })
+    // Try cache first
+    const cached = cache.get<unknown[]>(CacheKeys.TESTIMONIALS)
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: { 'X-Cache-Status': 'hit' }
+      })
+    }
+
+    const testimonials = await withFallback(
+      () => withRetry(
+        () => prisma.testimonial.findMany({
+          where: { isActive: true },
+          orderBy: [
+            { featured: 'desc' },
+            { createdAt: 'desc' },
+          ],
+          take: 6,
+        }),
+        { maxRetries: 2 }
+      ),
+      []
+    )
+
+    // Cache for longer since testimonials rarely change
+    cache.set(CacheKeys.TESTIMONIALS, testimonials, CacheTTL.LONG)
 
     return NextResponse.json(testimonials)
   } catch (error) {
@@ -35,12 +54,15 @@ export async function POST(request: NextRequest) {
     // Rate limiting check - max 3 testimonials per email per day
     if (data.email) {
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
-      const recentSubmissions = await prisma.testimonial.count({
-        where: {
-          clientTitle: { contains: data.email },
-          createdAt: { gte: oneDayAgo },
-        },
-      })
+      const recentSubmissions = await withRetry(
+        () => prisma.testimonial.count({
+          where: {
+            clientTitle: { contains: data.email },
+            createdAt: { gte: oneDayAgo },
+          },
+        }),
+        { maxRetries: 2 }
+      )
 
       if (recentSubmissions >= 3) {
         return NextResponse.json(
@@ -51,16 +73,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Create testimonial with isActive: false (requires admin approval)
-    const testimonial = await prisma.testimonial.create({
-      data: {
-        clientName: data.clientName,
-        clientTitle: data.clientTitle || (data.email ? `Email: ${data.email}` : null),
-        content: data.content,
-        rating: Math.min(5, Math.max(1, data.rating || 5)),
-        featured: false,
-        isActive: false, // Requires admin approval
-      },
-    })
+    const testimonial = await withRetry(
+      () => prisma.testimonial.create({
+        data: {
+          clientName: data.clientName,
+          clientTitle: data.clientTitle || (data.email ? `Email: ${data.email}` : null),
+          content: data.content,
+          rating: Math.min(5, Math.max(1, data.rating || 5)),
+          featured: false,
+          isActive: false, // Requires admin approval
+        },
+      }),
+      { maxRetries: 2 }
+    )
 
     return NextResponse.json({
       success: true,
@@ -70,7 +95,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Failed to submit testimonial:', error)
     return NextResponse.json(
-      { error: 'Failed to submit testimonial' },
+      { error: 'Failed to submit testimonial. Please try again.' },
       { status: 500 }
     )
   }

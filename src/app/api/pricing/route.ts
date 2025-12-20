@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
+import { withRetry, withFallback } from '@/lib/db'
 
 interface PricingPlan {
   id: string
@@ -15,16 +17,33 @@ interface PricingPlan {
 
 export async function GET() {
   try {
-    const plans = await prisma.pricingPlan.findMany({
-      where: { isActive: true },
-      orderBy: { order: 'asc' },
-    })
+    // Try cache first - pricing rarely changes
+    const cached = cache.get<unknown[]>(CacheKeys.PRICING_PLANS)
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: { 'X-Cache-Status': 'hit' }
+      })
+    }
+
+    const plans = await withFallback(
+      () => withRetry(
+        () => prisma.pricingPlan.findMany({
+          where: { isActive: true },
+          orderBy: { order: 'asc' },
+        }),
+        { maxRetries: 2 }
+      ),
+      []
+    )
 
     // Parse features JSON
     const parsedPlans = plans.map((plan: PricingPlan) => ({
       ...plan,
       features: JSON.parse(plan.features || '[]'),
     }))
+
+    // Cache for very long since pricing rarely changes
+    cache.set(CacheKeys.PRICING_PLANS, parsedPlans, CacheTTL.VERY_LONG)
 
     return NextResponse.json(parsedPlans)
   } catch (error) {

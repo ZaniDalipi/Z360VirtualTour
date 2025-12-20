@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
+import { cache } from '@/lib/cache'
+import { withRetry } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
@@ -14,10 +16,13 @@ export async function GET(
 
   try {
     const { id } = await params
-    const tour = await prisma.tour.findUnique({
-      where: { id },
-      include: { category: true },
-    })
+    const tour = await withRetry(
+      () => prisma.tour.findUnique({
+        where: { id },
+        include: { category: true },
+      }),
+      { maxRetries: 2 }
+    )
 
     if (!tour) {
       return NextResponse.json({ error: 'Tour not found' }, { status: 404 })
@@ -27,8 +32,8 @@ export async function GET(
   } catch (error) {
     console.error('Failed to fetch tour:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch tour' },
-      { status: 500 }
+      { error: 'Failed to fetch tour. Please try again.' },
+      { status: 503 }
     )
   }
 }
@@ -48,12 +53,15 @@ export async function PUT(
     const data = await request.json()
 
     // Check if slug is unique (excluding current tour)
-    const existingTour = await prisma.tour.findFirst({
-      where: {
-        slug: data.slug,
-        NOT: { id },
-      },
-    })
+    const existingTour = await withRetry(
+      () => prisma.tour.findFirst({
+        where: {
+          slug: data.slug,
+          NOT: { id },
+        },
+      }),
+      { maxRetries: 2 }
+    )
 
     if (existingTour) {
       return NextResponse.json(
@@ -72,31 +80,39 @@ export async function PUT(
       }
     }
 
-    const tour = await prisma.tour.update({
-      where: { id },
-      data: {
-        title: data.title,
-        slug: data.slug,
-        description: data.description || null,
-        shortDesc: data.shortDescription || data.shortDesc || null,
-        clientName: data.clientName || null,
-        location: data.location || null,
-        coverImage: data.coverImage,
-        images: imagesJson,
-        tourUrl: data.tourUrl || null,
-        tourEmbed: data.tourEmbed || null,
-        categoryId: data.categoryId,
-        featured: data.featured || false,
-        isActive: data.isActive ?? true,
-      },
-      include: { category: true },
-    })
+    const tour = await withRetry(
+      () => prisma.tour.update({
+        where: { id },
+        data: {
+          title: data.title,
+          slug: data.slug,
+          description: data.description || null,
+          shortDesc: data.shortDescription || data.shortDesc || null,
+          clientName: data.clientName || null,
+          location: data.location || null,
+          coverImage: data.coverImage,
+          images: imagesJson,
+          tourUrl: data.tourUrl || null,
+          tourEmbed: data.tourEmbed || null,
+          categoryId: data.categoryId,
+          featured: data.featured || false,
+          isActive: data.isActive ?? true,
+        },
+        include: { category: true },
+      }),
+      { maxRetries: 2 }
+    )
+
+    // Invalidate caches
+    cache.invalidatePrefix('tours')
+    cache.invalidatePrefix('admin:tours')
+    cache.invalidatePrefix('stats')
 
     return NextResponse.json(tour)
   } catch (error) {
     console.error('Failed to update tour:', error)
     return NextResponse.json(
-      { error: 'Failed to update tour' },
+      { error: 'Failed to update tour. Please try again.' },
       { status: 500 }
     )
   }
@@ -114,15 +130,23 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    await prisma.tour.delete({
-      where: { id },
-    })
+    await withRetry(
+      () => prisma.tour.delete({
+        where: { id },
+      }),
+      { maxRetries: 2 }
+    )
+
+    // Invalidate caches
+    cache.invalidatePrefix('tours')
+    cache.invalidatePrefix('admin:tours')
+    cache.invalidatePrefix('stats')
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete tour:', error)
     return NextResponse.json(
-      { error: 'Failed to delete tour' },
+      { error: 'Failed to delete tour. Please try again.' },
       { status: 500 }
     )
   }

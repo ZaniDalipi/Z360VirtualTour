@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
+import { cache } from '@/lib/cache'
+import { withRetry } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
@@ -14,14 +16,17 @@ export async function GET(
 
   try {
     const { id } = await params
-    const category = await prisma.category.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { tours: true },
+    const category = await withRetry(
+      () => prisma.category.findUnique({
+        where: { id },
+        include: {
+          _count: {
+            select: { tours: true },
+          },
         },
-      },
-    })
+      }),
+      { maxRetries: 2 }
+    )
 
     if (!category) {
       return NextResponse.json({ error: 'Category not found' }, { status: 404 })
@@ -31,8 +36,8 @@ export async function GET(
   } catch (error) {
     console.error('Failed to fetch category:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch category' },
-      { status: 500 }
+      { error: 'Failed to fetch category. Please try again.' },
+      { status: 503 }
     )
   }
 }
@@ -53,12 +58,15 @@ export async function PUT(
 
     // Check if slug is unique (excluding current category)
     if (data.slug) {
-      const existingCategory = await prisma.category.findFirst({
-        where: {
-          slug: data.slug,
-          NOT: { id },
-        },
-      })
+      const existingCategory = await withRetry(
+        () => prisma.category.findFirst({
+          where: {
+            slug: data.slug,
+            NOT: { id },
+          },
+        }),
+        { maxRetries: 2 }
+      )
 
       if (existingCategory) {
         return NextResponse.json(
@@ -68,23 +76,29 @@ export async function PUT(
       }
     }
 
-    const category = await prisma.category.update({
-      where: { id },
-      data: {
-        name: data.name,
-        slug: data.slug,
-        description: data.description || null,
-        icon: data.icon || null,
-        order: data.order || 0,
-        isActive: data.isActive ?? true,
-      },
-    })
+    const category = await withRetry(
+      () => prisma.category.update({
+        where: { id },
+        data: {
+          name: data.name,
+          slug: data.slug,
+          description: data.description || null,
+          icon: data.icon || null,
+          order: data.order || 0,
+          isActive: data.isActive ?? true,
+        },
+      }),
+      { maxRetries: 2 }
+    )
+
+    // Invalidate caches
+    cache.invalidatePrefix('categories')
 
     return NextResponse.json(category)
   } catch (error) {
     console.error('Failed to update category:', error)
     return NextResponse.json(
-      { error: 'Failed to update category' },
+      { error: 'Failed to update category. Please try again.' },
       { status: 500 }
     )
   }
@@ -104,14 +118,17 @@ export async function DELETE(
     const { id } = await params
 
     // Check if category has tours
-    const category = await prisma.category.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { tours: true },
+    const category = await withRetry(
+      () => prisma.category.findUnique({
+        where: { id },
+        include: {
+          _count: {
+            select: { tours: true },
+          },
         },
-      },
-    })
+      }),
+      { maxRetries: 2 }
+    )
 
     if (category?._count.tours > 0) {
       return NextResponse.json(
@@ -120,15 +137,21 @@ export async function DELETE(
       )
     }
 
-    await prisma.category.delete({
-      where: { id },
-    })
+    await withRetry(
+      () => prisma.category.delete({
+        where: { id },
+      }),
+      { maxRetries: 2 }
+    )
+
+    // Invalidate caches
+    cache.invalidatePrefix('categories')
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete category:', error)
     return NextResponse.json(
-      { error: 'Failed to delete category' },
+      { error: 'Failed to delete category. Please try again.' },
       { status: 500 }
     )
   }

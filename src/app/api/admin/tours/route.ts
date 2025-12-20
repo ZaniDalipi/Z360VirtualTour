@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
+import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
+import { withRetry } from '@/lib/db'
 
 export async function GET() {
   const admin = await getAdminFromCookies()
@@ -10,17 +12,40 @@ export async function GET() {
   }
 
   try {
-    const tours = await prisma.tour.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: { category: true },
-    })
+    // Try cache first
+    const cacheKey = 'admin:tours'
+    const cached = cache.get<unknown[]>(cacheKey)
+    if (cached) {
+      return NextResponse.json(cached)
+    }
+
+    // Fetch with retry logic
+    const tours = await withRetry(
+      () => prisma.tour.findMany({
+        orderBy: { createdAt: 'desc' },
+        include: { category: true },
+      }),
+      { maxRetries: 2, initialDelayMs: 300 }
+    )
+
+    // Cache the result
+    cache.set(cacheKey, tours, CacheTTL.SHORT)
 
     return NextResponse.json(tours)
   } catch (error) {
     console.error('Failed to fetch tours:', error)
+
+    // Return cached data if available
+    const staleCache = cache.get<unknown[]>('admin:tours')
+    if (staleCache) {
+      return NextResponse.json(staleCache, {
+        headers: { 'X-Cache-Status': 'stale' }
+      })
+    }
+
     return NextResponse.json(
-      { error: 'Failed to fetch tours' },
-      { status: 500 }
+      { error: 'Failed to fetch tours. Please try again.' },
+      { status: 503 }
     )
   }
 }
@@ -36,9 +61,12 @@ export async function POST(request: NextRequest) {
     const data = await request.json()
 
     // Check if slug is unique
-    const existingTour = await prisma.tour.findUnique({
-      where: { slug: data.slug },
-    })
+    const existingTour = await withRetry(
+      () => prisma.tour.findUnique({
+        where: { slug: data.slug },
+      }),
+      { maxRetries: 2 }
+    )
 
     if (existingTour) {
       return NextResponse.json(
@@ -57,30 +85,38 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const tour = await prisma.tour.create({
-      data: {
-        title: data.title,
-        slug: data.slug,
-        description: data.description || '',
-        shortDesc: data.shortDescription || data.shortDesc || null,
-        clientName: data.clientName || null,
-        location: data.location || null,
-        coverImage: data.coverImage,
-        images: imagesJson,
-        tourUrl: data.tourUrl || null,
-        tourEmbed: data.tourEmbed || null,
-        categoryId: data.categoryId,
-        featured: data.featured || false,
-        isActive: data.isActive ?? true,
-      },
-      include: { category: true },
-    })
+    const tour = await withRetry(
+      () => prisma.tour.create({
+        data: {
+          title: data.title,
+          slug: data.slug,
+          description: data.description || '',
+          shortDesc: data.shortDescription || data.shortDesc || null,
+          clientName: data.clientName || null,
+          location: data.location || null,
+          coverImage: data.coverImage,
+          images: imagesJson,
+          tourUrl: data.tourUrl || null,
+          tourEmbed: data.tourEmbed || null,
+          categoryId: data.categoryId,
+          featured: data.featured || false,
+          isActive: data.isActive ?? true,
+        },
+        include: { category: true },
+      }),
+      { maxRetries: 2 }
+    )
+
+    // Invalidate caches
+    cache.invalidatePrefix('tours')
+    cache.invalidatePrefix('admin:tours')
+    cache.invalidatePrefix('stats')
 
     return NextResponse.json(tour)
   } catch (error) {
     console.error('Failed to create tour:', error)
     return NextResponse.json(
-      { error: 'Failed to create tour' },
+      { error: 'Failed to create tour. Please try again.' },
       { status: 500 }
     )
   }

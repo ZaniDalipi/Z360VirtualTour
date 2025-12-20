@@ -1,30 +1,55 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
+import { withRetry } from '@/lib/db'
 
 export async function GET() {
   try {
-    const categories = await prisma.category.findMany({
-      where: { isActive: true },
-      orderBy: { order: 'asc' },
-      include: {
-        _count: {
-          select: { tours: { where: { isActive: true } } },
-        },
-      },
-    })
+    // Try cache first
+    const cached = cache.get<unknown[]>(CacheKeys.CATEGORIES)
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: { 'X-Cache-Status': 'hit' }
+      })
+    }
 
-    return NextResponse.json(
-      categories.map((cat) => ({
-        ...cat,
-        tourCount: cat._count.tours,
-        _count: undefined,
-      }))
+    const categories = await withRetry(
+      () => prisma.category.findMany({
+        where: { isActive: true },
+        orderBy: { order: 'asc' },
+        include: {
+          _count: {
+            select: { tours: { where: { isActive: true } } },
+          },
+        },
+      }),
+      { maxRetries: 2, initialDelayMs: 300 }
     )
+
+    const result = categories.map((cat) => ({
+      ...cat,
+      tourCount: cat._count.tours,
+      _count: undefined,
+    }))
+
+    // Cache for longer since categories rarely change
+    cache.set(CacheKeys.CATEGORIES, result, CacheTTL.LONG)
+
+    return NextResponse.json(result)
   } catch (error) {
     console.error('Failed to fetch categories:', error)
+
+    // Return cached data if available
+    const staleCache = cache.get<unknown[]>(CacheKeys.CATEGORIES)
+    if (staleCache) {
+      return NextResponse.json(staleCache, {
+        headers: { 'X-Cache-Status': 'stale' }
+      })
+    }
+
     return NextResponse.json(
-      { error: 'Failed to fetch categories' },
-      { status: 500 }
+      { error: 'Failed to fetch categories. Please try again.' },
+      { status: 503 }
     )
   }
 }
