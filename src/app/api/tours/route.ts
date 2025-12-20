@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
-import { withRetry, withFallback } from '@/lib/db'
+import { cache, CacheTTL } from '@/lib/cache'
+import { withRetry } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,9 +30,11 @@ export async function GET(request: NextRequest) {
     }
 
     if (category) {
+      // Use select for faster category lookup with retry
       const cat = await withRetry(
         () => prisma.category.findUnique({
           where: { slug: category },
+          select: { id: true },
         }),
         { maxRetries: 2 }
       )
@@ -45,12 +47,30 @@ export async function GET(request: NextRequest) {
       where.featured = true
     }
 
+    // Use select for faster queries - only fetch needed fields, with retry
     const tours = await withRetry(
       () => prisma.tour.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        take: limit ? parseInt(limit) : undefined,
-        include: {
+        take: limit ? parseInt(limit) : 50, // Default limit for faster loads
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          description: true,
+          shortDesc: true,
+          clientName: true,
+          location: true,
+          coverImage: true,
+          images: true,
+          tourUrl: true,
+          tourEmbed: true,
+          categoryId: true,
+          views: true,
+          featured: true,
+          isActive: true,
+          completedAt: true,
+          createdAt: true,
           category: {
             select: {
               id: true,
@@ -67,7 +87,12 @@ export async function GET(request: NextRequest) {
     const ttl = featured === 'true' ? CacheTTL.LONG : CacheTTL.MEDIUM
     cache.set(cacheKey, tours, ttl)
 
-    return NextResponse.json(tours)
+    const response = NextResponse.json(tours)
+
+    // Cache for 30 seconds
+    response.headers.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60')
+
+    return response
   } catch (error) {
     console.error('Failed to fetch tours:', error)
 

@@ -1,143 +1,119 @@
 'use client'
 
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+import { Menu, Eye, Phone } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { MobileDrawer } from './MobileDrawer'
 
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/tours', label: 'Portfolio' },
   { href: '/testimonials', label: 'Testimonials' },
   { href: '/pricing', label: 'Pricing' },
-  { href: '/contact', label: 'Contact' },
 ]
 
 export function PublicHeader() {
+  const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  // Handle scroll for header background
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const handleCloseMenu = useCallback(() => {
+    setMobileMenuOpen(false)
+  }, [])
 
   return (
     <>
       {/* Fixed Header */}
       <header
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 9999,
-          backgroundColor: '#0A1520',
-          borderBottom: '1px solid rgba(201, 169, 98, 0.3)',
-        }}
+        className={cn(
+          'fixed top-0 left-0 right-0 z-[9990] transition-all duration-300 safe-top',
+          isScrolled
+            ? 'bg-navy-dark/95 backdrop-blur-lg border-b border-gold/20 shadow-lg'
+            : 'bg-navy-dark border-b border-gold/15'
+        )}
       >
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
-            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-              <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#E8DCC4' }}>Z</span>
-              <span style={{ fontSize: '1.25rem', fontWeight: '600', color: '#C9A962' }}>360</span>
-              <span style={{ fontSize: '0.875rem', color: '#E8DCC4' }}>Virtual Tours</span>
+            <Link
+              href="/"
+              className="flex items-center gap-1.5"
+            >
+              <span className="text-2xl font-bold text-cream">Z</span>
+              <span className="text-xl font-semibold text-gold">360</span>
+              <span className="text-sm text-cream-soft ml-0.5">Virtual Tours</span>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }} className="hidden md:flex">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  style={{
-                    color: '#E8DCC4',
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                  }}
-                >
-                  {link.label}
-                </Link>
-              ))}
+            <nav className="hidden lg:flex items-center gap-1">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      'px-4 py-2 rounded-lg text-body font-medium transition-all duration-200',
+                      isActive
+                        ? 'text-gold bg-gold/10'
+                        : 'text-cream-soft hover:text-cream hover:bg-cream/5'
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              })}
             </nav>
 
-            {/* CTA Button - Desktop */}
-            <div className="hidden md:block">
-              <Link href="/contact" style={{ textDecoration: 'none' }}>
-                <button
-                  style={{
-                    backgroundColor: '#C9A962',
-                    color: '#0A1520',
-                    padding: '0.5rem 1.5rem',
-                    borderRadius: '0.375rem',
-                    fontWeight: 600,
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Get a Quote
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Phone button - visible on tablet */}
+              <a
+                href="tel:+1234567890"
+                className="hidden sm:flex lg:hidden items-center gap-2 px-3 py-2 rounded-lg text-cream-soft hover:text-cream hover:bg-cream/5 transition-colors"
+              >
+                <Phone className="w-4 h-4" />
+                <span className="text-sm font-medium">Call Us</span>
+              </a>
+
+              {/* CTA Button - Desktop */}
+              <Link href="/contact" className="hidden lg:block">
+                <button className="bg-gold hover:bg-gold-soft text-navy font-bold px-6 py-2.5 rounded-lg transition-all shadow-lg shadow-gold/20 hover:shadow-xl hover:shadow-gold/30 hover:scale-105">
+                  Work With Us
                 </button>
               </Link>
-            </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden"
-              style={{ color: '#E8DCC4', background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X style={{ width: '24px', height: '24px' }} /> : <Menu style={{ width: '24px', height: '24px' }} />}
-            </button>
+              {/* Mobile & Tablet Menu Button - Shows on all screens below desktop */}
+              <button
+                className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg border border-cream/15 text-cream hover:border-gold/30 hover:text-gold transition-colors"
+                onClick={() => setMobileMenuOpen(true)}
+                aria-label="Open menu"
+                aria-expanded={mobileMenuOpen}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div
-            style={{
-              backgroundColor: '#0A1520',
-              borderTop: '1px solid rgba(201, 169, 98, 0.2)',
-              padding: '1rem',
-            }}
-            className="md:hidden"
-          >
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  style={{
-                    color: '#E8DCC4',
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '0.5rem',
-                    display: 'block',
-                  }}
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div style={{ paddingTop: '0.5rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
-                <Link href="/contact" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none' }}>
-                  <button
-                    style={{
-                      width: '100%',
-                      backgroundColor: '#C9A962',
-                      color: '#0A1520',
-                      padding: '0.75rem',
-                      borderRadius: '0.375rem',
-                      fontWeight: 600,
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Get a Quote
-                  </button>
-                </Link>
-              </div>
-            </nav>
-          </div>
-        )}
       </header>
 
+      {/* Mobile Drawer */}
+      <MobileDrawer isOpen={mobileMenuOpen} onClose={handleCloseMenu} />
+
       {/* Spacer to push content below fixed header */}
-      <div style={{ height: '64px' }} />
+      <div className="h-16 md:h-20" />
     </>
   )
 }

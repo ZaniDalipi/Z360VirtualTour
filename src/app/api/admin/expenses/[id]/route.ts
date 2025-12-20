@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// GET single expense
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -14,22 +15,26 @@ export async function GET(
 
   try {
     const { id } = await params
-    const tier = await prisma.urgencyTier.findUnique({ where: { id } })
+    const expense = await prisma.expense.findUnique({
+      where: { id },
+      include: { category: true },
+    })
 
-    if (!tier) {
-      return NextResponse.json({ error: 'Tier not found' }, { status: 404 })
+    if (!expense) {
+      return NextResponse.json({ error: 'Expense not found' }, { status: 404 })
     }
 
-    return NextResponse.json(tier)
+    return NextResponse.json(expense)
   } catch (error) {
-    console.error('Failed to fetch urgency tier:', error)
+    console.error('Failed to fetch expense:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch urgency tier' },
+      { error: 'Failed to fetch expense' },
       { status: 500 }
     )
   }
 }
 
+// PUT update expense
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -45,30 +50,35 @@ export async function PUT(
     const data = await request.json()
 
     const updateData: Record<string, unknown> = {}
-    if (data.name !== undefined) updateData.name = data.name
-    if (data.displayName !== undefined) updateData.displayName = data.displayName
-    if (data.description !== undefined) updateData.description = data.description
-    if (data.minLeadDays !== undefined) updateData.minLeadDays = parseInt(data.minLeadDays)
-    if (data.maxLeadDays !== undefined) updateData.maxLeadDays = data.maxLeadDays ? parseInt(data.maxLeadDays) : null
-    if (data.surchargePercent !== undefined) updateData.surchargePercent = parseFloat(data.surchargePercent)
-    if (data.isActive !== undefined) updateData.isActive = data.isActive
-    if (data.order !== undefined) updateData.order = parseInt(data.order)
 
-    const tier = await prisma.urgencyTier.update({
+    if (data.description !== undefined) updateData.description = data.description
+    if (data.amount !== undefined) updateData.amount = parseFloat(data.amount)
+    if (data.date !== undefined) updateData.date = new Date(data.date)
+    if (data.categoryId !== undefined) updateData.categoryId = data.categoryId
+    if (data.vendor !== undefined) updateData.vendor = data.vendor || null
+    if (data.receiptUrl !== undefined) updateData.receiptUrl = data.receiptUrl || null
+    if (data.notes !== undefined) updateData.notes = data.notes || null
+    if (data.isRecurring !== undefined) updateData.isRecurring = data.isRecurring
+    if (data.recurringFrequency !== undefined) updateData.recurringFrequency = data.recurringFrequency || null
+    if (data.bookingId !== undefined) updateData.bookingId = data.bookingId || null
+
+    const expense = await prisma.expense.update({
       where: { id },
       data: updateData,
+      include: { category: true },
     })
 
-    return NextResponse.json(tier)
+    return NextResponse.json(expense)
   } catch (error) {
-    console.error('Failed to update urgency tier:', error)
+    console.error('Failed to update expense:', error)
     return NextResponse.json(
-      { error: 'Failed to update urgency tier' },
+      { error: 'Failed to update expense' },
       { status: 500 }
     )
   }
 }
 
+// DELETE expense
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -81,12 +91,12 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    await prisma.urgencyTier.delete({ where: { id } })
+    await prisma.expense.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Failed to delete urgency tier:', error)
+    console.error('Failed to delete expense:', error)
     return NextResponse.json(
-      { error: 'Failed to delete urgency tier' },
+      { error: 'Failed to delete expense' },
       { status: 500 }
     )
   }

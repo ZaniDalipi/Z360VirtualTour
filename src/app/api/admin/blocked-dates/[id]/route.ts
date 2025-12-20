@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { blockedDates } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
 
 export async function DELETE(
   request: NextRequest,
@@ -14,7 +14,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    blockedDates.delete(id)
+    await prisma.blockedDate.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete blocked date:', error)

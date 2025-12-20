@@ -1,10 +1,41 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Calendar, Users, AlertCircle, ChevronRight } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import {
+  MapPin, Phone, Mail, Clock, Send, CheckCircle, Calendar, Users, AlertCircle,
+  ChevronRight, Download, Facebook, Instagram, Linkedin, Youtube, Twitter,
+  FileText, Share2, ExternalLink
+} from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card, Input } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
+
+const socialLinks = [
+  {
+    name: 'Facebook',
+    icon: Facebook,
+    url: 'https://facebook.com/z360virtualtours',
+    color: 'hover:bg-blue-600/20 text-blue-400',
+  },
+  {
+    name: 'Instagram',
+    icon: Instagram,
+    url: 'https://instagram.com/z360virtualtours',
+    color: 'hover:bg-pink-600/20 text-pink-400',
+  },
+  {
+    name: 'LinkedIn',
+    icon: Linkedin,
+    url: 'https://linkedin.com/company/z360virtualtours',
+    color: 'hover:bg-blue-700/20 text-blue-500',
+  },
+  {
+    name: 'YouTube',
+    icon: Youtube,
+    url: 'https://youtube.com/@z360virtualtours',
+    color: 'hover:bg-red-600/20 text-red-500',
+  },
+]
 
 const contactInfo = [
   {
@@ -72,6 +103,18 @@ interface QuoteResult {
   depositAmount: number | null
 }
 
+interface BookingResponse {
+  bookingId: string
+  quote: {
+    basePrice: number
+    urgencySurcharge: number
+    travelFee: number
+    bundleDiscount: number
+    total: number
+    depositAmount: number | null
+  }
+}
+
 export default function ContactPage() {
   const [step, setStep] = useState(1)
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
@@ -79,6 +122,8 @@ export default function ContactPage() {
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [quote, setQuote] = useState<QuoteResult | null>(null)
   const [isCalculating, setIsCalculating] = useState(false)
+  const [bookingResponse, setBookingResponse] = useState<BookingResponse | null>(null)
+  const confirmationRef = useRef<HTMLDivElement>(null)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -90,12 +135,27 @@ export default function ContactPage() {
     pricingPlanId: '',
     urgencyTierId: '',
     preferredDate: '',
+    preferredTime: '',
     alternateDate: '',
+    alternateTime: '',
     deadlineDate: '',
     isUrgent: false,
     bundleId: '',
     message: '',
   })
+
+  // Available time slots for booking
+  const timeSlots = [
+    { value: '09:00', label: '9:00 AM' },
+    { value: '10:00', label: '10:00 AM' },
+    { value: '11:00', label: '11:00 AM' },
+    { value: '12:00', label: '12:00 PM' },
+    { value: '13:00', label: '1:00 PM' },
+    { value: '14:00', label: '2:00 PM' },
+    { value: '15:00', label: '3:00 PM' },
+    { value: '16:00', label: '4:00 PM' },
+    { value: '17:00', label: '5:00 PM' },
+  ]
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
@@ -194,7 +254,9 @@ export default function ContactPage() {
           pricingPlanId: formData.pricingPlanId || null,
           urgencyTierId: formData.urgencyTierId || null,
           preferredDate: formData.preferredDate || null,
+          preferredTime: formData.preferredTime || null,
           alternateDate: formData.alternateDate || null,
+          alternateTime: formData.alternateTime || null,
           deadlineDate: formData.isUrgent ? formData.deadlineDate : null,
           travelBundleId: formData.bundleId || null,
           projectDescription: formData.message,
@@ -202,6 +264,8 @@ export default function ContactPage() {
       })
 
       if (res.ok) {
+        const responseData = await res.json()
+        setBookingResponse(responseData)
         setIsSubmitted(true)
       } else {
         const data = await res.json()
@@ -213,6 +277,368 @@ export default function ContactPage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Generate and download confirmation document
+  const handleDownloadConfirmation = () => {
+    const selectedPlanName = pricingPlans.find(p => p.id === formData.pricingPlanId)?.name || 'Custom'
+    const selectedTierName = urgencyTiers.find(t => t.id === formData.urgencyTierId)?.displayName || 'Standard'
+    const bookingId = bookingResponse?.bookingId || 'N/A'
+    const currentDate = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+
+    const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Z360 Virtual Tours - Booking Confirmation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0D1B2A;
+      color: #F5F1E6;
+      padding: 40px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #1B2838;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .header {
+      background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%);
+      color: #0D1B2A;
+      padding: 40px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    .content { padding: 40px; }
+    .booking-id {
+      background: #0D1B2A;
+      border: 2px solid #C9A962;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .booking-id label {
+      font-size: 12px;
+      color: #C9A962;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .booking-id .id {
+      font-size: 24px;
+      font-weight: 700;
+      color: #C9A962;
+      font-family: monospace;
+      margin-top: 8px;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #C9A962;
+      border-bottom: 1px solid #C9A96233;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    .info-item {
+      background: #0D1B2A;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .info-item label {
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .info-item p {
+      font-size: 14px;
+      color: #F5F1E6;
+      margin-top: 4px;
+    }
+    .quote-box {
+      background: #0D1B2A;
+      border-radius: 12px;
+      padding: 25px;
+    }
+    .quote-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #1B2838;
+    }
+    .quote-row:last-child { border-bottom: none; }
+    .quote-row.total {
+      border-top: 2px solid #C9A962;
+      margin-top: 10px;
+      padding-top: 15px;
+    }
+    .quote-row.total span:last-child {
+      font-size: 24px;
+      font-weight: 700;
+      color: #C9A962;
+    }
+    .contact-section {
+      background: linear-gradient(135deg, #0D1B2A 0%, #1B2838 100%);
+      border: 1px solid #C9A96233;
+      border-radius: 12px;
+      padding: 25px;
+      margin-top: 30px;
+    }
+    .contact-section h3 {
+      color: #C9A962;
+      margin-bottom: 20px;
+      font-size: 16px;
+    }
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 12px 0;
+      border-bottom: 1px solid #C9A96222;
+    }
+    .contact-item:last-child { border-bottom: none; }
+    .contact-icon {
+      width: 40px;
+      height: 40px;
+      background: #C9A96222;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #C9A962;
+    }
+    .social-section {
+      text-align: center;
+      padding: 30px;
+      background: #0D1B2A;
+      margin-top: 30px;
+      border-radius: 12px;
+    }
+    .social-section h3 {
+      color: #F5F1E6;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    .social-links {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .social-link {
+      color: #C9A962;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .footer {
+      text-align: center;
+      padding: 30px;
+      background: #0D1B2A;
+      font-size: 12px;
+      color: #666;
+    }
+    .footer p { margin: 5px 0; }
+    @media print {
+      body { background: white; padding: 0; }
+      .container { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Z360 Virtual Tours</h1>
+      <p>Booking Request Confirmation</p>
+    </div>
+
+    <div class="content">
+      <div class="booking-id">
+        <label>Reference Number</label>
+        <div class="id">#${bookingId.slice(-8).toUpperCase()}</div>
+        <p style="font-size: 12px; color: #888; margin-top: 10px;">Submitted on ${currentDate}</p>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Client Information</div>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Name</label>
+            <p>${formData.name}</p>
+          </div>
+          <div class="info-item">
+            <label>Email</label>
+            <p>${formData.email}</p>
+          </div>
+          <div class="info-item">
+            <label>Phone</label>
+            <p>${formData.phone || 'Not provided'}</p>
+          </div>
+          <div class="info-item">
+            <label>Company</label>
+            <p>${formData.company || 'Not provided'}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Property Details</div>
+        <div class="info-grid">
+          <div class="info-item" style="grid-column: span 2;">
+            <label>Address</label>
+            <p>${formData.propertyAddress}</p>
+          </div>
+          <div class="info-item">
+            <label>City</label>
+            <p>${formData.propertyCity}</p>
+          </div>
+          <div class="info-item">
+            <label>Service Package</label>
+            <p>${selectedPlanName}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Scheduling</div>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Delivery Speed</label>
+            <p>${selectedTierName}</p>
+          </div>
+          <div class="info-item">
+            <label>Preferred Date & Time</label>
+            <p>${formData.preferredDate ? new Date(formData.preferredDate).toLocaleDateString() : 'Flexible'}${formData.preferredTime ? ` at ${formData.preferredTime}` : ''}</p>
+          </div>
+          ${formData.alternateDate ? `
+          <div class="info-item">
+            <label>Alternate Date & Time</label>
+            <p>${new Date(formData.alternateDate).toLocaleDateString()}${formData.alternateTime ? ` at ${formData.alternateTime}` : ''}</p>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Quote Estimate</div>
+        <div class="quote-box">
+          <div class="quote-row">
+            <span>Base Price</span>
+            <span>€${quote?.basePrice.toFixed(2) || '0.00'}</span>
+          </div>
+          ${quote?.urgencySurchargeAmount ? `
+          <div class="quote-row">
+            <span>Urgency Surcharge</span>
+            <span style="color: #f97316;">+€${quote.urgencySurchargeAmount.toFixed(2)}</span>
+          </div>` : ''}
+          ${quote?.travelFee ? `
+          <div class="quote-row">
+            <span>Travel Fee</span>
+            <span>+€${quote.travelFee.toFixed(2)}</span>
+          </div>` : ''}
+          ${quote?.bundleDiscount ? `
+          <div class="quote-row">
+            <span>Bundle Discount</span>
+            <span style="color: #22c55e;">-€${quote.bundleDiscount.toFixed(2)}</span>
+          </div>` : ''}
+          <div class="quote-row total">
+            <span>Estimated Total</span>
+            <span>€${quote?.total.toFixed(2) || '0.00'}</span>
+          </div>
+          ${quote?.depositAmount ? `
+          <div class="quote-row">
+            <span style="color: #888;">Deposit Required</span>
+            <span style="color: #888;">€${quote.depositAmount.toFixed(2)}</span>
+          </div>` : ''}
+        </div>
+        <p style="font-size: 11px; color: #666; margin-top: 15px; text-align: center;">
+          * Final price will be confirmed after review of your request
+        </p>
+      </div>
+
+      <div class="contact-section">
+        <h3>📞 Contact Us</h3>
+        <div class="contact-item">
+          <div class="contact-icon">📧</div>
+          <div>
+            <p style="font-size: 14px;">z360virtualtours@gmail.com</p>
+            <p style="font-size: 11px; color: #888;">We reply within 24 hours</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📱</div>
+          <div>
+            <p style="font-size: 14px;">+389 71 967 915</p>
+            <p style="font-size: 11px; color: #888;">Mon-Fri 9am-6pm</p>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <p style="font-size: 14px;">Balkans Region</p>
+            <p style="font-size: 11px; color: #888;">Available for on-site visits</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="social-section">
+        <h3>Follow Us for Updates & Exclusive Content</h3>
+        <p style="font-size: 13px; color: #888;">See our latest virtual tours and behind-the-scenes content</p>
+        <div class="social-links">
+          <a class="social-link" href="https://facebook.com/z360virtualtours">Facebook</a>
+          <a class="social-link" href="https://instagram.com/z360virtualtours">Instagram</a>
+          <a class="social-link" href="https://linkedin.com/company/z360virtualtours">LinkedIn</a>
+          <a class="social-link" href="https://youtube.com/@z360virtualtours">YouTube</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p><strong>Z360 Virtual Tours</strong></p>
+      <p>Professional 360° Virtual Tour Services</p>
+      <p style="margin-top: 15px;">Thank you for choosing us! We'll be in touch soon.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `
+
+    // Create blob and download
+    const blob = new Blob([htmlContent], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `Z360-Booking-${bookingId.slice(-8).toUpperCase()}.html`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   const selectedPlan = pricingPlans.find(p => p.id === formData.pricingPlanId)
@@ -389,48 +815,144 @@ export default function ContactPage() {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-12"
+                    className="py-8"
                   >
-                    <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
-                      <CheckCircle className="w-8 h-8 text-green-500" />
-                    </div>
-                    <h3 className="text-h3 font-bold text-cream mb-2">
-                      Booking Request Sent!
-                    </h3>
-                    <p className="text-body text-cream-muted mb-6">
-                      Thank you for your request. We'll review your details and send you a
-                      confirmed quote within 24 hours.
-                    </p>
-                    {quote && (
-                      <p className="text-gold font-semibold mb-6">
-                        Estimated Total: €{quote.total.toFixed(2)}
+                    {/* Success Header */}
+                    <div className="text-center mb-8">
+                      <div className="w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
+                        <CheckCircle className="w-10 h-10 text-green-500" />
+                      </div>
+                      <h3 className="text-h3 font-bold text-cream mb-2">
+                        Booking Request Sent!
+                      </h3>
+                      <p className="text-body text-cream-muted">
+                        Thank you for your request. We'll review your details and send you a
+                        confirmed quote within 24 hours.
                       </p>
-                    )}
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        setIsSubmitted(false)
-                        setFormData({
-                          name: '',
-                          email: '',
-                          phone: '',
-                          company: '',
-                          propertyAddress: '',
-                          propertyCity: '',
-                          pricingPlanId: '',
-                          urgencyTierId: '',
-                          preferredDate: '',
-                          alternateDate: '',
-                          deadlineDate: '',
-                          isUrgent: false,
-                          bundleId: '',
-                          message: '',
-                        })
-                        setQuote(null)
-                      }}
-                    >
-                      Submit Another Request
-                    </Button>
+                    </div>
+
+                    {/* Reference & Quote */}
+                    <div className="bg-navy rounded-xl p-6 mb-6">
+                      <div className="flex items-center justify-between mb-4 pb-4 border-b border-gold/20">
+                        <div>
+                          <p className="text-xs text-cream-muted uppercase tracking-wide">Reference Number</p>
+                          <p className="text-lg font-mono font-bold text-gold">
+                            #{bookingResponse?.bookingId?.slice(-8).toUpperCase() || 'N/A'}
+                          </p>
+                        </div>
+                        {quote && (
+                          <div className="text-right">
+                            <p className="text-xs text-cream-muted">Estimated Total</p>
+                            <p className="text-2xl font-bold text-gold">€{quote.total.toFixed(2)}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Download Button */}
+                      <Button
+                        onClick={handleDownloadConfirmation}
+                        className="w-full group"
+                        size="lg"
+                      >
+                        <Download className="w-5 h-5 mr-2 group-hover:animate-bounce" />
+                        Download Confirmation
+                      </Button>
+                      <p className="text-xs text-cream-muted text-center mt-3">
+                        Save this document for your records. You can print it or open it in your browser.
+                      </p>
+                    </div>
+
+                    {/* Contact Info Summary */}
+                    <div className="bg-navy rounded-xl p-6 mb-6">
+                      <h4 className="text-sm font-semibold text-gold mb-4 flex items-center gap-2">
+                        <Phone className="w-4 h-4" />
+                        Need to reach us?
+                      </h4>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <a
+                          href="mailto:z360virtualtours@gmail.com"
+                          className="flex items-center gap-3 p-3 rounded-lg bg-navy-dark hover:bg-gold/10 transition-colors"
+                        >
+                          <Mail className="w-5 h-5 text-gold" />
+                          <div>
+                            <p className="text-sm text-cream">z360virtualtours@gmail.com</p>
+                            <p className="text-xs text-cream-muted">We reply within 24 hours</p>
+                          </div>
+                        </a>
+                        <a
+                          href="tel:+38971967915"
+                          className="flex items-center gap-3 p-3 rounded-lg bg-navy-dark hover:bg-gold/10 transition-colors"
+                        >
+                          <Phone className="w-5 h-5 text-gold" />
+                          <div>
+                            <p className="text-sm text-cream">+389 71 967 915</p>
+                            <p className="text-xs text-cream-muted">Mon-Fri 9am-6pm</p>
+                          </div>
+                        </a>
+                      </div>
+                    </div>
+
+                    {/* Social Media Section */}
+                    <div className="bg-gradient-to-br from-gold/10 to-gold/5 rounded-xl p-6 border border-gold/20">
+                      <h4 className="text-lg font-semibold text-cream text-center mb-2">
+                        Follow Us for Updates!
+                      </h4>
+                      <p className="text-sm text-cream-muted text-center mb-6">
+                        See our latest virtual tours, behind-the-scenes content, and exclusive offers
+                      </p>
+                      <div className="grid grid-cols-4 gap-3">
+                        {socialLinks.map((social) => {
+                          const Icon = social.icon
+                          return (
+                            <a
+                              key={social.name}
+                              href={social.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`flex flex-col items-center gap-2 p-4 rounded-xl bg-navy border border-gold/10 ${social.color} transition-all hover:border-gold/30 hover:scale-105`}
+                            >
+                              <Icon className="w-6 h-6" />
+                              <span className="text-xs text-cream-muted hidden sm:block">{social.name}</span>
+                            </a>
+                          )
+                        })}
+                      </div>
+                      <p className="text-xs text-center text-cream-muted mt-4">
+                        Tag us in your posts once your tour is live! 🎉
+                      </p>
+                    </div>
+
+                    {/* Submit Another */}
+                    <div className="mt-6 text-center">
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setIsSubmitted(false)
+                          setBookingResponse(null)
+                          setFormData({
+                            name: '',
+                            email: '',
+                            phone: '',
+                            company: '',
+                            propertyAddress: '',
+                            propertyCity: '',
+                            pricingPlanId: '',
+                            urgencyTierId: '',
+                            preferredDate: '',
+                            preferredTime: '',
+                            alternateDate: '',
+                            alternateTime: '',
+                            deadlineDate: '',
+                            isUrgent: false,
+                            bundleId: '',
+                            message: '',
+                          })
+                          setQuote(null)
+                        }}
+                      >
+                        Submit Another Request
+                      </Button>
+                    </div>
                   </motion.div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
@@ -582,29 +1104,65 @@ export default function ContactPage() {
                         </div>
                       </div>
 
-                      {/* Dates */}
-                      <div className="grid sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-cream mb-2">
-                            Preferred Date
+                      {/* Preferred Date & Time */}
+                      <div className="space-y-4">
+                        <div className="p-4 rounded-xl bg-navy border border-gold/10">
+                          <label className="block text-sm font-medium text-cream mb-3">
+                            Preferred Date & Time
                           </label>
-                          <Input
-                            type="date"
-                            name="preferredDate"
-                            value={formData.preferredDate}
-                            onChange={handleChange}
-                          />
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <Input
+                              type="date"
+                              name="preferredDate"
+                              value={formData.preferredDate}
+                              onChange={handleChange}
+                            />
+                            <select
+                              name="preferredTime"
+                              value={formData.preferredTime}
+                              onChange={handleChange}
+                              className="w-full px-4 py-3 rounded-xl bg-navy-dark border border-gold/20 text-cream
+                                       focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50"
+                            >
+                              <option value="">Select time...</option>
+                              {timeSlots.map((slot) => (
+                                <option key={slot.value} value={slot.value}>
+                                  {slot.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-cream mb-2">
-                            Alternate Date
+
+                        <div className="p-4 rounded-xl bg-navy border border-gold/10">
+                          <label className="block text-sm font-medium text-cream mb-3">
+                            Alternate Date & Time (Optional)
                           </label>
-                          <Input
-                            type="date"
-                            name="alternateDate"
-                            value={formData.alternateDate}
-                            onChange={handleChange}
-                          />
+                          <div className="grid sm:grid-cols-2 gap-3">
+                            <Input
+                              type="date"
+                              name="alternateDate"
+                              value={formData.alternateDate}
+                              onChange={handleChange}
+                            />
+                            <select
+                              name="alternateTime"
+                              value={formData.alternateTime}
+                              onChange={handleChange}
+                              className="w-full px-4 py-3 rounded-xl bg-navy-dark border border-gold/20 text-cream
+                                       focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50"
+                            >
+                              <option value="">Select time...</option>
+                              {timeSlots.map((slot) => (
+                                <option key={slot.value} value={slot.value}>
+                                  {slot.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <p className="text-xs text-cream-muted mt-2">
+                            Providing a backup option helps us schedule faster
+                          </p>
                         </div>
                       </div>
 

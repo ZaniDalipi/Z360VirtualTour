@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { travelZones } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   const admin = await getAdminFromCookies()
@@ -10,7 +10,9 @@ export async function GET() {
   }
 
   try {
-    const zones = travelZones.findMany()
+    const zones = await prisma.travelZone.findMany({
+      orderBy: { order: 'asc' },
+    })
     return NextResponse.json(zones)
   } catch (error) {
     console.error('Failed to fetch travel zones:', error)
@@ -31,16 +33,18 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
-    const zone = travelZones.create({
-      name: data.name,
-      description: data.description,
-      minDistanceKm: parseFloat(data.minDistanceKm) || 0,
-      maxDistanceKm: data.maxDistanceKm ? parseFloat(data.maxDistanceKm) : null,
-      flatFee: data.flatFee ? parseFloat(data.flatFee) : null,
-      perKmRate: data.perKmRate ? parseFloat(data.perKmRate) : null,
-      isIncluded: data.isIncluded ?? false,
-      isActive: data.isActive ?? true,
-      order: parseInt(data.order) || 0,
+    const zone = await prisma.travelZone.create({
+      data: {
+        name: data.name,
+        description: data.description || null,
+        minDistanceKm: parseFloat(data.minDistanceKm) || 0,
+        maxDistanceKm: data.maxDistanceKm ? parseFloat(data.maxDistanceKm) : null,
+        flatFee: data.flatFee ? parseFloat(data.flatFee) : null,
+        perKmRate: data.perKmRate ? parseFloat(data.perKmRate) : null,
+        isIncluded: data.isIncluded ?? false,
+        isActive: data.isActive ?? true,
+        order: parseInt(data.order) || 0,
+      },
     })
 
     return NextResponse.json(zone, { status: 201 })

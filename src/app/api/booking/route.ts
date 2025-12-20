@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { bookings, travelBundles, calculateQuote, getDistanceByCity } from '@/lib/booking-db'
+import { calculateQuote, getDistanceByCity } from '@/lib/quote-utils'
 import { prisma } from '@/lib/prisma'
 
 // Send email notification for new booking
@@ -185,16 +185,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate quote
-    const quote = calculateQuote({
+    const quote = await calculateQuote({
       pricingPlanPrice: basePrice,
       urgencyTierId: data.urgencyTierId,
       distanceKm,
       bundleId: data.travelBundleId,
+      userCity: data.propertyCity,  // Pass user's city for bundle eligibility check
     })
 
     // If joining a bundle, validate it
     if (data.travelBundleId) {
-      const bundle = travelBundles.findUnique(data.travelBundleId)
+      const bundle = await prisma.travelBundle.findUnique({
+        where: { id: data.travelBundleId },
+      })
       if (!bundle) {
         return NextResponse.json(
           { error: 'Selected bundle not found' },
@@ -215,32 +218,43 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create booking
-    const booking = bookings.create({
-      clientName: data.clientName,
-      clientEmail: data.clientEmail,
-      clientPhone: data.clientPhone,
-      companyName: data.companyName,
-      propertyAddress: data.propertyAddress,
-      propertyCity: data.propertyCity,
-      estimatedDistance: distanceKm,
-      serviceType: data.serviceType || planName,
-      projectDescription: data.projectDescription,
-      specialRequests: data.specialRequests,
-      pricingPlanId: data.pricingPlanId,
-      urgencyTierId: data.urgencyTierId,
-      preferredDate: data.preferredDate,
-      alternateDate: data.alternateDate,
-      deadlineDate: data.deadlineDate,
-      isFlexible: data.isFlexible ?? true,
-      travelBundleId: data.travelBundleId,
-      basePrice: quote.basePrice,
-      urgencySurcharge: quote.urgencySurchargeAmount,
-      travelFee: quote.travelFee,
-      bundleDiscount: quote.bundleDiscount,
-      totalQuote: quote.total,
-      depositAmount: quote.depositAmount,
-      status: 'quote_requested',
+    // Create booking with relation connections
+    const booking = await prisma.booking.create({
+      data: {
+        clientName: data.clientName,
+        clientEmail: data.clientEmail,
+        clientPhone: data.clientPhone || null,
+        companyName: data.companyName || null,
+        propertyAddress: data.propertyAddress,
+        propertyCity: data.propertyCity || null,
+        estimatedDistance: distanceKm || null,
+        serviceType: data.serviceType || planName || null,
+        projectDescription: data.projectDescription || null,
+        specialRequests: data.specialRequests || null,
+        preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
+        preferredTime: data.preferredTime || null,
+        alternateDate: data.alternateDate ? new Date(data.alternateDate) : null,
+        alternateTime: data.alternateTime || null,
+        deadlineDate: data.deadlineDate ? new Date(data.deadlineDate) : null,
+        isFlexible: data.isFlexible ?? true,
+        basePrice: quote.basePrice,
+        urgencySurcharge: quote.urgencySurchargeAmount,
+        travelFee: quote.travelFee,
+        bundleDiscount: quote.bundleDiscount,
+        totalQuote: quote.total,
+        depositAmount: quote.depositAmount,
+        status: 'quote_requested',
+        // Use connect syntax for relations
+        ...(data.pricingPlanId && {
+          pricingPlan: { connect: { id: data.pricingPlanId } }
+        }),
+        ...(data.urgencyTierId && {
+          urgencyTier: { connect: { id: data.urgencyTierId } }
+        }),
+        ...(data.travelBundleId && {
+          travelBundle: { connect: { id: data.travelBundleId } }
+        }),
+      },
     })
 
     // Send notification email (async, don't block the response)

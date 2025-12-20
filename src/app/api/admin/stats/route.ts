@@ -26,6 +26,9 @@ const DEFAULT_STATS: StatsData = {
   recentTours: [],
 }
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 30 // Cache for 30 seconds
+
 export async function GET() {
   const admin = await getAdminFromCookies()
 
@@ -40,8 +43,8 @@ export async function GET() {
       return NextResponse.json(cached)
     }
 
-    // Fetch all stats with individual retry logic for resilience
-    const [totalTours, totalTestimonials, unreadMessages, tours] = await Promise.all([
+    // Use optimized queries with select to reduce data transfer, with retry logic
+    const [totalTours, totalTestimonials, unreadMessages, tours, viewsAggregate] = await Promise.all([
       withFallback(
         () => withRetry(() => prisma.tour.count(), { maxRetries: 2 }),
         0
@@ -59,19 +62,26 @@ export async function GET() {
           () => prisma.tour.findMany({
             take: 5,
             orderBy: { createdAt: 'desc' },
-            include: { category: true },
+            select: {
+              id: true,
+              title: true,
+              views: true,
+              category: { select: { name: true } },
+            },
           }),
           { maxRetries: 2 }
         ),
         []
       ),
+      withFallback(
+        () => withRetry(() => prisma.tour.aggregate({ _sum: { views: true } }), { maxRetries: 2 }),
+        { _sum: { views: 0 } }
+      ),
     ])
-
-    const totalViews = tours.reduce((sum, tour) => sum + tour.views, 0)
 
     const stats: StatsData = {
       totalTours,
-      totalViews,
+      totalViews: viewsAggregate._sum.views || 0,
       totalTestimonials,
       unreadMessages,
       recentTours: tours.map((tour) => ({
@@ -85,7 +95,12 @@ export async function GET() {
     // Cache the result
     cache.set(CacheKeys.STATS, stats, CacheTTL.SHORT)
 
-    return NextResponse.json(stats)
+    const response = NextResponse.json(stats)
+
+    // Add cache headers for faster subsequent loads
+    response.headers.set('Cache-Control', 'private, max-age=30, stale-while-revalidate=60')
+
+    return response
   } catch (error) {
     console.error('Failed to fetch stats:', error)
 

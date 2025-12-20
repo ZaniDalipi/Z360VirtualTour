@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { calculateQuote, getDistanceByCity } from '@/lib/booking-db'
+import { calculateQuote, getDistanceByCity } from '@/lib/quote-utils'
 import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
@@ -28,11 +28,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate quote
-    const quote = calculateQuote({
+    const quote = await calculateQuote({
       pricingPlanPrice: basePrice,
       urgencyTierId: data.urgencyTierId,
       distanceKm,
       bundleId: data.bundleId,
+      userCity: data.city,  // Pass user's city for bundle eligibility check
     })
 
     return NextResponse.json({

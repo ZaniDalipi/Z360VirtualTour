@@ -1,32 +1,25 @@
 import { PrismaClient } from '@prisma/client'
 
+const globalForPrisma = globalThis as unknown as {
+  prisma: PrismaClient | undefined
+}
+
 // Enhanced Prisma configuration for better connection resilience
-const prismaClientSingleton = () => {
-  return new PrismaClient({
-    log: process.env.NODE_ENV === 'development'
-      ? ['error', 'warn']
-      : ['error'],
-    // Connection handling is managed through DATABASE_URL parameters
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
   })
-}
 
-declare const globalThis: {
-  prismaGlobal: ReturnType<typeof prismaClientSingleton>
-} & typeof global
+// Ensure single instance in development (prevents connection exhaustion)
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
-
-if (process.env.NODE_ENV !== 'production') {
-  globalThis.prismaGlobal = prisma
-}
-
-// Graceful shutdown handling
-const handleShutdown = async () => {
+// Graceful shutdown
+process.on('beforeExit', async () => {
   await prisma.$disconnect()
-}
-
-if (typeof process !== 'undefined') {
-  process.on('beforeExit', handleShutdown)
-}
-
-export { prisma }
+})

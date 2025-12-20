@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// GET all expense categories
 export async function GET() {
   const admin = await getAdminFromCookies()
 
@@ -10,19 +11,22 @@ export async function GET() {
   }
 
   try {
-    const tiers = await prisma.urgencyTier.findMany({
-      orderBy: { order: 'asc' },
+    const categories = await prisma.expenseCategory.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
     })
-    return NextResponse.json(tiers)
+
+    return NextResponse.json(categories)
   } catch (error) {
-    console.error('Failed to fetch urgency tiers:', error)
+    console.error('Failed to fetch expense categories:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch urgency tiers' },
+      { error: 'Failed to fetch expense categories' },
       { status: 500 }
     )
   }
 }
 
+// POST create new expense category
 export async function POST(request: NextRequest) {
   const admin = await getAdminFromCookies()
 
@@ -33,24 +37,28 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
-    const tier = await prisma.urgencyTier.create({
+    if (!data.name) {
+      return NextResponse.json(
+        { error: 'Category name is required' },
+        { status: 400 }
+      )
+    }
+
+    const category = await prisma.expenseCategory.create({
       data: {
         name: data.name,
-        displayName: data.displayName,
         description: data.description || null,
-        minLeadDays: parseInt(data.minLeadDays) || 1,
-        maxLeadDays: data.maxLeadDays ? parseInt(data.maxLeadDays) : null,
-        surchargePercent: parseFloat(data.surchargePercent) || 0,
-        isActive: data.isActive ?? true,
-        order: parseInt(data.order) || 0,
+        color: data.color || '#6B7280',
+        icon: data.icon || 'Tag',
+        isActive: true,
       },
     })
 
-    return NextResponse.json(tier, { status: 201 })
+    return NextResponse.json(category, { status: 201 })
   } catch (error) {
-    console.error('Failed to create urgency tier:', error)
+    console.error('Failed to create expense category:', error)
     return NextResponse.json(
-      { error: 'Failed to create urgency tier' },
+      { error: 'Failed to create expense category' },
       { status: 500 }
     )
   }

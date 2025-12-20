@@ -5,12 +5,27 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 4000",
+    "dev:dev": "env-cmd -f .env.development next dev -p 4000",
+    "dev:staging": "env-cmd -f .env.staging next dev -p 4000",
+    "dev:prod": "env-cmd -f .env.production next dev -p 4000",
     "build": "prisma generate && next build",
+    "build:dev": "env-cmd -f .env.development prisma generate && env-cmd -f .env.development next build",
+    "build:staging": "env-cmd -f .env.staging prisma generate && env-cmd -f .env.staging next build",
+    "build:prod": "env-cmd -f .env.production prisma generate && env-cmd -f .env.production next build",
     "start": "next start -p 4000",
     "lint": "next lint",
     "db:push": "prisma db push",
+    "db:push:dev": "env-cmd -f .env.development prisma db push",
+    "db:push:staging": "env-cmd -f .env.staging prisma db push",
+    "db:push:prod": "env-cmd -f .env.production prisma db push",
     "db:studio": "prisma studio",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:seed:dev": "env-cmd -f .env.development tsx prisma/seed.ts",
+    "db:seed:staging": "env-cmd -f .env.staging tsx prisma/seed.ts",
+    "db:seed:prod": "env-cmd -f .env.production tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
@@ -29,6 +44,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "env-cmd": "^10.1.0",
     "@types/node": "^20.10.6",
     "@types/nodemailer": "^7.0.4",
     "@types/react": "^18.2.46",
@@ -37,7 +53,9 @@
     "postcss": "^8.4.33",
     "prisma": "^5.7.1",
     "tailwindcss": "^3.4.0",
+    "ts-node": "^10.9.2",
     "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.9.3"
   }
+  
 }

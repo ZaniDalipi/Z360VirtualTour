@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { travelBundles } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
 
 // Public endpoint to get open bundles
 export async function GET(request: NextRequest) {
@@ -7,25 +7,48 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const city = searchParams.get('city')
 
-    let bundles = travelBundles.findMany({
-      where: { isActive: true, status: 'open' },
-    })
+    const now = new Date()
+
+    // Build where clause
+    const where: {
+      isActive: boolean
+      status: string
+      city?: { contains: string; mode: 'insensitive' }
+      OR?: Array<{ registrationDeadline: null } | { registrationDeadline: { gt: Date } }>
+    } = {
+      isActive: true,
+      status: 'open',
+      OR: [
+        { registrationDeadline: null },
+        { registrationDeadline: { gt: now } },
+      ],
+    }
 
     // Filter by city if provided
     if (city) {
-      bundles = bundles.filter(b =>
-        b.city.toLowerCase().includes(city.toLowerCase())
-      )
+      where.city = { contains: city, mode: 'insensitive' }
     }
 
-    // Filter out bundles past registration deadline
-    const now = new Date().toISOString()
-    bundles = bundles.filter(b =>
-      !b.registrationDeadline || b.registrationDeadline > now
-    )
+    // Use select for faster queries
+    const bundles = await prisma.travelBundle.findMany({
+      where,
+      orderBy: { scheduledDate: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        city: true,
+        region: true,
+        scheduledDate: true,
+        maxParticipants: true,
+        currentCount: true,
+        perPersonTravelFee: true,
+        discountPercent: true,
+        description: true,
+        registrationDeadline: true,
+      },
+    })
 
-    // Only return public-facing data
-    return NextResponse.json(bundles.map(b => ({
+    const response = NextResponse.json(bundles.map(b => ({
       id: b.id,
       name: b.name,
       city: b.city,
@@ -37,6 +60,11 @@ export async function GET(request: NextRequest) {
       description: b.description,
       registrationDeadline: b.registrationDeadline,
     })))
+
+    // Cache for 60 seconds (bundles don't change frequently)
+    response.headers.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=120')
+
+    return response
   } catch (error) {
     console.error('Failed to fetch bundles:', error)
     return NextResponse.json(

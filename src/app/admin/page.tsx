@@ -212,10 +212,10 @@ export default function AdminDashboard() {
                 View Messages
               </Button>
             </Link>
-            <Link href="/admin/settings">
+            <Link href="/admin/booking-settings">
               <Button variant="secondary" className="w-full justify-start">
                 <TrendingUp className="w-4 h-4 mr-2" />
-                Site Settings
+                Booking Settings
               </Button>
             </Link>
           </div>
