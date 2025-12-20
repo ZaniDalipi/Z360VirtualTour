@@ -49,9 +49,9 @@ interface RetryOptions {
 }
 
 const DEFAULT_RETRY_OPTIONS: Required<RetryOptions> = {
-  maxRetries: 3,
-  initialDelayMs: 500,
-  maxDelayMs: 5000,
+  maxRetries: 2,
+  initialDelayMs: 200,
+  maxDelayMs: 1000,
   backoffMultiplier: 2,
 }
 
