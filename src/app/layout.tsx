@@ -8,6 +8,12 @@ export const metadata: Metadata = {
   title: 'Z360 Virtual Tours | Professional 360° Tour Services',
   description: 'Professional 360° virtual tour services for real estate, businesses, hospitality, and more. Immersive experiences that showcase your space.',
   keywords: ['virtual tour', '360 tour', 'real estate photography', 'business tour', 'virtual walkthrough', 'immersive tour'],
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    viewportFit: 'cover',
+  },
 }
 
 export default function RootLayout({
