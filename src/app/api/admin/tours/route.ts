@@ -1,8 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
-import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
+import { cache, CacheTTL } from '@/lib/cache'
 import { withRetry } from '@/lib/db'
+
+// Helper to parse images from JSON string or array
+function parseImages(images: string | string[] | null): string[] {
+  if (!images) return []
+  if (Array.isArray(images)) return images
+  try {
+    const parsed = JSON.parse(images)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+interface TourWithImages {
+  id: string
+  images: string | null
+  [key: string]: unknown
+}
 
 export async function GET() {
   const admin = await getAdminFromCookies()
@@ -26,12 +44,18 @@ export async function GET() {
         include: { category: true },
       }),
       { maxRetries: 2, initialDelayMs: 300 }
-    )
+    ) as TourWithImages[]
+
+    // Parse images for each tour
+    const toursWithParsedImages = tours.map((tour) => ({
+      ...tour,
+      images: parseImages(tour.images),
+    }))
 
     // Cache the result
-    cache.set(cacheKey, tours, CacheTTL.SHORT)
+    cache.set(cacheKey, toursWithParsedImages, CacheTTL.SHORT)
 
-    return NextResponse.json(tours)
+    return NextResponse.json(toursWithParsedImages)
   } catch (error) {
     console.error('Failed to fetch tours:', error)
 
@@ -105,14 +129,18 @@ export async function POST(request: NextRequest) {
         include: { category: true },
       }),
       { maxRetries: 2 }
-    )
+    ) as TourWithImages
 
     // Invalidate caches
     cache.invalidatePrefix('tours')
     cache.invalidatePrefix('admin:tours')
     cache.invalidatePrefix('stats')
 
-    return NextResponse.json(tour)
+    // Return with parsed images for consistency
+    return NextResponse.json({
+      ...tour,
+      images: parseImages(tour.images),
+    })
   } catch (error) {
     console.error('Failed to create tour:', error)
     return NextResponse.json(

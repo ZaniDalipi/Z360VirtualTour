@@ -3,6 +3,54 @@ import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
 import { cache } from '@/lib/cache'
 import { withRetry } from '@/lib/db'
+import { deleteImage } from '@/lib/cloudinary'
+
+// Type for tour with images
+interface TourData {
+  id: string
+  title: string
+  slug: string
+  description: string
+  shortDesc: string | null
+  clientName: string | null
+  location: string | null
+  coverImage: string
+  images: string | null
+  tourUrl: string | null
+  tourEmbed: string | null
+  categoryId: string
+  featured: boolean
+  isActive: boolean
+  views: number
+  completedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+  category?: {
+    id: string
+    name: string
+    slug: string
+  }
+}
+
+// Helper to extract Cloudinary public ID from URL
+function extractPublicId(url: string): string | null {
+  if (!url || !url.includes('cloudinary.com')) return null
+  // URL format: https://res.cloudinary.com/cloud-name/image/upload/v123/folder/filename.ext
+  const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.\w+$/)
+  return match ? match[1] : null
+}
+
+// Helper to parse images from JSON string or array
+function parseImages(images: string | string[] | null): string[] {
+  if (!images) return []
+  if (Array.isArray(images)) return images
+  try {
+    const parsed = JSON.parse(images)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
 
 export async function GET(
   request: NextRequest,
@@ -22,13 +70,19 @@ export async function GET(
         include: { category: true },
       }),
       { maxRetries: 2 }
-    )
+    ) as TourData | null
 
     if (!tour) {
       return NextResponse.json({ error: 'Tour not found' }, { status: 404 })
     }
 
-    return NextResponse.json(tour)
+    // Parse images JSON to array for frontend
+    const tourWithParsedImages = {
+      ...tour,
+      images: parseImages(tour.images),
+    }
+
+    return NextResponse.json(tourWithParsedImages)
   } catch (error) {
     console.error('Failed to fetch tour:', error)
     return NextResponse.json(
@@ -52,6 +106,15 @@ export async function PUT(
     const { id } = await params
     const data = await request.json()
 
+    // Get current tour to compare images
+    const currentTour = await withRetry(
+      () => prisma.tour.findUnique({
+        where: { id },
+        select: { coverImage: true, images: true },
+      }),
+      { maxRetries: 2 }
+    ) as { coverImage: string; images: string | null } | null
+
     // Check if slug is unique (excluding current tour)
     const existingTour = await withRetry(
       () => prisma.tour.findFirst({
@@ -71,12 +134,36 @@ export async function PUT(
     }
 
     // Convert images array to JSON string if it's an array
-    let imagesJson = null
-    if (data.images) {
-      if (Array.isArray(data.images)) {
-        imagesJson = data.images.length > 0 ? JSON.stringify(data.images) : null
-      } else if (typeof data.images === 'string') {
-        imagesJson = data.images
+    const newImages = Array.isArray(data.images) ? data.images : []
+    const imagesJson = newImages.length > 0 ? JSON.stringify(newImages) : null
+
+    // Clean up removed images from Cloudinary (async, don't block response)
+    if (currentTour) {
+      const oldImages = parseImages(currentTour.images)
+      const removedImages = oldImages.filter((img: string) => !newImages.includes(img))
+
+      // Delete removed gallery images
+      removedImages.forEach(async (imgUrl: string) => {
+        const publicId = extractPublicId(imgUrl)
+        if (publicId) {
+          try {
+            await deleteImage(publicId)
+          } catch (err) {
+            console.error('Failed to delete image from Cloudinary:', err)
+          }
+        }
+      })
+
+      // If cover image changed, delete old one
+      if (currentTour.coverImage && currentTour.coverImage !== data.coverImage) {
+        const oldCoverPublicId = extractPublicId(currentTour.coverImage)
+        if (oldCoverPublicId) {
+          try {
+            await deleteImage(oldCoverPublicId)
+          } catch (err) {
+            console.error('Failed to delete old cover image:', err)
+          }
+        }
       }
     }
 
@@ -101,14 +188,18 @@ export async function PUT(
         include: { category: true },
       }),
       { maxRetries: 2 }
-    )
+    ) as TourData
 
     // Invalidate caches
     cache.invalidatePrefix('tours')
     cache.invalidatePrefix('admin:tours')
     cache.invalidatePrefix('stats')
 
-    return NextResponse.json(tour)
+    // Return with parsed images
+    return NextResponse.json({
+      ...tour,
+      images: parseImages(tour.images),
+    })
   } catch (error) {
     console.error('Failed to update tour:', error)
     return NextResponse.json(
@@ -130,12 +221,47 @@ export async function DELETE(
 
   try {
     const { id } = await params
+
+    // Get tour to clean up images
+    const tour = await withRetry(
+      () => prisma.tour.findUnique({
+        where: { id },
+        select: { coverImage: true, images: true },
+      }),
+      { maxRetries: 2 }
+    ) as { coverImage: string; images: string | null } | null
+
+    // Delete tour from database
     await withRetry(
       () => prisma.tour.delete({
         where: { id },
       }),
       { maxRetries: 2 }
     )
+
+    // Clean up images from Cloudinary (async, don't block response)
+    if (tour) {
+      // Delete cover image
+      if (tour.coverImage) {
+        const coverPublicId = extractPublicId(tour.coverImage)
+        if (coverPublicId) {
+          deleteImage(coverPublicId).catch(err =>
+            console.error('Failed to delete cover image:', err)
+          )
+        }
+      }
+
+      // Delete gallery images
+      const galleryImages = parseImages(tour.images)
+      galleryImages.forEach((imgUrl: string) => {
+        const publicId = extractPublicId(imgUrl)
+        if (publicId) {
+          deleteImage(publicId).catch(err =>
+            console.error('Failed to delete gallery image:', err)
+          )
+        }
+      })
+    }
 
     // Invalidate caches
     cache.invalidatePrefix('tours')
