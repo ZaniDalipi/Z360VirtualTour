@@ -3,6 +3,24 @@ import { prisma } from '@/lib/prisma'
 import { cache, CacheTTL } from '@/lib/cache'
 import { withRetry } from '@/lib/db'
 
+// Helper to parse images from JSON string or array
+function parseImages(images: string | string[] | null): string[] {
+  if (!images) return []
+  if (Array.isArray(images)) return images
+  try {
+    const parsed = JSON.parse(images)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+interface TourResult {
+  id: string
+  images: string | null
+  [key: string]: unknown
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -83,11 +101,17 @@ export async function GET(request: NextRequest) {
       { maxRetries: 2, initialDelayMs: 300 }
     )
 
+    // Parse images for each tour
+    const toursWithParsedImages = (tours as TourResult[]).map((tour) => ({
+      ...tour,
+      images: parseImages(tour.images),
+    }))
+
     // Cache the result - longer TTL for featured tours
     const ttl = featured === 'true' ? CacheTTL.LONG : CacheTTL.MEDIUM
-    cache.set(cacheKey, tours, ttl)
+    cache.set(cacheKey, toursWithParsedImages, ttl)
 
-    const response = NextResponse.json(tours)
+    const response = NextResponse.json(toursWithParsedImages)
 
     // Cache for 30 seconds
     response.headers.set('Cache-Control', 'public, max-age=30, stale-while-revalidate=60')

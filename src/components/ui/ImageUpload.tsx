@@ -4,18 +4,13 @@ import { useState, useCallback, useRef } from 'react'
 import Image from 'next/image'
 import { Upload, X, Loader2, ImageIcon } from 'lucide-react'
 
-interface UploadedImage {
-  url: string
-  publicId: string
-  width?: number
-  height?: number
-}
-
 interface ImageUploadProps {
   value?: string | string[]
   onChange: (value: string | string[]) => void
   multiple?: boolean
-  folder?: string
+  tourId?: string
+  tourSlug?: string
+  imageType?: 'cover' | 'gallery'
   maxFiles?: number
   className?: string
   disabled?: boolean
@@ -26,7 +21,9 @@ export function ImageUpload({
   value,
   onChange,
   multiple = false,
-  folder = 'z360-tours',
+  tourId,
+  tourSlug,
+  imageType = 'gallery',
   maxFiles = 10,
   className = '',
   disabled = false,
@@ -63,7 +60,15 @@ export function ImageUpload({
       const uploadPromises = fileArray.map(async (file) => {
         const formData = new FormData()
         formData.append('file', file)
-        formData.append('folder', folder)
+        formData.append('imageType', imageType)
+
+        // Add tour context for folder organization
+        if (tourSlug) {
+          formData.append('tourSlug', tourSlug)
+        }
+        if (tourId) {
+          formData.append('tourId', tourId)
+        }
 
         const response = await fetch('/api/upload', {
           method: 'POST',
@@ -91,7 +96,7 @@ export function ImageUpload({
     } finally {
       setIsUploading(false)
     }
-  }, [disabled, folder, images, maxFiles, multiple, onChange])
+  }, [disabled, tourId, tourSlug, imageType, images, maxFiles, multiple, onChange])
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -138,7 +143,7 @@ export function ImageUpload({
       <div
         className={`
           relative border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors
-          ${dragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
+          ${dragActive ? 'border-gold bg-gold/5' : 'border-gold/30 hover:border-gold/50'}
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
           ${isUploading ? 'pointer-events-none' : ''}
         `}
@@ -160,14 +165,14 @@ export function ImageUpload({
 
         {isUploading ? (
           <div className="flex flex-col items-center justify-center py-4">
-            <Loader2 className="w-10 h-10 text-blue-500 animate-spin mb-2" />
-            <p className="text-sm text-gray-600">Uploading...</p>
+            <Loader2 className="w-10 h-10 text-gold animate-spin mb-2" />
+            <p className="text-sm text-cream-muted">Uploading...</p>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-4">
-            <Upload className="w-10 h-10 text-gray-400 mb-2" />
-            <p className="text-sm text-gray-600">{placeholder}</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <Upload className="w-10 h-10 text-gold/60 mb-2" />
+            <p className="text-sm text-cream">{placeholder}</p>
+            <p className="text-xs text-cream-muted mt-1">
               JPEG, PNG, WebP, GIF up to 10MB
             </p>
           </div>
@@ -176,7 +181,7 @@ export function ImageUpload({
 
       {/* Error message */}
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <p className="text-sm text-red-400">{error}</p>
       )}
 
       {/* Preview images */}
@@ -185,7 +190,7 @@ export function ImageUpload({
           {images.map((imageUrl, index) => (
             <div
               key={index}
-              className="relative group rounded-lg overflow-hidden bg-gray-100 aspect-video"
+              className="relative group rounded-lg overflow-hidden bg-navy-light aspect-video border border-gold/20"
             >
               {imageUrl.startsWith('http') ? (
                 <Image
@@ -197,7 +202,7 @@ export function ImageUpload({
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <ImageIcon className="w-8 h-8 text-gray-400" />
+                  <ImageIcon className="w-8 h-8 text-cream-muted" />
                 </div>
               )}
 
@@ -220,7 +225,7 @@ export function ImageUpload({
 
       {/* Image count for multiple */}
       {multiple && images.length > 0 && (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-cream-muted">
           {images.length} of {maxFiles} images
         </p>
       )}

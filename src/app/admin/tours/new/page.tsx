@@ -242,7 +242,8 @@ export default function NewTourPage() {
                   <ImageUpload
                     value={formData.coverImage}
                     onChange={(url) => setFormData(prev => ({ ...prev, coverImage: url as string }))}
-                    folder="z360-tours/covers"
+                    tourSlug={formData.slug || undefined}
+                    imageType="cover"
                     placeholder="Upload cover image"
                   />
                   <p className="mt-2 text-xs text-cream-muted">
@@ -265,7 +266,8 @@ export default function NewTourPage() {
                     onChange={(urls) => setFormData(prev => ({ ...prev, images: urls as string[] }))}
                     multiple
                     maxFiles={10}
-                    folder="z360-tours/gallery"
+                    tourSlug={formData.slug || undefined}
+                    imageType="gallery"
                     placeholder="Upload additional tour images"
                   />
                 </div>

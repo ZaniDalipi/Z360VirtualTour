@@ -29,6 +29,18 @@ interface TourWithCategory {
   }
 }
 
+// Helper to parse images from JSON string or array
+function parseImages(images: string | string[] | null): string[] {
+  if (!images) return []
+  if (Array.isArray(images)) return images
+  try {
+    const parsed = JSON.parse(images)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -67,13 +79,19 @@ export async function GET(
       return NextResponse.json({ error: 'Tour not found' }, { status: 404 })
     }
 
-    // Cache the tour
-    cache.set(cacheKey, tour, CacheTTL.MEDIUM)
+    // Parse images JSON to array for frontend
+    const tourWithParsedImages = {
+      ...tour,
+      images: parseImages(tour.images),
+    }
+
+    // Cache the tour with parsed images
+    cache.set(cacheKey, tourWithParsedImages, CacheTTL.MEDIUM)
 
     // Increment view count asynchronously (fire and forget)
     incrementViewCount(slug).catch(console.error)
 
-    return NextResponse.json(tour)
+    return NextResponse.json(tourWithParsedImages)
   } catch (error) {
     console.error('Failed to fetch tour:', error)
     return NextResponse.json(
