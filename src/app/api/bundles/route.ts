@@ -48,7 +48,21 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    const response = NextResponse.json(bundles.map((b) => ({
+    interface BundleData {
+      id: string
+      name: string
+      city: string
+      region: string | null
+      scheduledDate: Date
+      maxParticipants: number
+      currentCount: number
+      perPersonTravelFee: number | null
+      discountPercent: number
+      description: string | null
+      registrationDeadline: Date | null
+    }
+
+    const response = NextResponse.json(bundles.map((b: BundleData) => ({
       id: b.id,
       name: b.name,
       city: b.city,

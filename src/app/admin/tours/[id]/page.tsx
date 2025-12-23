@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Save, Trash2, Upload, X } from 'lucide-react'
+import { ArrowLeft, Save, Trash2 } from 'lucide-react'
 import Link from 'next/link'
-import { Card, Button, Input } from '@/components/ui'
+import { Card, Button, Input, ImageUpload } from '@/components/ui'
 import { motion } from 'framer-motion'
 
 interface Category {
@@ -21,9 +21,6 @@ export default function EditTourPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadError, setUploadError] = useState('')
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -32,7 +29,7 @@ export default function EditTourPage() {
     clientName: '',
     location: '',
     coverImage: '',
-    images: '',
+    images: [] as string[],
     tourUrl: '',
     tourEmbed: '',
     categoryId: '',
@@ -58,7 +55,7 @@ export default function EditTourPage() {
             clientName: tour.clientName || '',
             location: tour.location || '',
             coverImage: tour.coverImage || '',
-            images: (tour.images || []).join('\n'),
+            images: tour.images || [],
             tourUrl: tour.tourUrl || '',
             tourEmbed: tour.tourEmbed || '',
             categoryId: tour.categoryId || '',
@@ -91,44 +88,6 @@ export default function EditTourPage() {
     }))
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setIsUploading(true)
-    setUploadError('')
-
-    try {
-      const uploadFormData = new FormData()
-      uploadFormData.append('file', file)
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      })
-
-      const data = await res.json()
-
-      if (res.ok) {
-        setFormData((prev) => ({ ...prev, coverImage: data.url }))
-      } else {
-        setUploadError(data.error || 'Failed to upload image')
-      }
-    } catch (error) {
-      console.error('Upload failed:', error)
-      setUploadError('Failed to upload image')
-    } finally {
-      setIsUploading(false)
-    }
-  }
-
-  const handleRemoveImage = () => {
-    setFormData((prev) => ({ ...prev, coverImage: '' }))
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
@@ -139,7 +98,7 @@ export default function EditTourPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          images: formData.images.split('\n').filter(Boolean),
+          images: formData.images,
         }),
       })
 
@@ -348,93 +307,34 @@ export default function EditTourPage() {
                   <label className="block text-sm font-medium text-cream mb-2">
                     Cover Image *
                   </label>
-
-                  {/* File Upload */}
-                  <div className="mb-3">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      id="coverImageUploadEdit"
-                    />
-                    <label
-                      htmlFor="coverImageUploadEdit"
-                      className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed
-                                  cursor-pointer transition-all ${
-                                    isUploading
-                                      ? 'border-gold/50 bg-gold/5'
-                                      : 'border-gold/30 hover:border-gold/50 hover:bg-navy-light/30'
-                                  }`}
-                    >
-                      {isUploading ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-                          <span className="text-cream-muted">Uploading...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-5 h-5 text-gold" />
-                          <span className="text-cream">Upload from PC</span>
-                        </>
-                      )}
-                    </label>
-                    {uploadError && (
-                      <p className="mt-2 text-sm text-red-400">{uploadError}</p>
-                    )}
-                  </div>
-
-                  {/* Or use URL */}
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="flex-1 h-px bg-gold/20" />
-                    <span className="text-xs text-cream-muted">or paste URL</span>
-                    <div className="flex-1 h-px bg-gold/20" />
-                  </div>
-
+                  <ImageUpload
+                    value={formData.coverImage}
+                    onChange={(url) => setFormData(prev => ({ ...prev, coverImage: url as string }))}
+                    folder="z360-tours/covers"
+                    placeholder="Upload cover image"
+                  />
+                  <p className="mt-2 text-xs text-cream-muted">
+                    Or paste a URL directly:
+                  </p>
                   <Input
                     name="coverImage"
                     value={formData.coverImage}
                     onChange={handleChange}
                     placeholder="https://example.com/image.jpg"
+                    className="mt-2"
                   />
-
-                  {/* Preview */}
-                  {formData.coverImage && (
-                    <div className="mt-3 relative inline-block">
-                      <div className="w-40 h-24 rounded-lg overflow-hidden border border-gold/20">
-                        <img
-                          src={formData.coverImage}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none'
-                          }}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleRemoveImage}
-                        className="absolute -top-2 -right-2 p-1 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-cream mb-2">
-                    Additional Images (one URL per line)
+                    Additional Images
                   </label>
-                  <textarea
-                    name="images"
+                  <ImageUpload
                     value={formData.images}
-                    onChange={handleChange}
-                    placeholder="https://example.com/image1.jpg&#10;https://example.com/image2.jpg"
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-xl bg-navy border border-gold/20 text-cream
-                               placeholder:text-cream-muted focus:outline-none focus:ring-2
-                               focus:ring-gold/50 focus:border-gold/50 resize-none"
+                    onChange={(urls) => setFormData(prev => ({ ...prev, images: urls as string[] }))}
+                    multiple
+                    maxFiles={10}
+                    folder="z360-tours/gallery"
+                    placeholder="Upload additional tour images"
                   />
                 </div>
                 <div>

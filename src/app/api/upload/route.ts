@@ -1,73 +1,105 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
-import path from 'path'
 import { getAdminFromCookies } from '@/lib/auth'
+import { uploadImage, deleteImage } from '@/lib/cloudinary'
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 
 export async function POST(request: NextRequest) {
-  const admin = await getAdminFromCookies()
-
-  if (!admin) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
   try {
+    // Check authentication
+    const admin = await getAdminFromCookies()
+    if (!admin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
+    const folder = (formData.get('folder') as string) || 'z360-tours'
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
-    if (!allowedTypes.includes(file.type)) {
+    if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: 'Invalid file type. Allowed: JPG, PNG, WebP, GIF' },
+        { error: 'Invalid file type. Allowed: JPEG, PNG, WebP, GIF' },
         { status: 400 }
       )
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024 // 10MB
-    if (file.size > maxSize) {
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { error: 'File too large. Maximum size is 10MB' },
         { status: 400 }
       )
     }
 
-    // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
-    if (!existsSync(uploadsDir)) {
-      await mkdir(uploadsDir, { recursive: true })
-    }
-
-    // Generate unique filename
-    const timestamp = Date.now()
-    const randomString = Math.random().toString(36).substring(2, 8)
-    const extension = file.name.split('.').pop() || 'jpg'
-    const filename = `${timestamp}-${randomString}.${extension}`
-
-    // Write file to disk
+    // Convert file to buffer
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const filePath = path.join(uploadsDir, filename)
-    await writeFile(filePath, buffer)
 
-    // Return the public URL
-    const publicUrl = `/uploads/${filename}`
+    // Upload to Cloudinary
+    const result = await uploadImage(buffer, {
+      folder,
+      transformation: {
+        quality: 'auto',
+      },
+    })
 
     return NextResponse.json({
-      url: publicUrl,
-      filename: filename,
-      size: file.size,
-      type: file.type,
+      success: true,
+      url: result.secure_url,
+      publicId: result.public_id,
+      width: result.width,
+      height: result.height,
+      format: result.format,
+      bytes: result.bytes,
     })
   } catch (error) {
-    console.error('Failed to upload file:', error)
+    console.error('Upload error:', error)
     return NextResponse.json(
-      { error: 'Failed to upload file' },
+      { error: 'Failed to upload image' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    // Check authentication
+    const admin = await getAdminFromCookies()
+    if (!admin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const publicId = searchParams.get('publicId')
+
+    if (!publicId) {
+      return NextResponse.json(
+        { error: 'Public ID required' },
+        { status: 400 }
+      )
+    }
+
+    // Delete from Cloudinary
+    const deleted = await deleteImage(publicId)
+
+    if (!deleted) {
+      return NextResponse.json(
+        { error: 'Failed to delete image from storage' },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Delete error:', error)
+    return NextResponse.json(
+      { error: 'Failed to delete image' },
       { status: 500 }
     )
   }
