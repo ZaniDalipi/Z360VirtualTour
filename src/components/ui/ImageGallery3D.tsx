@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
-import { ChevronLeft, ChevronRight, X, ZoomIn } from 'lucide-react'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface ImageGallery3DProps {
@@ -33,11 +33,6 @@ export function ImageGallery3D({
     })
   }, [images.length])
 
-  const goToSlide = (index: number) => {
-    setDirection(index > currentIndex ? 1 : -1)
-    setCurrentIndex(index)
-  }
-
   useEffect(() => {
     if (!autoPlay || isHovered || images.length <= 1 || isFullscreen) return
 
@@ -66,8 +61,8 @@ export function ImageGallery3D({
     enter: (direction: number) => ({
       x: direction > 0 ? '100%' : '-100%',
       opacity: 0,
-      scale: 0.8,
-      rotateY: direction > 0 ? 45 : -45,
+      scale: 0.85,
+      rotateY: direction > 0 ? 35 : -35,
     }),
     center: {
       x: 0,
@@ -84,8 +79,8 @@ export function ImageGallery3D({
     exit: (direction: number) => ({
       x: direction < 0 ? '100%' : '-100%',
       opacity: 0,
-      scale: 0.8,
-      rotateY: direction < 0 ? 45 : -45,
+      scale: 0.85,
+      rotateY: direction < 0 ? 35 : -35,
       transition: {
         x: { type: 'spring', stiffness: 300, damping: 30 },
         opacity: { duration: 0.3 },
@@ -97,14 +92,27 @@ export function ImageGallery3D({
 
   return (
     <>
+      {/* Main Gallery Container with Side Navigation */}
       <div
-        className="relative w-full"
+        className="relative w-full flex items-center justify-center gap-4 md:gap-8"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
+        {/* PREV Button - Left Side */}
+        {images.length > 1 && (
+          <button
+            onClick={() => navigate(-1)}
+            className="flex-shrink-0 w-16 md:w-20 h-48 md:h-72 lg:h-96 rounded-2xl bg-navy-light/50 backdrop-blur-sm border-2 border-gold/30 flex flex-col items-center justify-center text-gold hover:bg-gold/20 hover:border-gold/60 transition-all duration-300 shadow-xl group"
+            aria-label="Previous image"
+          >
+            <ChevronLeft className="w-8 h-8 md:w-10 md:h-10 group-hover:scale-110 transition-transform" />
+            <span className="mt-2 text-sm md:text-base font-semibold tracking-wider">Prev</span>
+          </button>
+        )}
+
         {/* Main Image Container */}
         <div
-          className="relative mx-auto w-full max-w-5xl aspect-[16/10] rounded-2xl md:rounded-3xl overflow-hidden"
+          className="relative flex-1 max-w-4xl aspect-[16/10] rounded-2xl md:rounded-3xl overflow-hidden"
           style={{ perspective: '1200px' }}
         >
           {/* Animated Image */}
@@ -120,25 +128,15 @@ export function ImageGallery3D({
               style={{ transformStyle: 'preserve-3d' }}
               onClick={() => setIsFullscreen(true)}
             >
-              <div className="group relative w-full h-full rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl shadow-black/50 border-2 border-gold/30 hover:border-gold/60 transition-colors duration-300">
+              <div className="relative w-full h-full rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl shadow-black/50 border-2 border-gold/30 hover:border-gold/60 transition-colors duration-300">
                 <Image
                   src={images[currentIndex]}
                   alt={`${title} - Image ${currentIndex + 1}`}
                   fill
                   className="object-cover"
                   priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1000px"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 900px"
                 />
-
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                {/* Zoom Icon on Hover */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gold/90 flex items-center justify-center shadow-2xl transform group-hover:scale-110 transition-transform">
-                    <ZoomIn className="w-8 h-8 sm:w-10 sm:h-10 text-navy" />
-                  </div>
-                </div>
 
                 {/* Image Counter Badge */}
                 <div className="absolute bottom-4 right-4 sm:bottom-6 sm:right-6 px-4 py-2 rounded-xl bg-navy/80 backdrop-blur-sm border border-gold/30">
@@ -148,71 +146,18 @@ export function ImageGallery3D({
               </div>
             </motion.div>
           </AnimatePresence>
-
-          {/* Navigation Arrows */}
-          {images.length > 1 && (
-            <>
-              <button
-                onClick={(e) => { e.stopPropagation(); navigate(-1); }}
-                className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-navy/80 backdrop-blur-sm border-2 border-gold/40 flex items-center justify-center text-gold hover:bg-gold hover:text-navy hover:border-gold transition-all duration-300 shadow-xl"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
-              </button>
-              <button
-                onClick={(e) => { e.stopPropagation(); navigate(1); }}
-                className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-navy/80 backdrop-blur-sm border-2 border-gold/40 flex items-center justify-center text-gold hover:bg-gold hover:text-navy hover:border-gold transition-all duration-300 shadow-xl"
-                aria-label="Next image"
-              >
-                <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
-              </button>
-            </>
-          )}
         </div>
 
-        {/* Thumbnail Strip */}
+        {/* NEXT Button - Right Side */}
         {images.length > 1 && (
-          <div className="flex justify-center gap-2 sm:gap-3 mt-6 sm:mt-8 px-4">
-            <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-2 max-w-full scrollbar-hide">
-              {images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToSlide(index)}
-                  className={`relative flex-shrink-0 w-20 h-14 sm:w-24 sm:h-16 md:w-28 md:h-20 rounded-xl overflow-hidden transition-all duration-300 ${
-                    index === currentIndex
-                      ? 'ring-2 ring-gold ring-offset-2 ring-offset-navy scale-105 shadow-lg shadow-gold/30'
-                      : 'opacity-50 hover:opacity-80 border border-gold/20 hover:border-gold/50'
-                  }`}
-                >
-                  <Image
-                    src={image}
-                    alt={`Thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="112px"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Dots Indicator (for many images) */}
-        {images.length > 1 && images.length <= 10 && (
-          <div className="flex justify-center gap-2 mt-4">
-            {images.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`transition-all duration-300 rounded-full ${
-                  index === currentIndex
-                    ? 'w-8 h-2 bg-gold'
-                    : 'w-2 h-2 bg-gold/30 hover:bg-gold/50'
-                }`}
-                aria-label={`Go to image ${index + 1}`}
-              />
-            ))}
-          </div>
+          <button
+            onClick={() => navigate(1)}
+            className="flex-shrink-0 w-16 md:w-20 h-48 md:h-72 lg:h-96 rounded-2xl bg-navy-light/50 backdrop-blur-sm border-2 border-gold/30 flex flex-col items-center justify-center text-gold hover:bg-gold/20 hover:border-gold/60 transition-all duration-300 shadow-xl group"
+            aria-label="Next image"
+          >
+            <ChevronRight className="w-8 h-8 md:w-10 md:h-10 group-hover:scale-110 transition-transform" />
+            <span className="mt-2 text-sm md:text-base font-semibold tracking-wider">Next</span>
+          </button>
         )}
       </div>
 
@@ -234,12 +179,23 @@ export function ImageGallery3D({
               <X className="w-6 h-6" />
             </button>
 
+            {/* PREV Button - Fullscreen */}
+            {images.length > 1 && (
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate(-1); }}
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-50 w-16 md:w-20 h-48 md:h-72 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/20 flex flex-col items-center justify-center text-white transition-all"
+              >
+                <ChevronLeft className="w-10 h-10" />
+                <span className="mt-2 text-sm font-medium">Prev</span>
+              </button>
+            )}
+
             {/* Fullscreen Image */}
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="relative w-[95vw] h-[85vh] max-w-7xl"
+              className="relative w-[70vw] h-[85vh] max-w-5xl"
               onClick={(e) => e.stopPropagation()}
             >
               <AnimatePresence initial={false} custom={direction} mode="wait">
@@ -258,56 +214,27 @@ export function ImageGallery3D({
                     fill
                     className="object-contain"
                     priority
-                    sizes="95vw"
+                    sizes="70vw"
                   />
                 </motion.div>
               </AnimatePresence>
             </motion.div>
 
-            {/* Fullscreen Navigation */}
+            {/* NEXT Button - Fullscreen */}
             {images.length > 1 && (
-              <>
-                <button
-                  onClick={(e) => { e.stopPropagation(); navigate(-1); }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 z-50 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-                >
-                  <ChevronLeft className="w-8 h-8" />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); navigate(1); }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 z-50 w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
-                >
-                  <ChevronRight className="w-8 h-8" />
-                </button>
-              </>
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate(1); }}
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-50 w-16 md:w-20 h-48 md:h-72 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/20 flex flex-col items-center justify-center text-white transition-all"
+              >
+                <ChevronRight className="w-10 h-10" />
+                <span className="mt-2 text-sm font-medium">Next</span>
+              </button>
             )}
 
             {/* Fullscreen Counter */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-6 py-3 rounded-xl bg-white/10 backdrop-blur-sm">
               <span className="text-white font-bold text-lg">{currentIndex + 1}</span>
               <span className="text-white/60 text-lg"> / {images.length}</span>
-            </div>
-
-            {/* Fullscreen Thumbnails */}
-            <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2 max-w-[90vw] overflow-x-auto px-4 pb-2">
-              {images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={(e) => { e.stopPropagation(); goToSlide(index); }}
-                  className={`relative flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 transition-all ${
-                    index === currentIndex
-                      ? 'border-white scale-110'
-                      : 'border-white/30 opacity-50 hover:opacity-100'
-                  }`}
-                >
-                  <Image
-                    src={image}
-                    alt={`Thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
             </div>
           </motion.div>
         )}
