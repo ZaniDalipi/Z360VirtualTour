@@ -3,17 +3,31 @@ import { prisma } from '@/lib/prisma'
 import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
 import { withRetry, withFallback } from '@/lib/db'
 
+interface Testimonial {
+  id: string
+  clientName: string
+  clientTitle: string | null
+  clientImage: string | null
+  content: string
+  rating: number
+  tourId: string | null
+  featured: boolean
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
 export async function GET() {
   try {
     // Try cache first
-    const cached = cache.get<unknown[]>(CacheKeys.TESTIMONIALS)
+    const cached = cache.get<Testimonial[]>(CacheKeys.TESTIMONIALS)
     if (cached) {
       return NextResponse.json(cached, {
         headers: { 'X-Cache-Status': 'hit' }
       })
     }
 
-    const testimonials = await withFallback(
+    const testimonials = await withFallback<Testimonial[]>(
       () => withRetry(
         () => prisma.testimonial.findMany({
           where: { isActive: true },
@@ -54,7 +68,7 @@ export async function POST(request: NextRequest) {
     // Rate limiting check - max 3 testimonials per email per day
     if (data.email) {
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
-      const recentSubmissions = await withRetry(
+      const recentSubmissions = await withRetry<number>(
         () => prisma.testimonial.count({
           where: {
             clientTitle: { contains: data.email },
@@ -73,7 +87,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create testimonial with isActive: false (requires admin approval)
-    const testimonial = await withRetry(
+    const testimonial = await withRetry<Testimonial>(
       () => prisma.testimonial.create({
         data: {
           clientName: data.clientName,

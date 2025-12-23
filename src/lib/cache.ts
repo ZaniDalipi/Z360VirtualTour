@@ -54,7 +54,8 @@ class MemoryCache {
    * Delete all cached values matching a prefix
    */
   invalidatePrefix(prefix: string): void {
-    for (const key of this.cache.keys()) {
+    const keys = Array.from(this.cache.keys())
+    for (const key of keys) {
       if (key.startsWith(prefix)) {
         this.cache.delete(key)
       }
@@ -73,7 +74,8 @@ class MemoryCache {
    */
   private cleanup(): void {
     const now = Date.now()
-    for (const [key, entry] of this.cache.entries()) {
+    const entries = Array.from(this.cache.entries())
+    for (const [key, entry] of entries) {
       if (now > entry.expiresAt) {
         this.cache.delete(key)
       }

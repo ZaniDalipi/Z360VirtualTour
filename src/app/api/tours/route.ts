@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     if (category) {
       // Use select for faster category lookup with retry
-      const cat = await withRetry(
+      const cat = await withRetry<{ id: string } | null>(
         () => prisma.category.findUnique({
           where: { slug: category },
           select: { id: true },

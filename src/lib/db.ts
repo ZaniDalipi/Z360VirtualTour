@@ -2,8 +2,6 @@
  * Database utilities with retry logic for handling transient failures
  */
 
-import { Prisma } from '@prisma/client'
-
 // Error codes that indicate transient/retryable failures
 const RETRYABLE_ERROR_CODES = [
   'P2024', // Timed out while waiting for connection from pool
@@ -18,12 +16,12 @@ const RETRYABLE_ERROR_CODES = [
  * Check if an error is retryable (transient network/connection issue)
  */
 export function isRetryableError(error: unknown): boolean {
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    return RETRYABLE_ERROR_CODES.includes(error.code)
-  }
-
-  if (error instanceof Prisma.PrismaClientInitializationError) {
-    return true // Connection initialization errors are usually transient
+  // Check for Prisma error codes
+  if (error && typeof error === 'object' && 'code' in error) {
+    const code = (error as { code: string }).code
+    if (RETRYABLE_ERROR_CODES.includes(code)) {
+      return true
+    }
   }
 
   if (error instanceof Error) {
@@ -34,7 +32,9 @@ export function isRetryableError(error: unknown): boolean {
       message.includes('econnrefused') ||
       message.includes('econnreset') ||
       message.includes('server selection') ||
-      message.includes('no available servers')
+      message.includes('no available servers') ||
+      message.includes('prisma') ||
+      message.includes('initialization')
     )
   }
 

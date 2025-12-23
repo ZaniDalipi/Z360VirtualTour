@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    const response = NextResponse.json(bundles.map(b => ({
+    const response = NextResponse.json(bundles.map((b) => ({
       id: b.id,
       name: b.name,
       city: b.city,

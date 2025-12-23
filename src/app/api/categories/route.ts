@@ -3,6 +3,19 @@ import { prisma } from '@/lib/prisma'
 import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
 import { withRetry } from '@/lib/db'
 
+interface CategoryWithCount {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  icon: string | null
+  order: number
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+  _count: { tours: number }
+}
+
 export async function GET() {
   try {
     // Try cache first
@@ -13,7 +26,7 @@ export async function GET() {
       })
     }
 
-    const categories = await withRetry(
+    const categories = await withRetry<CategoryWithCount[]>(
       () => prisma.category.findMany({
         where: { isActive: true },
         orderBy: { order: 'asc' },

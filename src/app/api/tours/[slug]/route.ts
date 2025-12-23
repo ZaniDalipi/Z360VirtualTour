@@ -3,6 +3,32 @@ import { prisma } from '@/lib/prisma'
 import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
 import { withRetry } from '@/lib/db'
 
+interface TourWithCategory {
+  id: string
+  title: string
+  slug: string
+  description: string
+  shortDesc: string | null
+  clientName: string | null
+  location: string | null
+  coverImage: string
+  images: string | null
+  tourUrl: string | null
+  tourEmbed: string | null
+  categoryId: string
+  featured: boolean
+  isActive: boolean
+  views: number
+  completedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+  category: {
+    id: string
+    name: string
+    slug: string
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -21,7 +47,7 @@ export async function GET(
       })
     }
 
-    const tour = await withRetry(
+    const tour = await withRetry<TourWithCategory | null>(
       () => prisma.tour.findUnique({
         where: { slug },
         include: {

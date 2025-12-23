@@ -45,19 +45,19 @@ export async function GET() {
 
     // Use optimized queries with select to reduce data transfer, with retry logic
     const [totalTours, totalTestimonials, unreadMessages, tours, viewsAggregate] = await Promise.all([
-      withFallback(
+      withFallback<number>(
         () => withRetry(() => prisma.tour.count(), { maxRetries: 2 }),
         0
       ),
-      withFallback(
+      withFallback<number>(
         () => withRetry(() => prisma.testimonial.count(), { maxRetries: 2 }),
         0
       ),
-      withFallback(
+      withFallback<number>(
         () => withRetry(() => prisma.contactSubmission.count({ where: { isRead: false } }), { maxRetries: 2 }),
         0
       ),
-      withFallback(
+      withFallback<Array<{ id: string; title: string; views: number; category: { name: string } }>>(
         () => withRetry(
           () => prisma.tour.findMany({
             take: 5,
@@ -73,7 +73,7 @@ export async function GET() {
         ),
         []
       ),
-      withFallback(
+      withFallback<{ _sum: { views: number | null } }>(
         () => withRetry(() => prisma.tour.aggregate({ _sum: { views: true } }), { maxRetries: 2 }),
         { _sum: { views: 0 } }
       ),

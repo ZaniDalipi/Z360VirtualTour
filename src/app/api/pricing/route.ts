@@ -25,7 +25,7 @@ export async function GET() {
       })
     }
 
-    const plans = await withFallback(
+    const plans = await withFallback<PricingPlan[]>(
       () => withRetry(
         () => prisma.pricingPlan.findMany({
           where: { isActive: true },
@@ -37,7 +37,7 @@ export async function GET() {
     )
 
     // Parse features JSON
-    const parsedPlans = plans.map((plan: PricingPlan) => ({
+    const parsedPlans = plans.map((plan) => ({
       ...plan,
       features: JSON.parse(plan.features || '[]'),
     }))

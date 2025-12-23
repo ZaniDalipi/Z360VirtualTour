@@ -118,7 +118,7 @@ export async function DELETE(
     const { id } = await params
 
     // Check if category has tours
-    const category = await withRetry(
+    const category = await withRetry<{ _count: { tours: number } } | null>(
       () => prisma.category.findUnique({
         where: { id },
         include: {

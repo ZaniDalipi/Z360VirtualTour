@@ -86,12 +86,12 @@ export async function GET(request: NextRequest) {
     maxDate.setDate(maxDate.getDate() + (settings?.maxAdvanceBookingDays || 90))
 
     return NextResponse.json({
-      blockedDates: blocked.map(d => d.date.toISOString().split('T')[0]),
+      blockedDates: blocked.map((d) => d.date.toISOString().split('T')[0]),
       bookedDates: confirmedBookings
-        .filter(b => b.confirmedDate)
-        .map(b => b.confirmedDate!.toISOString().split('T')[0]),
+        .filter((b) => b.confirmedDate)
+        .map((b) => b.confirmedDate!.toISOString().split('T')[0]),
       urgencyTiers: tiers,
-      bundles: openBundles.map(b => ({
+      bundles: openBundles.map((b) => ({
         id: b.id,
         name: b.name,
         city: b.city,

@@ -80,17 +80,17 @@ export async function GET(request: NextRequest) {
     })
 
     // Calculate totals
-    const totalIncome = completedBookings.reduce((sum, b) => sum + (b.totalQuote || 0), 0)
-    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0)
+    const totalIncome = completedBookings.reduce((sum: number, b) => sum + (b.totalQuote || 0), 0)
+    const totalExpenses = expenses.reduce((sum: number, e) => sum + e.amount, 0)
     const netProfit = totalIncome - totalExpenses
-    const pendingIncome = pendingBookings.reduce((sum, b) => sum + (b.totalQuote || 0), 0)
+    const pendingIncome = pendingBookings.reduce((sum: number, b) => sum + (b.totalQuote || 0), 0)
     const collectedDeposits = pendingBookings
-      .filter(b => b.depositPaid)
-      .reduce((sum, b) => sum + (b.depositAmount || 0), 0)
+      .filter((b) => b.depositPaid)
+      .reduce((sum: number, b) => sum + (b.depositAmount || 0), 0)
 
     // Expenses by category
     const expensesByCategory: Record<string, number> = {}
-    expenses.forEach(e => {
+    expenses.forEach((e) => {
       const categoryName = e.category.name
       expensesByCategory[categoryName] = (expensesByCategory[categoryName] || 0) + e.amount
     })
@@ -124,8 +124,8 @@ export async function GET(request: NextRequest) {
 
       monthlyIncome.push({
         month: monthStart.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-        income: monthBookings.reduce((sum, b) => sum + (b.totalQuote || 0), 0),
-        expenses: monthExpenses.reduce((sum, e) => sum + e.amount, 0),
+        income: monthBookings.reduce((sum: number, b) => sum + (b.totalQuote || 0), 0),
+        expenses: monthExpenses.reduce((sum: number, e) => sum + e.amount, 0),
       })
     }
 
