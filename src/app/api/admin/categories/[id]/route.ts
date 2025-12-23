@@ -130,7 +130,7 @@ export async function DELETE(
       { maxRetries: 2 }
     )
 
-    if (category?._count.tours > 0) {
+    if (category?._count?.tours && category._count.tours > 0) {
       return NextResponse.json(
         { error: 'Cannot delete category with existing tours. Move or delete the tours first.' },
         { status: 400 }
