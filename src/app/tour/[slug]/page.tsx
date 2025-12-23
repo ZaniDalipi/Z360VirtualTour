@@ -57,6 +57,18 @@ interface RelatedTour {
   coverImage: string
 }
 
+// Helper to safely parse images from API response (handles both string and array)
+function parseImages(images: string | string[] | null | undefined): string[] {
+  if (!images) return []
+  if (Array.isArray(images)) return images
+  try {
+    const parsed = JSON.parse(images)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export default function TourDetailPage() {
   const params = useParams()
   const slug = params.slug as string
@@ -75,7 +87,11 @@ export default function TourDetailPage() {
         const res = await fetch(`/api/tours/${slug}`)
         if (res.ok) {
           const data = await res.json()
-          setTour(data)
+          // Defensively parse images to ensure it's always an array
+          setTour({
+            ...data,
+            images: parseImages(data.images),
+          })
 
           // Fetch related tours from same category
           const relatedRes = await fetch(`/api/tours?category=${data.category.slug}&limit=4`)
