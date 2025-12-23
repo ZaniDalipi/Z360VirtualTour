@@ -4,6 +4,8 @@ import { getAdminFromCookies } from '@/lib/auth'
 import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
 import { withRetry, withFallback } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 interface StatsData {
   totalTours: number
   totalViews: number
@@ -25,9 +27,6 @@ const DEFAULT_STATS: StatsData = {
   unreadMessages: 0,
   recentTours: [],
 }
-
-export const dynamic = 'force-dynamic'
-export const revalidate = 30 // Cache for 30 seconds
 
 export async function GET() {
   const admin = await getAdminFromCookies()

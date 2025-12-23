@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 // POST /api/admin/bundles/sync - Sync all bundle participant counts
 export async function POST() {
   const admin = await getAdminFromCookies()

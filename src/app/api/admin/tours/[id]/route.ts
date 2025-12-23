@@ -5,6 +5,8 @@ import { cache } from '@/lib/cache'
 import { withRetry } from '@/lib/db'
 import { deleteImage } from '@/lib/cloudinary'
 
+export const dynamic = 'force-dynamic'
+
 // Type for tour with images
 interface TourData {
   id: string

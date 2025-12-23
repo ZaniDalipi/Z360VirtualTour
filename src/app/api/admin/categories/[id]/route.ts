@@ -4,6 +4,8 @@ import { getAdminFromCookies } from '@/lib/auth'
 import { cache } from '@/lib/cache'
 import { withRetry } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
