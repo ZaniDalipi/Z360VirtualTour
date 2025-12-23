@@ -26,7 +26,7 @@ import {
   Heart,
 } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
-import { Button, Card } from '@/components/ui'
+import { Button, Card, ImageGallery3D } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface Tour {
@@ -398,37 +398,28 @@ export default function TourDetailPage() {
         </section>
       )}
 
-      {/* Gallery Section */}
+      {/* Gallery Section - 3D Carousel */}
       {tour.images && tour.images.length > 0 && (
-        <section className="py-12 md:py-16 bg-navy-dark/50">
+        <section className="py-12 md:py-20 bg-gradient-to-b from-navy-dark/50 to-navy overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <h2 className="text-h3 font-bold text-cream mb-8">
-                Project Gallery
-              </h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tour.images.map((image, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 * index }}
-                    className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-gold/20"
-                  >
-                    <Image
-                      src={image}
-                      alt={`${tour.title} - Image ${index + 1}`}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </motion.div>
-                ))}
+              <div className="text-center mb-8 md:mb-12">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-cream mb-3">
+                  Project Gallery
+                </h2>
+                <p className="text-cream-muted">
+                  Click on images to view in fullscreen • Use arrows or swipe to navigate
+                </p>
               </div>
+              <ImageGallery3D
+                images={tour.images}
+                title={tour.title}
+                autoPlay={false}
+              />
             </motion.div>
           </div>
         </section>
