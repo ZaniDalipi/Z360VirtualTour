@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -106,7 +106,7 @@ interface Category {
   slug: string
 }
 
-export default function ToursPage() {
+function ToursContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const categoryFromUrl = searchParams.get('category')
@@ -470,5 +470,27 @@ export default function ToursPage() {
       {/* Mobile Bottom Navigation */}
       <Navbar />
     </div>
+  )
+}
+
+// Loading fallback for Suspense
+function ToursLoading() {
+  return (
+    <div className="min-h-screen bg-navy">
+      <PublicHeader />
+      <div className="flex items-center justify-center py-32">
+        <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+      </div>
+      <Footer />
+      <Navbar />
+    </div>
+  )
+}
+
+export default function ToursPage() {
+  return (
+    <Suspense fallback={<ToursLoading />}>
+      <ToursContent />
+    </Suspense>
   )
 }
