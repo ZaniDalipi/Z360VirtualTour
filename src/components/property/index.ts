@@ -1,3 +1,3 @@
 export { PropertyCard } from './PropertyCard'
 export { PropertyGrid } from './PropertyGrid'
-export { FeaturedCarousel } from './FeaturedCarousel'
+// FeaturedCarousel removed - legacy real estate component not used in virtual tours
