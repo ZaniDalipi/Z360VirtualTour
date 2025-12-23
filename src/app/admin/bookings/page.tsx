@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react'
 import {
   CalendarCheck, Mail, Phone, MapPin, Clock, DollarSign,
   Check, X, AlertCircle, Calendar, ChevronDown, ChevronUp,
-  Trash2, Building2, FileText, Route, Users, Tag, Plus
+  Trash2, Building2, FileText, Route, Users, Tag, Plus,
+  Download, Play, Pause, Send, CreditCard, Package, Star,
+  MessageSquare, Percent
 } from 'lucide-react'
 import { Card, Button, Input } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -32,6 +34,7 @@ interface Booking {
   urgencySurcharge: number | null
   travelFee: number | null
   bundleDiscount: number | null
+  sameCityDiscount: number | null
   totalQuote: number | null
   depositAmount: number | null
   depositPaid: boolean
@@ -39,6 +42,14 @@ interface Booking {
   isRead: boolean
   createdAt: string
   internalNotes: string | null
+  communicationLog: string | null
+  deliveredAt: string | null
+  deliverables: string | null
+  clientFeedback: string | null
+  rating: number | null
+  workStartedAt: string | null
+  workEndedAt: string | null
+  workDurationMinutes: number | null
   // Related data
   pricingPlanName?: string | null
   urgencyTierName?: string | null
@@ -61,10 +72,13 @@ const timeSlots = [
 const statusColors: Record<string, string> = {
   quote_requested: 'bg-blue-500/20 text-blue-400',
   quote_sent: 'bg-yellow-500/20 text-yellow-400',
-  pending_confirmation: 'bg-orange-500/20 text-orange-400',
+  negotiating: 'bg-amber-500/20 text-amber-400',
+  pending_deposit: 'bg-orange-500/20 text-orange-400',
   confirmed: 'bg-green-500/20 text-green-400',
   scheduled: 'bg-purple-500/20 text-purple-400',
   in_progress: 'bg-indigo-500/20 text-indigo-400',
+  editing: 'bg-cyan-500/20 text-cyan-400',
+  delivered: 'bg-teal-500/20 text-teal-400',
   completed: 'bg-emerald-500/20 text-emerald-400',
   cancelled: 'bg-red-500/20 text-red-400',
 }
@@ -72,13 +86,44 @@ const statusColors: Record<string, string> = {
 const statusLabels: Record<string, string> = {
   quote_requested: 'Quote Requested',
   quote_sent: 'Quote Sent',
-  pending_confirmation: 'Pending',
+  negotiating: 'Negotiating',
+  pending_deposit: 'Awaiting Deposit',
   confirmed: 'Confirmed',
   scheduled: 'Scheduled',
   in_progress: 'In Progress',
+  editing: 'Editing',
+  delivered: 'Delivered',
   completed: 'Completed',
   cancelled: 'Cancelled',
 }
+
+const statusIcons: Record<string, React.ReactNode> = {
+  quote_requested: <FileText className="w-4 h-4" />,
+  quote_sent: <Send className="w-4 h-4" />,
+  negotiating: <MessageSquare className="w-4 h-4" />,
+  pending_deposit: <CreditCard className="w-4 h-4" />,
+  confirmed: <Check className="w-4 h-4" />,
+  scheduled: <Calendar className="w-4 h-4" />,
+  in_progress: <Play className="w-4 h-4" />,
+  editing: <Package className="w-4 h-4" />,
+  delivered: <Download className="w-4 h-4" />,
+  completed: <Star className="w-4 h-4" />,
+  cancelled: <X className="w-4 h-4" />,
+}
+
+// Workflow stages in order
+const workflowStages = [
+  'quote_requested',
+  'quote_sent',
+  'negotiating',
+  'pending_deposit',
+  'confirmed',
+  'scheduled',
+  'in_progress',
+  'editing',
+  'delivered',
+  'completed',
+]
 
 export default function BookingsAdminPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -773,6 +818,15 @@ export default function BookingsAdminPage() {
                                     <span className="text-green-400">-{formatCurrency(booking.bundleDiscount)}</span>
                                   </div>
                                 )}
+                                {booking.sameCityDiscount && booking.sameCityDiscount > 0 && (
+                                  <div className="flex justify-between">
+                                    <span className="text-cream-muted flex items-center gap-1">
+                                      <Percent className="w-3 h-3" />
+                                      Same-City Discount
+                                    </span>
+                                    <span className="text-green-400">-{formatCurrency(booking.sameCityDiscount)}</span>
+                                  </div>
+                                )}
                                 {booking.totalQuote !== null && (
                                   <div className="flex justify-between pt-2 border-t border-gold/10">
                                     <span className="text-cream font-medium">Total</span>
@@ -825,7 +879,7 @@ export default function BookingsAdminPage() {
                           )}
 
                           {/* Date & Time Confirmation Flow */}
-                          {confirmingDate === booking.id && booking.status === 'quote_sent' && (
+                          {confirmingDate === booking.id && booking.status === 'pending_deposit' && (
                             <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20">
                               <p className="text-sm text-cream mb-3 flex items-center gap-2">
                                 <Calendar className="w-4 h-4 text-green-400" />
@@ -890,10 +944,29 @@ export default function BookingsAdminPage() {
                           <div className="flex flex-wrap gap-2 pt-2">
                             {booking.status === 'quote_requested' && (
                               <Button size="sm" onClick={() => handleStatusChange(booking.id, 'quote_sent')}>
+                                <Send className="w-4 h-4 mr-1" />
                                 Mark Quote Sent
                               </Button>
                             )}
-                            {booking.status === 'quote_sent' && confirmingDate !== booking.id && (
+                            {booking.status === 'quote_sent' && (
+                              <>
+                                <Button size="sm" onClick={() => handleStatusChange(booking.id, 'negotiating')}>
+                                  <MessageSquare className="w-4 h-4 mr-1" />
+                                  Negotiating
+                                </Button>
+                                <Button size="sm" onClick={() => handleStatusChange(booking.id, 'pending_deposit')}>
+                                  <CreditCard className="w-4 h-4 mr-1" />
+                                  Awaiting Deposit
+                                </Button>
+                              </>
+                            )}
+                            {booking.status === 'negotiating' && (
+                              <Button size="sm" onClick={() => handleStatusChange(booking.id, 'pending_deposit')}>
+                                <CreditCard className="w-4 h-4 mr-1" />
+                                Awaiting Deposit
+                              </Button>
+                            )}
+                            {booking.status === 'pending_deposit' && confirmingDate !== booking.id && (
                               <Button
                                 size="sm"
                                 onClick={() => {
@@ -907,24 +980,50 @@ export default function BookingsAdminPage() {
                                 }}
                               >
                                 <Calendar className="w-4 h-4 mr-1" />
-                                Confirm Booking
+                                Confirm & Schedule
                               </Button>
                             )}
                             {booking.status === 'confirmed' && (
                               <Button size="sm" onClick={() => handleStatusChange(booking.id, 'scheduled')}>
+                                <Calendar className="w-4 h-4 mr-1" />
                                 Mark Scheduled
                               </Button>
                             )}
                             {booking.status === 'scheduled' && (
                               <Button size="sm" onClick={() => handleStatusChange(booking.id, 'in_progress')}>
+                                <Play className="w-4 h-4 mr-1" />
                                 Start Work
                               </Button>
                             )}
                             {booking.status === 'in_progress' && (
+                              <Button size="sm" onClick={() => handleStatusChange(booking.id, 'editing')}>
+                                <Package className="w-4 h-4 mr-1" />
+                                Move to Editing
+                              </Button>
+                            )}
+                            {booking.status === 'editing' && (
+                              <Button size="sm" onClick={() => handleStatusChange(booking.id, 'delivered')}>
+                                <Download className="w-4 h-4 mr-1" />
+                                Mark Delivered
+                              </Button>
+                            )}
+                            {booking.status === 'delivered' && (
                               <Button size="sm" onClick={() => handleStatusChange(booking.id, 'completed')}>
-                                <Check className="w-4 h-4 mr-1" />
+                                <Star className="w-4 h-4 mr-1" />
                                 Mark Complete
                               </Button>
+                            )}
+                            {['delivered', 'completed'].includes(booking.status) && (
+                              <a
+                                href={`/api/admin/bookings/${booking.id}/receipt?format=html`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Button size="sm" variant="secondary">
+                                  <Download className="w-4 h-4 mr-1" />
+                                  Download Receipt
+                                </Button>
+                              </a>
                             )}
                             {!['completed', 'cancelled'].includes(booking.status) && (
                               <Button

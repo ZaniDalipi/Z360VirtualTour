@@ -10,6 +10,7 @@ import { MobileDrawer } from './MobileDrawer'
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/tours', label: 'Portfolio' },
+  { href: '/schedule', label: 'Availability' },
   { href: '/testimonials', label: 'Testimonials' },
   { href: '/pricing', label: 'Pricing' },
 ]

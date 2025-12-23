@@ -36,14 +36,22 @@ export interface WorkReportData {
   urgencySurcharge: number | null
   travelFee: number | null
   bundleDiscount: number | null
+  sameCityDiscount: number | null
   totalAmount: number | null
   depositAmount: number | null
   depositPaid: boolean
   balanceDue: number | null
 
+  // Deliverables
+  deliverables: string | null
+  tourUrl: string | null
+  deliveredAt: string | null
+
   // Additional
   internalNotes: string | null
   workNotes: string | null
+  clientFeedback: string | null
+  rating: number | null
 }
 
 // Generate a unique receipt number
@@ -397,6 +405,12 @@ export function generateReceiptHTML(data: WorkReportData): string {
             <td class="value discount">-€${data.bundleDiscount.toFixed(2)}</td>
           </tr>
           ` : ''}
+          ${data.sameCityDiscount && data.sameCityDiscount > 0 ? `
+          <tr>
+            <td class="label">Same-City Discount (15%)</td>
+            <td class="value discount">-€${data.sameCityDiscount.toFixed(2)}</td>
+          </tr>
+          ` : ''}
           <tr class="total-row">
             <td>Total Amount</td>
             <td class="value">€${(data.totalAmount || 0).toFixed(2)}</td>
@@ -491,6 +505,9 @@ PRICING
   if (data.bundleDiscount && data.bundleDiscount > 0) {
     text += `Bundle Discount:  -€${data.bundleDiscount.toFixed(2)}\n`
   }
+  if (data.sameCityDiscount && data.sameCityDiscount > 0) {
+    text += `Same-City Disc:   -€${data.sameCityDiscount.toFixed(2)}\n`
+  }
 
   text += `───────────────────────────────────────
 TOTAL:             €${(data.totalAmount || 0).toFixed(2)}
@@ -542,10 +559,16 @@ export function generateReceiptCSV(data: WorkReportData): string {
     ['Urgency Surcharge', data.urgencySurcharge?.toFixed(2) || '0.00'],
     ['Travel Fee', data.travelFee?.toFixed(2) || '0.00'],
     ['Bundle Discount', data.bundleDiscount?.toFixed(2) || '0.00'],
+    ['Same-City Discount', data.sameCityDiscount?.toFixed(2) || '0.00'],
     ['Total Amount', data.totalAmount?.toFixed(2) || '0.00'],
     ['Deposit Amount', data.depositAmount?.toFixed(2) || '0.00'],
     ['Deposit Paid', data.depositPaid ? 'Yes' : 'No'],
     ['Balance Due', data.balanceDue?.toFixed(2) || '0.00'],
+    [''],
+    ['DELIVERABLES'],
+    ['Delivered At', data.deliveredAt || ''],
+    ['Tour URL', data.tourUrl || ''],
+    ['Client Rating', data.rating ? `${data.rating}/5` : ''],
   ]
 
   return rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n')

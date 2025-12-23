@@ -224,17 +224,20 @@ model Booking {
   urgencySurcharge    Float?              // Calculated surcharge amount
   travelFee           Float?              // Calculated travel fee (or bundle share)
   bundleDiscount      Float?              // Discount from bundle
+  sameCityDiscount    Float?              // 15% discount when booking same city/date as existing job
   totalQuote          Float?              // Total estimated price
   depositAmount       Float?              // Required deposit
   depositPaid         Boolean   @default(false)
 
-  // Admin notes
+  // Admin notes & Communication
   internalNotes       String?             // Admin-only notes
+  communicationLog    String?             // JSON array of communication entries
+  stageNotes          String?             // JSON object with notes per stage
 
   // Status Tracking
   status              String    @default("quote_requested")
-  // Status values: quote_requested, quote_sent, pending_confirmation,
-  //                confirmed, scheduled, in_progress, completed, cancelled
+  // Status values: quote_requested, quote_sent, negotiating, pending_deposit,
+  //                confirmed, scheduled, in_progress, editing, delivered, completed, cancelled
   isRead              Boolean   @default(false)
 
   // Timestamps
@@ -243,11 +246,17 @@ model Booking {
   quoteSentAt         DateTime?           // When quote was sent
   confirmedAt         DateTime?           // When client confirmed
   completedAt         DateTime?           // When project completed
+  deliveredAt         DateTime?           // When final files were delivered
 
   // Work session tracking
   workStartedAt       DateTime?           // When work actually started
   workEndedAt         DateTime?           // When work actually ended
   workDurationMinutes Int?                // Total minutes worked
+
+  // Deliverables tracking
+  deliverables        String?             // JSON: files delivered, links, etc.
+  clientFeedback      String?             // Client's feedback after delivery
+  rating              Int?                // Client rating 1-5
 }
 
 // Booking settings (singleton-style config)

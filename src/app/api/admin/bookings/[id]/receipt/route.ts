@@ -91,14 +91,22 @@ export async function GET(
       urgencySurcharge: booking.urgencySurcharge,
       travelFee: booking.travelFee,
       bundleDiscount: booking.bundleDiscount,
+      sameCityDiscount: booking.sameCityDiscount || null,
       totalAmount: totalAmount,
       depositAmount: depositAmount,
       depositPaid: booking.depositPaid,
       balanceDue: balanceDue,
 
-      // Notes
+      // Deliverables
+      deliverables: booking.deliverables || null,
+      tourUrl: null, // Can be extracted from deliverables JSON if needed
+      deliveredAt: booking.deliveredAt ? formatDate(new Date(booking.deliveredAt)) : null,
+
+      // Notes & Feedback
       internalNotes: booking.internalNotes,
       workNotes: null, // Can be added from the completion modal
+      clientFeedback: booking.clientFeedback || null,
+      rating: booking.rating || null,
     }
 
     // Return in requested format
@@ -219,12 +227,18 @@ export async function POST(
       urgencySurcharge: updatedBooking.urgencySurcharge,
       travelFee: updatedBooking.travelFee,
       bundleDiscount: updatedBooking.bundleDiscount,
+      sameCityDiscount: updatedBooking.sameCityDiscount || null,
       totalAmount: totalAmount,
       depositAmount: depositAmount,
       depositPaid: updatedBooking.depositPaid,
       balanceDue: balanceDue,
+      deliverables: updatedBooking.deliverables || null,
+      tourUrl: null,
+      deliveredAt: updatedBooking.deliveredAt ? formatDate(new Date(updatedBooking.deliveredAt)) : null,
       internalNotes: updatedBooking.internalNotes,
       workNotes: data.workNotes || null,
+      clientFeedback: updatedBooking.clientFeedback || null,
+      rating: updatedBooking.rating || null,
     }
 
     return NextResponse.json({

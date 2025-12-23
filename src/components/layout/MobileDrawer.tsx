@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { X, Eye, Home, FolderOpen, MessageSquare, DollarSign, Mail, ChevronRight } from 'lucide-react'
+import { X, Eye, Home, FolderOpen, MessageSquare, DollarSign, Mail, ChevronRight, CalendarDays } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -16,6 +16,7 @@ interface NavLink {
 const navLinks: NavLink[] = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/tours', label: 'Portfolio', icon: FolderOpen },
+  { href: '/schedule', label: 'Availability', icon: CalendarDays },
   { href: '/testimonials', label: 'Testimonials', icon: MessageSquare },
   { href: '/pricing', label: 'Pricing', icon: DollarSign },
 ]
