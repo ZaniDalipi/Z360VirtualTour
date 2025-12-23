@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Search, Play, MapPin, Grid, List, Eye, Star, ArrowUpRight, SlidersHorizontal, X } from 'lucide-react'
 import { PublicHeader, Footer, Navbar } from '@/components/layout'
-import { Button, Input, Chip } from '@/components/ui'
+import { Button, Input, Chip, Carousel3D } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 
 // Placeholder data - shown when no database tours exist
@@ -322,6 +322,26 @@ function ToursContent() {
         )}
       </AnimatePresence>
 
+      {/* Featured Tours 3D Carousel */}
+      {activeCategory === 'all' && searchQuery === '' && filteredTours.filter(t => t.featured).length > 0 && (
+        <section className="py-8 sm:py-12 md:py-16 bg-gradient-to-b from-navy-dark to-navy overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center mb-8 sm:mb-12"
+            >
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-cream mb-2 flex items-center justify-center gap-2">
+                <Star className="w-5 h-5 sm:w-6 sm:h-6 text-gold fill-gold" />
+                Featured Projects
+              </h2>
+              <p className="text-sm sm:text-base text-cream-muted">Our most impressive virtual tours</p>
+            </motion.div>
+            <Carousel3D items={filteredTours.filter(t => t.featured)} />
+          </div>
+        </section>
+      )}
+
       {/* Tours Grid */}
       <section className="py-6 sm:py-8 md:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -329,7 +349,7 @@ function ToursContent() {
             {filteredTours.length} tour{filteredTours.length !== 1 ? 's' : ''} found
           </p>
 
-          <div className={`grid gap-4 sm:gap-6 lg:gap-8 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+          <div className={`grid gap-6 sm:gap-8 lg:gap-10 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
             {filteredTours.map((tour, index) => (
               <motion.div
                 key={tour.id}
@@ -339,13 +359,13 @@ function ToursContent() {
                 className="group"
               >
                 <Link href={tour.slug === 'placeholder' ? '/admin' : `/tour/${tour.slug}`}>
-                  <div className={`relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
-                                   group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-gold/10
-                                   active:scale-[0.98] md:hover:-translate-y-2
+                  <div className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
+                                   group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-gold/20
+                                   active:scale-[0.98] md:hover:-translate-y-3
                                    ${viewMode === 'list' ? 'sm:flex' : ''}`}>
 
-                    {/* Image Container */}
-                    <div className={`relative overflow-hidden ${viewMode === 'list' ? 'sm:w-64 md:w-72 flex-shrink-0 h-48 sm:h-auto' : 'h-48 sm:h-56 md:h-64'}`}>
+                    {/* Image Container - BIGGER */}
+                    <div className={`relative overflow-hidden ${viewMode === 'list' ? 'sm:w-72 md:w-80 lg:w-96 flex-shrink-0 h-56 sm:h-auto' : 'h-56 sm:h-72 md:h-80 lg:h-96'}`}>
                       <div className="h-full">
                         <Image
                           src={tour.coverImage}
