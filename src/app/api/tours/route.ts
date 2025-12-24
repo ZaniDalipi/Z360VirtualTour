@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { cache, CacheTTL } from '@/lib/cache'
 import { withRetry } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 // Helper to parse images from JSON string or array
 function parseImages(images: string | string[] | null): string[] {
   if (!images) return []
