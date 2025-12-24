@@ -27,7 +27,14 @@ export async function GET(
       return NextResponse.json({ error: 'Bundle not found' }, { status: 404 })
     }
 
-    return NextResponse.json(bundle)
+    // Add fallbacks for startDate/endDate for older entries
+    const mappedBundle = {
+      ...bundle,
+      startDate: bundle.startDate || bundle.scheduledDate,
+      endDate: bundle.endDate || bundle.scheduledDate,
+    }
+
+    return NextResponse.json(mappedBundle)
   } catch (error) {
     console.error('Failed to fetch travel bundle:', error)
     return NextResponse.json(

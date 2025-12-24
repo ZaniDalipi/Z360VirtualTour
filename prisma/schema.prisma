@@ -154,9 +154,9 @@ model TravelBundle {
   name               String              // "Ohrid Bundle - January 2025"
   city               String              // Target city
   region             String?             // Region/area
-  startDate          DateTime            // When the bundle period starts
-  endDate            DateTime            // When the bundle period ends
-  scheduledDate      DateTime            // Main working date (for display/compatibility)
+  startDate          DateTime?           // When the bundle period starts (optional for backward compat)
+  endDate            DateTime?           // When the bundle period ends (optional for backward compat)
+  scheduledDate      DateTime            // Main working date (required, used as fallback)
   maxParticipants    Int       @default(10) // Maximum clients in bundle
   currentCount       Int       @default(0)  // Current participants
   distanceKm         Float?              // Distance from base
