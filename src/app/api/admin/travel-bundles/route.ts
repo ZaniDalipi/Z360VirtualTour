@@ -13,7 +13,7 @@ export async function GET() {
 
   try {
     const bundles = await prisma.travelBundle.findMany({
-      orderBy: { scheduledDate: 'asc' },
+      orderBy: { startDate: 'asc' },
     })
     return NextResponse.json(bundles)
   } catch (error) {
@@ -35,12 +35,17 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
+    const startDate = new Date(data.startDate)
+    const endDate = data.endDate ? new Date(data.endDate) : startDate
+
     const bundle = await prisma.travelBundle.create({
       data: {
         name: data.name,
         city: data.city,
         region: data.region || null,
-        scheduledDate: new Date(data.scheduledDate),
+        startDate: startDate,
+        endDate: endDate,
+        scheduledDate: startDate, // Use startDate for compatibility
         maxParticipants: parseInt(data.maxParticipants) || 10,
         currentCount: 0,
         distanceKm: data.distanceKm ? parseFloat(data.distanceKm) : null,

@@ -55,7 +55,13 @@ export async function PUT(
     if (data.name !== undefined) updateData.name = data.name
     if (data.city !== undefined) updateData.city = data.city
     if (data.region !== undefined) updateData.region = data.region
-    if (data.scheduledDate !== undefined) updateData.scheduledDate = new Date(data.scheduledDate)
+    if (data.startDate !== undefined) {
+      updateData.startDate = new Date(data.startDate)
+      updateData.scheduledDate = new Date(data.startDate) // Keep scheduledDate in sync
+    }
+    if (data.endDate !== undefined) {
+      updateData.endDate = new Date(data.endDate)
+    }
     if (data.maxParticipants !== undefined) updateData.maxParticipants = parseInt(data.maxParticipants)
     if (data.currentCount !== undefined) updateData.currentCount = parseInt(data.currentCount)
     if (data.distanceKm !== undefined) updateData.distanceKm = data.distanceKm ? parseFloat(data.distanceKm) : null

@@ -34,7 +34,9 @@ interface Bundle {
   name: string
   city: string
   region: string | null
-  date: string
+  startDate: string
+  endDate: string
+  dates: string[] // All dates in the bundle range
   scheduledDate: string
   maxParticipants: number
   currentCount: number
@@ -136,7 +138,8 @@ export default function SchedulePage() {
     const dateStr = formatDateStr(currentYear, currentMonth, day)
     const scheduleDay = schedule.find((s) => s.date === dateStr)
     const blockedDay = blockedDates.find((b) => b.date === dateStr)
-    const dayBundles = bundles.filter((b) => b.date === dateStr)
+    // Check if this date falls within any bundle's date range
+    const dayBundles = bundles.filter((b) => b.dates.includes(dateStr))
 
     return {
       dateStr,
@@ -421,9 +424,18 @@ export default function SchedulePage() {
                                     )}
                                   </div>
 
-                                  <div className="flex items-center gap-2 text-sm text-cream-muted mb-2">
+                                  <div className="flex items-center gap-2 text-sm text-cream-muted mb-1">
                                     <MapPin className="w-4 h-4" />
                                     <span>{bundle.city}{bundle.region ? `, ${bundle.region}` : ''}</span>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 text-sm text-cream-muted mb-2">
+                                    <Calendar className="w-4 h-4" />
+                                    <span>
+                                      {bundle.startDate === bundle.endDate
+                                        ? bundle.startDate
+                                        : `${bundle.startDate} to ${bundle.endDate}`}
+                                    </span>
                                   </div>
 
                                   {bundle.description && (
@@ -582,7 +594,11 @@ export default function SchedulePage() {
                           )}
                         </div>
                         <div className="flex items-center justify-between text-xs text-cream-muted">
-                          <span>{new Date(bundle.scheduledDate).toLocaleDateString()}</span>
+                          <span>
+                            {bundle.startDate === bundle.endDate
+                              ? bundle.startDate
+                              : `${bundle.startDate} - ${bundle.endDate}`}
+                          </span>
                           <span>{bundle.isFull ? 'Emergency only' : `${bundle.spotsRemaining} spots`}</span>
                         </div>
                       </div>

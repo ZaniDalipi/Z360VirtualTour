@@ -89,17 +89,32 @@ export async function GET(request: NextRequest) {
       reason: bd.reason || 'Unavailable',
     }))
 
-    // Get active bundles within the date range
+    // Get active bundles that overlap with the date range
+    // A bundle overlaps if its startDate <= endDate filter AND endDate >= startDate filter
     const bundles = await prisma.travelBundle.findMany({
       where: {
         isActive: true,
-        scheduledDate: dateFilter,
+        OR: [
+          // Bundle starts within the range
+          { startDate: dateFilter },
+          // Bundle ends within the range
+          { endDate: dateFilter },
+          // Bundle spans the entire range
+          {
+            AND: [
+              { startDate: { lte: dateFilter.gte } },
+              { endDate: { gte: dateFilter.lte } },
+            ],
+          },
+        ],
       },
       select: {
         id: true,
         name: true,
         city: true,
         region: true,
+        startDate: true,
+        endDate: true,
         scheduledDate: true,
         maxParticipants: true,
         currentCount: true,
@@ -110,7 +125,7 @@ export async function GET(request: NextRequest) {
         status: true,
       },
       orderBy: {
-        scheduledDate: 'asc',
+        startDate: 'asc',
       },
     })
 
@@ -119,6 +134,8 @@ export async function GET(request: NextRequest) {
       name: string
       city: string
       region: string | null
+      startDate: Date
+      endDate: Date
       scheduledDate: Date
       maxParticipants: number
       currentCount: number
@@ -129,12 +146,26 @@ export async function GET(request: NextRequest) {
       status: string
     }
 
+    // Helper to get all dates between start and end
+    const getDatesBetween = (start: Date, end: Date): string[] => {
+      const dates: string[] = []
+      const current = new Date(start)
+      const endDate = new Date(end)
+      while (current <= endDate) {
+        dates.push(formatDateKey(current))
+        current.setDate(current.getDate() + 1)
+      }
+      return dates
+    }
+
     const formattedBundles = bundles.map((b: BundleData) => ({
       id: b.id,
       name: b.name,
       city: b.city,
       region: b.region,
-      date: formatDateKey(b.scheduledDate),
+      startDate: formatDateKey(b.startDate),
+      endDate: formatDateKey(b.endDate),
+      dates: getDatesBetween(b.startDate, b.endDate), // All dates in the bundle range
       scheduledDate: b.scheduledDate,
       maxParticipants: b.maxParticipants,
       currentCount: b.currentCount,

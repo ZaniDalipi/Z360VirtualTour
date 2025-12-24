@@ -10,6 +10,8 @@ interface TravelBundle {
   name: string
   city: string
   region: string | null
+  startDate: string
+  endDate: string
   scheduledDate: string
   maxParticipants: number
   currentCount: number
@@ -40,7 +42,8 @@ export default function BundlesAdminPage() {
     name: '',
     city: '',
     region: '',
-    scheduledDate: '',
+    startDate: '',
+    endDate: '',
     maxParticipants: 10,
     distanceKm: '',
     totalTravelCost: '',
@@ -103,7 +106,8 @@ export default function BundlesAdminPage() {
       name: bundle.name,
       city: bundle.city,
       region: bundle.region || '',
-      scheduledDate: bundle.scheduledDate.split('T')[0],
+      startDate: bundle.startDate?.split('T')[0] || '',
+      endDate: bundle.endDate?.split('T')[0] || '',
       maxParticipants: bundle.maxParticipants,
       distanceKm: bundle.distanceKm?.toString() || '',
       totalTravelCost: bundle.totalTravelCost?.toString() || '',
@@ -134,7 +138,8 @@ export default function BundlesAdminPage() {
       name: '',
       city: '',
       region: '',
-      scheduledDate: '',
+      startDate: '',
+      endDate: '',
       maxParticipants: 10,
       distanceKm: '',
       totalTravelCost: '',
@@ -267,25 +272,37 @@ export default function BundlesAdminPage() {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-cream mb-2">
-                        Scheduled Date *
+                        Start Date *
                       </label>
                       <Input
                         type="date"
-                        value={formData.scheduledDate}
-                        onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
+                        value={formData.startDate}
+                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
                         required
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-cream mb-2">
-                        Registration Deadline
+                        End Date *
                       </label>
                       <Input
                         type="date"
-                        value={formData.registrationDeadline}
-                        onChange={(e) => setFormData({ ...formData, registrationDeadline: e.target.value })}
+                        value={formData.endDate}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        required
                       />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-cream mb-2">
+                      Registration Deadline
+                    </label>
+                    <Input
+                      type="date"
+                      value={formData.registrationDeadline}
+                      onChange={(e) => setFormData({ ...formData, registrationDeadline: e.target.value })}
+                    />
                   </div>
 
                   <div className="grid md:grid-cols-3 gap-4">
@@ -432,7 +449,11 @@ export default function BundlesAdminPage() {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-cream-muted" />
-                    <span className="text-sm text-cream">{formatDate(bundle.scheduledDate)}</span>
+                    <span className="text-sm text-cream">
+                      {bundle.startDate === bundle.endDate || !bundle.endDate
+                        ? formatDate(bundle.startDate)
+                        : `${formatDate(bundle.startDate)} - ${formatDate(bundle.endDate)}`}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4 text-cream-muted" />

@@ -148,13 +148,15 @@ model TravelZone {
   bookings          Booking[]
 }
 
-// Travel bundles - group bookings for same city/date
+// Travel bundles - group bookings for same city/date range
 model TravelBundle {
   id                 String    @id @default(auto()) @map("_id") @db.ObjectId
   name               String              // "Ohrid Bundle - January 2025"
   city               String              // Target city
   region             String?             // Region/area
-  scheduledDate      DateTime            // When the photographer will be there
+  startDate          DateTime            // When the bundle period starts
+  endDate            DateTime            // When the bundle period ends
+  scheduledDate      DateTime            // Main working date (for display/compatibility)
   maxParticipants    Int       @default(10) // Maximum clients in bundle
   currentCount       Int       @default(0)  // Current participants
   distanceKm         Float?              // Distance from base
