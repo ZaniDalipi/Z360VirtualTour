@@ -3,6 +3,12 @@ import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
+// Helper to format date without timezone issues
+const formatDateKey = (date: Date): string => {
+  const d = new Date(date)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 // Public API to get scheduled work dates with cities (no client details)
 export async function GET(request: NextRequest) {
   try {
@@ -48,12 +54,6 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    // Helper to format date without timezone issues
-    const formatDateKey = (date: Date): string => {
-      const d = new Date(date)
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-    }
-
     // Group by date and city (only show city, not specific details)
     const scheduleMap = new Map<string, Set<string>>()
 
@@ -89,9 +89,68 @@ export async function GET(request: NextRequest) {
       reason: bd.reason || 'Unavailable',
     }))
 
+    // Get active bundles within the date range
+    const bundles = await prisma.travelBundle.findMany({
+      where: {
+        isActive: true,
+        scheduledDate: dateFilter,
+      },
+      select: {
+        id: true,
+        name: true,
+        city: true,
+        region: true,
+        scheduledDate: true,
+        maxParticipants: true,
+        currentCount: true,
+        discountPercent: true,
+        perPersonTravelFee: true,
+        description: true,
+        registrationDeadline: true,
+        status: true,
+      },
+      orderBy: {
+        scheduledDate: 'asc',
+      },
+    })
+
+    interface BundleData {
+      id: string
+      name: string
+      city: string
+      region: string | null
+      scheduledDate: Date
+      maxParticipants: number
+      currentCount: number
+      discountPercent: number
+      perPersonTravelFee: number | null
+      description: string | null
+      registrationDeadline: Date | null
+      status: string
+    }
+
+    const formattedBundles = bundles.map((b: BundleData) => ({
+      id: b.id,
+      name: b.name,
+      city: b.city,
+      region: b.region,
+      date: formatDateKey(b.scheduledDate),
+      scheduledDate: b.scheduledDate,
+      maxParticipants: b.maxParticipants,
+      currentCount: b.currentCount,
+      spotsRemaining: b.maxParticipants - b.currentCount,
+      isFull: b.currentCount >= b.maxParticipants,
+      discountPercent: b.discountPercent,
+      perPersonTravelFee: b.perPersonTravelFee,
+      description: b.description,
+      registrationDeadline: b.registrationDeadline ? formatDateKey(b.registrationDeadline) : null,
+      status: b.status,
+    }))
+
     return NextResponse.json({
       schedule,
       blockedDates: blocked,
+      bundles: formattedBundles,
     })
   } catch (error) {
     console.error('Failed to fetch public schedule:', error)
