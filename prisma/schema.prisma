@@ -49,7 +49,9 @@ model Tour {
   tourEmbed     String?   // Embed code for 360 viewer
   categoryId    String    @db.ObjectId
   category      Category  @relation(fields: [categoryId], references: [id])
-  featured      Boolean   @default(false)
+  premium       Boolean   @default(false)  // Gold border, always first
+  highlight     Boolean   @default(false)  // Pink style, second priority
+  featured      Boolean   @default(false)  // Third priority
   isActive      Boolean   @default(true)
   views         Int       @default(0)
   completedAt   DateTime? // When the tour project was completed

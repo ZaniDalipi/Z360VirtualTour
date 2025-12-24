@@ -33,6 +33,8 @@ export default function EditTourPage() {
     tourUrl: '',
     tourEmbed: '',
     categoryId: '',
+    premium: false,
+    highlight: false,
     featured: false,
     isActive: true,
   })
@@ -59,6 +61,8 @@ export default function EditTourPage() {
             tourUrl: tour.tourUrl || '',
             tourEmbed: tour.tourEmbed || '',
             categoryId: tour.categoryId || '',
+            premium: tour.premium || false,
+            highlight: tour.highlight || false,
             featured: tour.featured || false,
             isActive: tour.isActive ?? true,
           })
@@ -373,10 +377,40 @@ export default function EditTourPage() {
             {/* Options */}
             <div>
               <h2 className="text-h4 font-semibold text-cream mb-4">
-                Options
+                Display Options
               </h2>
               <div className="space-y-4">
-                <label className="flex items-center gap-3 cursor-pointer">
+                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border-2 border-gold/30 bg-gold/5 hover:bg-gold/10 transition-colors">
+                  <input
+                    type="checkbox"
+                    name="premium"
+                    checked={formData.premium}
+                    onChange={handleChange}
+                    className="w-5 h-5 rounded border-gold/20 bg-navy text-gold focus:ring-gold/50"
+                  />
+                  <div>
+                    <span className="text-gold font-bold">⭐ Premium Tour</span>
+                    <p className="text-sm text-cream-muted">
+                      Gold border, always displayed first (highest priority)
+                    </p>
+                  </div>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border-2 border-pink-500/30 bg-pink-500/5 hover:bg-pink-500/10 transition-colors">
+                  <input
+                    type="checkbox"
+                    name="highlight"
+                    checked={formData.highlight}
+                    onChange={handleChange}
+                    className="w-5 h-5 rounded border-pink-500/20 bg-navy text-pink-500 focus:ring-pink-500/50"
+                  />
+                  <div>
+                    <span className="text-pink-400 font-bold">✨ Highlight Tour</span>
+                    <p className="text-sm text-cream-muted">
+                      Pink style, displayed second (after premium)
+                    </p>
+                  </div>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-gold/10 hover:border-gold/20 transition-colors">
                   <input
                     type="checkbox"
                     name="featured"
@@ -387,11 +421,11 @@ export default function EditTourPage() {
                   <div>
                     <span className="text-cream font-medium">Featured Tour</span>
                     <p className="text-sm text-cream-muted">
-                      Display this tour prominently on the homepage
+                      Displayed third (after premium & highlight)
                     </p>
                   </div>
                 </label>
-                <label className="flex items-center gap-3 cursor-pointer">
+                <label className="flex items-center gap-3 cursor-pointer p-3 rounded-xl border border-gold/10 hover:border-gold/20 transition-colors">
                   <input
                     type="checkbox"
                     name="isActive"

@@ -85,6 +85,8 @@ export async function GET(request: NextRequest) {
           tourEmbed: true,
           categoryId: true,
           views: true,
+          premium: true,
+          highlight: true,
           featured: true,
           isActive: true,
           completedAt: true,

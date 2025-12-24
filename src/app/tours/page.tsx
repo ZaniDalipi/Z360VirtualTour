@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Search, Play, MapPin, Grid, List, Eye, Star, ArrowUpRight, SlidersHorizontal, X } from 'lucide-react'
+import { Search, Play, MapPin, Grid, List, Eye, Star, ArrowUpRight, SlidersHorizontal, X, Crown, Sparkles } from 'lucide-react'
 import { PublicHeader, Footer, Navbar } from '@/components/layout'
 import { Button, Input, Chip, Carousel3D } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -19,7 +19,7 @@ const placeholderCategories = [
   { id: 'education', name: 'Education', slug: 'education' },
 ]
 
-const placeholderTours = [
+const placeholderTours: Tour[] = [
   {
     id: 'placeholder-1',
     title: 'Your First Tour',
@@ -29,6 +29,8 @@ const placeholderTours = [
     location: 'Your location',
     coverImage: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80',
     category: { name: 'Real Estate', slug: 'real-estate' },
+    premium: false,
+    highlight: false,
     featured: true,
   },
   {
@@ -40,6 +42,8 @@ const placeholderTours = [
     location: 'Your city',
     coverImage: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80',
     category: { name: 'Business', slug: 'business' },
+    premium: false,
+    highlight: false,
     featured: true,
   },
   {
@@ -51,6 +55,8 @@ const placeholderTours = [
     location: 'Your region',
     coverImage: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
     category: { name: 'Hospitality', slug: 'hospitality' },
+    premium: false,
+    highlight: false,
     featured: true,
   },
   {
@@ -62,6 +68,8 @@ const placeholderTours = [
     location: 'Property location',
     coverImage: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=800&q=80',
     category: { name: 'Real Estate', slug: 'real-estate' },
+    premium: false,
+    highlight: false,
     featured: false,
   },
   {
@@ -73,6 +81,8 @@ const placeholderTours = [
     location: 'Store location',
     coverImage: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',
     category: { name: 'Business', slug: 'business' },
+    premium: false,
+    highlight: false,
     featured: false,
   },
   {
@@ -84,6 +94,8 @@ const placeholderTours = [
     location: 'Restaurant location',
     coverImage: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80',
     category: { name: 'Hospitality', slug: 'hospitality' },
+    premium: false,
+    highlight: false,
     featured: false,
   },
 ]
@@ -97,6 +109,8 @@ interface Tour {
   location: string | null
   coverImage: string
   category: { name: string; slug: string }
+  premium: boolean
+  highlight: boolean
   featured: boolean
 }
 
@@ -171,13 +185,27 @@ function ToursContent() {
     fetchData()
   }, [])
 
-  const filteredTours = tours.filter((tour) => {
-    const matchesCategory = activeCategory === 'all' || tour.category.slug === activeCategory
-    const matchesSearch = tour.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         (tour.clientName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
-                         (tour.location?.toLowerCase() || '').includes(searchQuery.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+  // Filter and sort tours: premium first, highlight second, featured third
+  const filteredTours = tours
+    .filter((tour) => {
+      const matchesCategory = activeCategory === 'all' || tour.category.slug === activeCategory
+      const matchesSearch = tour.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           (tour.clientName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                           (tour.location?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+      return matchesCategory && matchesSearch
+    })
+    .sort((a, b) => {
+      // Premium tours always first
+      if (a.premium && !b.premium) return -1
+      if (!a.premium && b.premium) return 1
+      // Highlight tours second
+      if (a.highlight && !b.highlight) return -1
+      if (!a.highlight && b.highlight) return 1
+      // Featured tours third
+      if (a.featured && !b.featured) return -1
+      if (!a.featured && b.featured) return 1
+      return 0
+    })
 
   return (
     <div className="min-h-screen bg-navy">
@@ -359,10 +387,16 @@ function ToursContent() {
                 className="group"
               >
                 <Link href={tour.slug === 'placeholder' ? '/admin' : `/tour/${tour.slug}`}>
-                  <div className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
-                                   group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-gold/20
+                  <div className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-navy-medium to-navy-dark
+                                   transition-all duration-500 group-hover:shadow-2xl
                                    active:scale-[0.98] md:hover:-translate-y-3
-                                   ${viewMode === 'list' ? 'sm:flex' : ''}`}>
+                                   ${viewMode === 'list' ? 'sm:flex' : ''}
+                                   ${tour.premium
+                                     ? 'ring-2 ring-gold shadow-lg shadow-gold/30 group-hover:ring-4 group-hover:shadow-gold/50'
+                                     : tour.highlight
+                                       ? 'ring-2 ring-pink-500 shadow-lg shadow-pink-500/30 group-hover:ring-4 group-hover:shadow-pink-500/50'
+                                       : 'border border-gold/10 group-hover:border-gold/40 group-hover:shadow-gold/20'
+                                   }`}>
 
                     {/* Image Container - BIGGER */}
                     <div className={`relative overflow-hidden ${viewMode === 'list' ? 'sm:w-72 md:w-80 lg:w-96 flex-shrink-0 h-56 sm:h-auto' : 'h-56 sm:h-72 md:h-80 lg:h-96'}`}>
@@ -398,12 +432,27 @@ function ToursContent() {
                           {tour.category.name}
                         </span>
 
-                        {tour.featured && (
-                          <span className="flex items-center gap-1 bg-navy/80 backdrop-blur-sm text-gold text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-gold/40 shadow-lg">
-                            <Star className="w-3 h-3 fill-gold" />
-                            <span className="hidden sm:inline">Featured</span>
-                          </span>
-                        )}
+                        {/* Priority Badges: Premium > Highlight > Featured */}
+                        <div className="flex gap-2">
+                          {tour.premium && (
+                            <span className="flex items-center gap-1 bg-gradient-to-r from-gold to-yellow-500 text-navy text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-lg animate-pulse">
+                              <Crown className="w-3 h-3" />
+                              <span className="hidden sm:inline">Premium</span>
+                            </span>
+                          )}
+                          {tour.highlight && (
+                            <span className="flex items-center gap-1 bg-gradient-to-r from-pink-500 to-pink-400 text-white text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg shadow-lg">
+                              <Sparkles className="w-3 h-3" />
+                              <span className="hidden sm:inline">Highlight</span>
+                            </span>
+                          )}
+                          {tour.featured && !tour.premium && !tour.highlight && (
+                            <span className="flex items-center gap-1 bg-navy/80 backdrop-blur-sm text-gold text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-gold/40 shadow-lg">
+                              <Star className="w-3 h-3 fill-gold" />
+                              <span className="hidden sm:inline">Featured</span>
+                            </span>
+                          )}
+                        </div>
                       </div>
 
                       {/* Bottom Image Overlay Info - Hidden on mobile */}
