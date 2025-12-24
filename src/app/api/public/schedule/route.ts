@@ -90,23 +90,11 @@ export async function GET(request: NextRequest) {
     }))
 
     // Get active bundles that overlap with the date range
-    // A bundle overlaps if its startDate <= endDate filter AND endDate >= startDate filter
+    // Use scheduledDate for backward compatibility, then apply startDate/endDate if available
     const bundles = await prisma.travelBundle.findMany({
       where: {
         isActive: true,
-        OR: [
-          // Bundle starts within the range
-          { startDate: dateFilter },
-          // Bundle ends within the range
-          { endDate: dateFilter },
-          // Bundle spans the entire range
-          {
-            AND: [
-              { startDate: { lte: dateFilter.gte } },
-              { endDate: { gte: dateFilter.lte } },
-            ],
-          },
-        ],
+        scheduledDate: dateFilter,
       },
       select: {
         id: true,
@@ -125,7 +113,7 @@ export async function GET(request: NextRequest) {
         status: true,
       },
       orderBy: {
-        startDate: 'asc',
+        scheduledDate: 'asc',
       },
     })
 
@@ -134,8 +122,8 @@ export async function GET(request: NextRequest) {
       name: string
       city: string
       region: string | null
-      startDate: Date
-      endDate: Date
+      startDate: Date | null
+      endDate: Date | null
       scheduledDate: Date
       maxParticipants: number
       currentCount: number
@@ -158,25 +146,31 @@ export async function GET(request: NextRequest) {
       return dates
     }
 
-    const formattedBundles = bundles.map((b: BundleData) => ({
-      id: b.id,
-      name: b.name,
-      city: b.city,
-      region: b.region,
-      startDate: formatDateKey(b.startDate),
-      endDate: formatDateKey(b.endDate),
-      dates: getDatesBetween(b.startDate, b.endDate), // All dates in the bundle range
-      scheduledDate: b.scheduledDate,
-      maxParticipants: b.maxParticipants,
-      currentCount: b.currentCount,
-      spotsRemaining: b.maxParticipants - b.currentCount,
-      isFull: b.currentCount >= b.maxParticipants,
-      discountPercent: b.discountPercent,
-      perPersonTravelFee: b.perPersonTravelFee,
-      description: b.description,
-      registrationDeadline: b.registrationDeadline ? formatDateKey(b.registrationDeadline) : null,
-      status: b.status,
-    }))
+    const formattedBundles = bundles.map((b: BundleData) => {
+      // Use startDate/endDate if available, fallback to scheduledDate for older entries
+      const effectiveStartDate = b.startDate || b.scheduledDate
+      const effectiveEndDate = b.endDate || b.scheduledDate
+
+      return {
+        id: b.id,
+        name: b.name,
+        city: b.city,
+        region: b.region,
+        startDate: formatDateKey(effectiveStartDate),
+        endDate: formatDateKey(effectiveEndDate),
+        dates: getDatesBetween(effectiveStartDate, effectiveEndDate), // All dates in the bundle range
+        scheduledDate: b.scheduledDate,
+        maxParticipants: b.maxParticipants,
+        currentCount: b.currentCount,
+        spotsRemaining: b.maxParticipants - b.currentCount,
+        isFull: b.currentCount >= b.maxParticipants,
+        discountPercent: b.discountPercent,
+        perPersonTravelFee: b.perPersonTravelFee,
+        description: b.description,
+        registrationDeadline: b.registrationDeadline ? formatDateKey(b.registrationDeadline) : null,
+        status: b.status,
+      }
+    })
 
     return NextResponse.json({
       schedule,

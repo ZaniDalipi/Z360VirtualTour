@@ -13,9 +13,17 @@ export async function GET() {
 
   try {
     const bundles = await prisma.travelBundle.findMany({
-      orderBy: { startDate: 'asc' },
+      orderBy: { scheduledDate: 'asc' },
     })
-    return NextResponse.json(bundles)
+
+    // Map bundles to include startDate/endDate fallbacks for older entries
+    const mappedBundles = bundles.map((bundle) => ({
+      ...bundle,
+      startDate: bundle.startDate || bundle.scheduledDate,
+      endDate: bundle.endDate || bundle.scheduledDate,
+    }))
+
+    return NextResponse.json(mappedBundles)
   } catch (error) {
     console.error('Failed to fetch travel bundles:', error)
     return NextResponse.json(
