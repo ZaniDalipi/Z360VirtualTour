@@ -48,12 +48,18 @@ export async function GET(request: NextRequest) {
       },
     })
 
+    // Helper to format date without timezone issues
+    const formatDateKey = (date: Date): string => {
+      const d = new Date(date)
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    }
+
     // Group by date and city (only show city, not specific details)
     const scheduleMap = new Map<string, Set<string>>()
 
     bookings.forEach((booking: { confirmedDate: Date | null; propertyCity: string | null }) => {
       if (booking.confirmedDate && booking.propertyCity) {
-        const dateKey = booking.confirmedDate.toISOString().split('T')[0]
+        const dateKey = formatDateKey(booking.confirmedDate)
         if (!scheduleMap.has(dateKey)) {
           scheduleMap.set(dateKey, new Set())
         }
@@ -79,7 +85,7 @@ export async function GET(request: NextRequest) {
     })
 
     const blocked = blockedDates.map((bd: { date: Date; reason: string | null }) => ({
-      date: bd.date.toISOString().split('T')[0],
+      date: formatDateKey(bd.date),
       reason: bd.reason || 'Unavailable',
     }))
 
