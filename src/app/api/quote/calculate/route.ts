@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       distanceKm,
       bundleId: data.bundleId,
       userCity: data.city,  // Pass user's city for bundle eligibility check
+      scheduledCities: data.scheduledCities,  // Cities where photographer is already scheduled (for same-city discount)
     })
 
     return NextResponse.json({

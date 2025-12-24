@@ -18,6 +18,9 @@ async function sendBookingNotification(booking: {
     urgencySurchargeAmount: number
     travelFee: number
     bundleDiscount: number
+    sameCityDiscount: number
+    sameCityDiscountPercent: number
+    matchedScheduledCity: string | null
     total: number
     depositAmount: number | null
     depositPercent: number | null
@@ -119,6 +122,12 @@ async function sendBookingNotification(booking: {
                 <td style="padding: 5px 0; text-align: right; color: #27ae60;">-€${booking.quote.bundleDiscount.toFixed(2)}</td>
               </tr>
               ` : ''}
+              ${booking.quote.sameCityDiscount > 0 ? `
+              <tr>
+                <td style="padding: 5px 0; color: #27ae60;">Same-City Discount (${booking.quote.sameCityDiscountPercent}%)${booking.quote.matchedScheduledCity ? ` - ${booking.quote.matchedScheduledCity}` : ''}:</td>
+                <td style="padding: 5px 0; text-align: right; color: #27ae60;">-€${booking.quote.sameCityDiscount.toFixed(2)}</td>
+              </tr>
+              ` : ''}
               <tr style="border-top: 2px solid #C9A962;">
                 <td style="padding: 10px 0; font-weight: bold; font-size: 18px;">Total:</td>
                 <td style="padding: 10px 0; text-align: right; font-weight: bold; font-size: 18px; color: #C9A962;">€${booking.quote.total.toFixed(2)}</td>
@@ -191,6 +200,7 @@ export async function POST(request: NextRequest) {
       distanceKm,
       bundleId: data.travelBundleId,
       userCity: data.propertyCity,  // Pass user's city for bundle eligibility check
+      scheduledCities: data.scheduledCities,  // For same-city discount
     })
 
     // If joining a bundle, validate it
@@ -241,6 +251,7 @@ export async function POST(request: NextRequest) {
         urgencySurcharge: quote.urgencySurchargeAmount,
         travelFee: quote.travelFee,
         bundleDiscount: quote.bundleDiscount,
+        sameCityDiscount: quote.sameCityDiscount || null,
         totalQuote: quote.total,
         depositAmount: quote.depositAmount,
         status: 'quote_requested',
@@ -273,6 +284,9 @@ export async function POST(request: NextRequest) {
         urgencySurchargeAmount: quote.urgencySurchargeAmount,
         travelFee: quote.travelFee,
         bundleDiscount: quote.bundleDiscount,
+        sameCityDiscount: quote.sameCityDiscount,
+        sameCityDiscountPercent: quote.sameCityDiscountPercent,
+        matchedScheduledCity: quote.matchedScheduledCity,
         total: quote.total,
         depositAmount: quote.depositAmount,
         depositPercent: quote.depositPercent,
@@ -287,6 +301,7 @@ export async function POST(request: NextRequest) {
         urgencySurcharge: quote.urgencySurchargeAmount,
         travelFee: quote.travelFee,
         bundleDiscount: quote.bundleDiscount,
+        sameCityDiscount: quote.sameCityDiscount,
         total: quote.total,
         depositAmount: quote.depositAmount,
       },

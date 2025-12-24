@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   MapPin, Phone, Mail, Clock, Send, CheckCircle, Calendar, Users, AlertCircle,
   ChevronRight, Download, Facebook, Instagram, Linkedin, Youtube, Twitter,
-  FileText, Share2, ExternalLink
+  FileText, Share2, ExternalLink, Percent, Sparkles
 } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card, Input } from '@/components/ui'
@@ -99,6 +100,9 @@ interface QuoteResult {
   travelFee: number
   bundleName: string | null
   bundleDiscount: number
+  sameCityDiscount: number
+  sameCityDiscountPercent: number
+  matchedScheduledCity: string | null
   total: number
   depositAmount: number | null
 }
@@ -115,7 +119,8 @@ interface BookingResponse {
   }
 }
 
-export default function ContactPage() {
+function ContactPageContent() {
+  const searchParams = useSearchParams()
   const [step, setStep] = useState(1)
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
   const [urgencyTiers, setUrgencyTiers] = useState<UrgencyTier[]>([])
@@ -124,6 +129,11 @@ export default function ContactPage() {
   const [isCalculating, setIsCalculating] = useState(false)
   const [bookingResponse, setBookingResponse] = useState<BookingResponse | null>(null)
   const confirmationRef = useRef<HTMLDivElement>(null)
+
+  // Get URL params for schedule booking (date and cities where photographer will be)
+  const scheduledDate = searchParams.get('date')
+  const scheduledCitiesParam = searchParams.get('cities')
+  const scheduledCities = scheduledCitiesParam ? scheduledCitiesParam.split(',') : []
 
   const [formData, setFormData] = useState({
     name: '',
@@ -134,7 +144,7 @@ export default function ContactPage() {
     propertyCity: '',
     pricingPlanId: '',
     urgencyTierId: '',
-    preferredDate: '',
+    preferredDate: scheduledDate || '',
     preferredTime: '',
     alternateDate: '',
     alternateTime: '',
@@ -143,6 +153,13 @@ export default function ContactPage() {
     bundleId: '',
     message: '',
   })
+
+  // Update preferred date if URL param changes
+  useEffect(() => {
+    if (scheduledDate && !formData.preferredDate) {
+      setFormData(prev => ({ ...prev, preferredDate: scheduledDate }))
+    }
+  }, [scheduledDate])
 
   // Available time slots for booking
   const timeSlots = [
@@ -209,6 +226,7 @@ export default function ContactPage() {
             urgencyTierId: formData.urgencyTierId,
             city: formData.propertyCity,
             bundleId: formData.bundleId,
+            scheduledCities: scheduledCities.length > 0 ? scheduledCities : undefined,
           }),
         })
 
@@ -224,7 +242,7 @@ export default function ContactPage() {
 
     const debounce = setTimeout(calculateQuote, 500)
     return () => clearTimeout(debounce)
-  }, [formData.pricingPlanId, formData.urgencyTierId, formData.propertyCity, formData.bundleId])
+  }, [formData.pricingPlanId, formData.urgencyTierId, formData.propertyCity, formData.bundleId, scheduledCitiesParam])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -260,6 +278,11 @@ export default function ContactPage() {
           deadlineDate: formData.isUrgent ? formData.deadlineDate : null,
           travelBundleId: formData.bundleId || null,
           projectDescription: formData.message,
+          // Same-city discount info
+          sameCityDiscount: quote?.sameCityDiscount || 0,
+          sameCityDiscountPercent: quote?.sameCityDiscountPercent || 0,
+          matchedScheduledCity: quote?.matchedScheduledCity || null,
+          scheduledCities: scheduledCities.length > 0 ? scheduledCities : null,
         }),
       })
 
@@ -567,6 +590,11 @@ export default function ContactPage() {
             <span>Bundle Discount</span>
             <span style="color: #22c55e;">-€${quote.bundleDiscount.toFixed(2)}</span>
           </div>` : ''}
+          ${quote?.sameCityDiscount ? `
+          <div class="quote-row">
+            <span>Same-City Discount (${quote.sameCityDiscountPercent}%)</span>
+            <span style="color: #22c55e;">-€${quote.sameCityDiscount.toFixed(2)}</span>
+          </div>` : ''}
           <div class="quote-row total">
             <span>Estimated Total</span>
             <span>€${quote?.total.toFixed(2) || '0.00'}</span>
@@ -684,6 +712,43 @@ export default function ContactPage() {
               animate={{ opacity: 1, x: 0 }}
               className="lg:col-span-2 space-y-6"
             >
+              {/* Same-City Discount Banner - shown when coming from schedule page */}
+              {scheduledCities.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Card className="p-4 border-green-500/30 bg-gradient-to-br from-green-500/10 to-emerald-500/5">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                        <Percent className="w-5 h-5 text-green-400" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Sparkles className="w-4 h-4 text-green-400" />
+                          <p className="text-green-400 font-semibold">15% Same-City Discount Available!</p>
+                        </div>
+                        <p className="text-cream-muted text-sm">
+                          I'll be in <span className="text-green-300 font-medium">{scheduledCities.join(', ')}</span> on{' '}
+                          <span className="text-green-300 font-medium">
+                            {scheduledDate ? new Date(scheduledDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'this date'}
+                          </span>.
+                          If your property is nearby, you'll automatically get 15% off!
+                        </p>
+                        {quote?.matchedScheduledCity && (
+                          <div className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/20 w-fit">
+                            <CheckCircle className="w-4 h-4 text-green-400" />
+                            <span className="text-green-300 text-sm font-medium">
+                              Discount applied! Your city matches {quote.matchedScheduledCity}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
+
               {/* Quote Preview */}
               {quote && (
                 <Card className="p-6 border-gold/30">
@@ -714,6 +779,15 @@ export default function ContactPage() {
                       <div className="flex justify-between">
                         <span className="text-cream-muted">Bundle Discount</span>
                         <span className="text-green-400">-€{quote.bundleDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
+
+                    {quote.sameCityDiscount > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-cream-muted">
+                          Same-City Discount ({quote.sameCityDiscountPercent}%)
+                        </span>
+                        <span className="text-green-400">-€{quote.sameCityDiscount.toFixed(2)}</span>
                       </div>
                     )}
 
@@ -1265,5 +1339,26 @@ export default function ContactPage() {
 
       <Footer />
     </div>
+  )
+}
+
+// Loading fallback
+function ContactLoading() {
+  return (
+    <div className="min-h-screen bg-navy flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-cream-muted">Loading booking form...</p>
+      </div>
+    </div>
+  )
+}
+
+// Default export with Suspense wrapper for useSearchParams
+export default function ContactPage() {
+  return (
+    <Suspense fallback={<ContactLoading />}>
+      <ContactPageContent />
+    </Suspense>
   )
 }

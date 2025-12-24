@@ -76,6 +76,12 @@ export const cityToCityDistances: Record<string, number> = {
 // Maximum distance (km) from bundle city to qualify for bundle discount
 export const BUNDLE_MAX_DISTANCE_KM = 50
 
+// Same-city discount percentage (when booking where photographer is already scheduled)
+export const SAME_CITY_DISCOUNT_PERCENT = 15
+
+// Maximum distance to qualify for same-city discount
+export const SAME_CITY_MAX_DISTANCE_KM = 40
+
 /**
  * Get distance from Skopje to a city
  */
@@ -156,6 +162,9 @@ export interface QuoteCalculation {
   travelFee: number
   bundleName: string | null
   bundleDiscount: number
+  sameCityDiscount: number
+  sameCityDiscountPercent: number
+  matchedScheduledCity: string | null
   subtotal: number
   total: number
   depositAmount: number | null
@@ -168,6 +177,7 @@ export async function calculateQuote(params: {
   distanceKm?: number | null
   bundleId?: string | null
   userCity?: string | null  // User's property city for bundle eligibility check
+  scheduledCities?: string[] | null  // Cities where photographer is already scheduled (for same-city discount)
 }): Promise<QuoteCalculation> {
   // Get booking settings
   const settings = await prisma.bookingSettings.findUnique({
@@ -191,6 +201,23 @@ export async function calculateQuote(params: {
   let travelZoneName: string | null = null
   let bundleDiscount = 0
   let bundleName: string | null = null
+  let sameCityDiscount = 0
+  let sameCityDiscountPercent = 0
+  let matchedScheduledCity: string | null = null
+
+  // Check for same-city discount (when booking where photographer is already scheduled)
+  if (params.userCity && params.scheduledCities && params.scheduledCities.length > 0) {
+    for (const scheduledCity of params.scheduledCities) {
+      const distance = getDistanceBetweenCities(params.userCity, scheduledCity)
+      if (distance !== null && distance <= SAME_CITY_MAX_DISTANCE_KM) {
+        // User's city is within range of a scheduled city - apply discount
+        sameCityDiscountPercent = SAME_CITY_DISCOUNT_PERCENT
+        sameCityDiscount = params.pricingPlanPrice * (SAME_CITY_DISCOUNT_PERCENT / 100)
+        matchedScheduledCity = scheduledCity
+        break // Found a match, no need to check other cities
+      }
+    }
+  }
 
   if (params.bundleId) {
     // If joining a bundle, use bundle pricing
@@ -247,8 +274,9 @@ export async function calculateQuote(params: {
     }
   }
 
-  // Calculate totals
-  const subtotal = params.pricingPlanPrice + urgencySurchargeAmount - bundleDiscount
+  // Calculate totals - apply both bundle discount and same-city discount
+  const totalDiscount = bundleDiscount + sameCityDiscount
+  const subtotal = params.pricingPlanPrice + urgencySurchargeAmount - totalDiscount
   const total = subtotal + travelFee
 
   // Calculate deposit
@@ -268,6 +296,9 @@ export async function calculateQuote(params: {
     travelFee,
     bundleName,
     bundleDiscount,
+    sameCityDiscount,
+    sameCityDiscountPercent,
+    matchedScheduledCity,
     subtotal,
     total,
     depositAmount,
