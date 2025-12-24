@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
+import { cache, CacheKeys } from '@/lib/cache'
 
 export const dynamic = 'force-dynamic'
 
@@ -67,6 +68,9 @@ export async function PUT(
       },
     })
 
+    // Invalidate cache so changes reflect immediately
+    cache.delete(CacheKeys.PRICING_PLANS)
+
     return NextResponse.json(plan)
   } catch (error) {
     console.error('Failed to update pricing plan:', error)
@@ -92,6 +96,9 @@ export async function DELETE(
     await prisma.pricingPlan.delete({
       where: { id },
     })
+
+    // Invalidate cache so changes reflect immediately
+    cache.delete(CacheKeys.PRICING_PLANS)
 
     return NextResponse.json({ success: true })
   } catch (error) {
