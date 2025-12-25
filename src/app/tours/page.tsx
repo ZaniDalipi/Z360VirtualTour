@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Search, Play, MapPin, Grid, List, Eye, Star, ArrowUpRight } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Input, Chip } from '@/components/ui'
+import { useTourTransition } from '@/components/tour'
 import { motion } from 'framer-motion'
 
 // Placeholder data - shown when no database tours exist
@@ -110,6 +111,7 @@ export default function ToursPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const categoryFromUrl = searchParams.get('category')
+  const { startTransition } = useTourTransition()
 
   const [tours, setTours] = useState<Tour[]>(placeholderTours)
   const [categories, setCategories] = useState<Category[]>(placeholderCategories)
@@ -117,6 +119,14 @@ export default function ToursPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [isLoading, setIsLoading] = useState(true)
+
+  // Handle tour card click with shared element transition
+  const handleTourClick = useCallback((e: React.MouseEvent<HTMLDivElement>, tour: Tour) => {
+    e.preventDefault()
+    const cardElement = e.currentTarget
+    const rect = cardElement.getBoundingClientRect()
+    startTransition(tour, rect)
+  }, [startTransition])
 
   // Update active category when URL changes
   useEffect(() => {
@@ -260,10 +270,10 @@ export default function ToursPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.08, duration: 0.5 }}
                 whileHover={{ y: -8 }}
-                className="group"
+                className="group cursor-pointer"
+                onClick={(e) => handleTourClick(e, tour)}
               >
-                <Link href={tour.slug === 'placeholder' ? '/admin' : `/tour/${tour.slug}`}>
-                  <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
+                <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
                                    group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-gold/10
                                    ${viewMode === 'list' ? 'flex' : ''}`}>
 
@@ -371,7 +381,6 @@ export default function ToursPage() {
                       <div className="absolute inset-y-0 -right-px w-px bg-gradient-to-b from-transparent via-gold to-transparent" />
                     </div>
                   </div>
-                </Link>
               </motion.div>
             ))}
           </div>
