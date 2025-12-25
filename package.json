@@ -5,7 +5,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 4000",
+    "dev:development": "dotenv -e .env.development -- next dev -p 4000",
+    "dev:staging": "dotenv -e .env.staging -- next dev -p 4000",
+    "dev:prod": "dotenv -e .env.production -- next dev -p 4000",
     "build": "prisma generate && next build",
+    "build:staging": "dotenv -e .env.staging -- prisma generate && next build",
+    "build:prod": "dotenv -e .env.production -- prisma generate && next build",
     "start": "next start -p 4000",
     "lint": "next lint",
     "db:push": "prisma db push",
@@ -29,6 +34,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "dotenv-cli": "^7.4.2",
     "@types/node": "^20.10.6",
     "@types/nodemailer": "^7.0.4",
     "@types/react": "^18.2.46",
