@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -107,7 +107,7 @@ interface Category {
   slug: string
 }
 
-export default function ToursPage() {
+function ToursContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const categoryFromUrl = searchParams.get('category')
@@ -188,9 +188,7 @@ export default function ToursPage() {
   })
 
   return (
-    <div className="min-h-screen bg-navy">
-      <PublicHeader />
-
+    <>
       {/* Hero */}
       <section className="bg-navy-dark py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -411,7 +409,48 @@ export default function ToursPage() {
           </Link>
         </div>
       </section>
+    </>
+  )
+}
 
+function ToursLoading() {
+  return (
+    <>
+      <section className="bg-navy-dark py-16 md:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="h-12 w-64 bg-gold/10 rounded mx-auto mb-4 animate-pulse" />
+            <div className="h-6 w-96 bg-gold/10 rounded mx-auto animate-pulse" />
+          </div>
+        </div>
+      </section>
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="rounded-2xl bg-navy-medium border border-gold/10 overflow-hidden animate-pulse">
+                <div className="h-64 bg-gold/10" />
+                <div className="p-6">
+                  <div className="h-6 w-3/4 bg-gold/10 rounded mb-3" />
+                  <div className="h-4 w-full bg-gold/10 rounded mb-2" />
+                  <div className="h-4 w-2/3 bg-gold/10 rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}
+
+export default function ToursPage() {
+  return (
+    <div className="min-h-screen bg-navy">
+      <PublicHeader />
+      <Suspense fallback={<ToursLoading />}>
+        <ToursContent />
+      </Suspense>
       <Footer />
     </div>
   )
