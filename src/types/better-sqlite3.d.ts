@@ -1,10 +1,4 @@
 declare module 'better-sqlite3' {
-  interface Database {
-    prepare(sql: string): Statement
-    exec(sql: string): this
-    close(): void
-  }
-
   interface Statement {
     run(...params: unknown[]): RunResult
     get(...params: unknown[]): unknown
@@ -16,6 +10,12 @@ declare module 'better-sqlite3' {
     lastInsertRowid: number | bigint
   }
 
-  function Database(filename: string, options?: unknown): Database
+  class Database {
+    constructor(filename: string, options?: unknown)
+    prepare(sql: string): Statement
+    exec(sql: string): this
+    close(): void
+  }
+
   export = Database
 }
