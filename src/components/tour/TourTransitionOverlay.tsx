@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MapPin, Eye, Play, ArrowLeft } from 'lucide-react'
+import { MapPin, Eye, Play } from 'lucide-react'
 import { useTourTransition } from './TourTransitionProvider'
 
 // Hook to get window dimensions safely
@@ -42,6 +42,9 @@ const SCREEN_DURATION = 0.85 // 850ms main screen transition
 const SHARED_DURATION = 1.05 // 1050ms shared element paths
 const DETAILS_DURATION = 0.9 // 900ms detail content entrance
 
+// Header height constant
+const HEADER_HEIGHT = 64
+
 export function TourTransitionOverlay() {
   const { selectedTour, isTransitioning, completeTransition, cardRect } = useTourTransition()
   const overlayRef = useRef<HTMLDivElement>(null)
@@ -59,24 +62,24 @@ export function TourTransitionOverlay() {
 
   if (!selectedTour || !cardRect) return null
 
-  // Calculate the initial position based on card rect
+  // Calculate the initial position based on card rect (adjusted for header offset)
   const initialImageStyle = {
     left: cardRect.left,
-    top: cardRect.top,
+    top: cardRect.top - HEADER_HEIGHT,
     width: cardRect.width,
     height: cardRect.width * 0.64, // Approximate aspect ratio of card image
   }
 
-  // Final position - full hero section
+  // Final position - full hero section (starts at 0 since overlay already has header offset)
   const finalImageStyle = {
     left: 0,
     top: 0,
     width: windowWidth,
-    height: Math.min(windowHeight * 0.7, 800),
+    height: Math.min((windowHeight - HEADER_HEIGHT) * 0.7, 800),
   }
 
-  // Initial text position (bottom of card)
-  const initialTextY = cardRect.top + cardRect.width * 0.64 + 24
+  // Initial text position (bottom of card, adjusted for header)
+  const initialTextY = cardRect.top - HEADER_HEIGHT + cardRect.width * 0.64 + 24
   const initialTextX = cardRect.left + 24
 
   // Final text position (hero section bottom)
@@ -92,8 +95,8 @@ export function TourTransitionOverlay() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-[100] overflow-hidden"
-          style={{ backgroundColor: '#0D1B2A' }}
+          className="fixed left-0 right-0 bottom-0 z-[100] overflow-hidden"
+          style={{ backgroundColor: '#0D1B2A', top: HEADER_HEIGHT }}
         >
           {/* Background overlay that fades in */}
           <motion.div
@@ -146,7 +149,7 @@ export function TourTransitionOverlay() {
             className="absolute px-4 py-1.5 rounded-full bg-gold text-navy text-sm font-semibold z-10"
             initial={{
               x: cardRect.left + 16,
-              y: cardRect.top + 16,
+              y: cardRect.top - HEADER_HEIGHT + 16,
               scale: 0.85,
             }}
             animate={{
@@ -253,23 +256,6 @@ export function TourTransitionOverlay() {
             <div className="px-6 py-3 rounded-xl bg-gradient-to-br from-gold to-gold-soft text-navy font-semibold flex items-center gap-2 shadow-lg shadow-gold/30">
               <Play className="w-5 h-5" fill="currentColor" />
               View Virtual Tour
-            </div>
-          </motion.div>
-
-          {/* Back Button - Appears with the header */}
-          <motion.div
-            className="absolute top-24 left-4 sm:left-8 z-10"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{
-              delay: SHARED_DURATION * 0.6,
-              duration: 0.3,
-              ease: cinematicEasing,
-            }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-navy/60 backdrop-blur-sm border border-gold/20 text-cream">
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Tours</span>
             </div>
           </motion.div>
 
