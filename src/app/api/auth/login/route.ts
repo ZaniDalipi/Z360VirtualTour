@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Set cookie with secure options
-    const cookieStore = await cookies()
+    const cookieStore = cookies()
     cookieStore.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
