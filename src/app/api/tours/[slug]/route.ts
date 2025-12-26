@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
 import { withRetry } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 interface TourWithCategory {
   id: string
   title: string

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { calculateQuote, getDistanceByCity } from '@/lib/quote-utils'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json()

@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
 import { withRetry, withFallback } from '@/lib/db'
 
+export const dynamic = 'force-dynamic'
+
 interface Testimonial {
   id: string
   clientName: string
