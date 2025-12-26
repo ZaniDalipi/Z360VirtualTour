@@ -18,8 +18,3 @@ export const prisma =
 
 // Ensure single instance in development (prevents connection exhaustion)
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
-
-// Graceful shutdown
-process.on('beforeExit', async () => {
-  await prisma.$disconnect()
-})
