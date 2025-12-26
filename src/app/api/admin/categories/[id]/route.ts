@@ -120,17 +120,14 @@ export async function DELETE(
     const { id } = await params
 
     // Check if category has tours
-    const category = await withRetry(
-      () => prisma.category.findUnique({
-        where: { id },
-        include: {
-          _count: {
-            select: { tours: true },
-          },
+    const category = await prisma.category.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { tours: true },
         },
-      }),
-      { maxRetries: 2 }
-    )
+      },
+    })
 
     if (!category) {
       return NextResponse.json({ error: 'Category not found' }, { status: 404 })
@@ -144,12 +141,9 @@ export async function DELETE(
       )
     }
 
-    await withRetry(
-      () => prisma.category.delete({
-        where: { id },
-      }),
-      { maxRetries: 2 }
-    )
+    await prisma.category.delete({
+      where: { id },
+    })
 
     // Invalidate caches
     cache.invalidatePrefix('categories')

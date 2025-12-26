@@ -17,7 +17,7 @@ export async function GET() {
     })
 
     // Map bundles to include startDate/endDate fallbacks for older entries
-    const mappedBundles = bundles.map((bundle) => ({
+    const mappedBundles = bundles.map((bundle: typeof bundles[number]) => ({
       ...bundle,
       startDate: bundle.startDate || bundle.scheduledDate,
       endDate: bundle.endDate || bundle.scheduledDate,
