@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -15,7 +15,7 @@ export async function GET(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const booking = await prisma.booking.findUnique({
       where: { id },
       include: {
@@ -50,7 +50,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -59,7 +59,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const data = await request.json()
 
     // Get existing booking to check for status changes and bundle updates
@@ -174,7 +174,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -183,7 +183,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
 
     // Get booking to check if we need to update bundle count
     const booking = await prisma.booking.findUnique({ where: { id } })

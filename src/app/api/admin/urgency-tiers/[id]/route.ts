@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -15,7 +15,7 @@ export async function GET(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const tier = await prisma.urgencyTier.findUnique({ where: { id } })
 
     if (!tier) {
@@ -34,7 +34,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -43,7 +43,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const data = await request.json()
 
     const updateData: Record<string, unknown> = {}
@@ -73,7 +73,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -82,7 +82,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     await prisma.urgencyTier.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {

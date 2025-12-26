@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -25,7 +25,7 @@ export async function GET(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const { searchParams } = new URL(request.url)
     const format = searchParams.get('format') || 'json' // json, html, text, csv
 
@@ -154,7 +154,7 @@ export async function GET(
 // POST endpoint to complete work and generate receipt
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -163,7 +163,7 @@ export async function POST(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const data = await request.json()
 
     const booking = await prisma.booking.findUnique({ where: { id } })

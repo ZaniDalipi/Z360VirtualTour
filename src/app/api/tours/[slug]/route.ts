@@ -45,10 +45,10 @@ function parseImages(images: string | string[] | null): string[] {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: { slug: string } }
 ) {
   try {
-    const { slug } = await params
+    const { slug } = params
 
     // Try cache first for the tour data
     const cacheKey = CacheKeys.TOUR_BY_SLUG(slug)

@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -16,7 +16,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     await prisma.blockedDate.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {

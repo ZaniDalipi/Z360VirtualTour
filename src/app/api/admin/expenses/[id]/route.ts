@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 // GET single expense
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -16,7 +16,7 @@ export async function GET(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const expense = await prisma.expense.findUnique({
       where: { id },
       include: { category: true },
@@ -39,7 +39,7 @@ export async function GET(
 // PUT update expense
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -48,7 +48,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const data = await request.json()
 
     const updateData: Record<string, unknown> = {}
@@ -83,7 +83,7 @@ export async function PUT(
 // DELETE expense
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -92,7 +92,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     await prisma.expense.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {

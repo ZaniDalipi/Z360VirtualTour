@@ -56,7 +56,7 @@ function parseImages(images: string | string[] | null): string[] {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -65,7 +65,7 @@ export async function GET(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const tour = await withRetry(
       () => prisma.tour.findUnique({
         where: { id },
@@ -96,7 +96,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -105,7 +105,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const data = await request.json()
 
     // Get current tour to compare images
@@ -213,7 +213,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -222,7 +222,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
 
     // Get tour to clean up images
     const tour = await withRetry(
