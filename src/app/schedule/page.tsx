@@ -82,6 +82,7 @@ export default function SchedulePage() {
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [selectedDay, setSelectedDay] = useState<SelectedDay | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [sameCityDiscountPercent, setSameCityDiscountPercent] = useState(15)
 
   const currentYear = currentDate.getFullYear()
   const currentMonth = currentDate.getMonth()
@@ -105,6 +106,9 @@ export default function SchedulePage() {
         setSchedule(data.schedule || [])
         setBlockedDates(data.blockedDates || [])
         setBundles(data.bundles || [])
+        if (data.settings?.sameCityDiscountPercent) {
+          setSameCityDiscountPercent(data.settings.sameCityDiscountPercent)
+        }
       }
     } catch (error) {
       console.error('Failed to fetch schedule:', error)
@@ -272,7 +276,7 @@ export default function SchedulePage() {
                 <Percent className="w-5 h-5 text-green-400" />
               </div>
               <div className="text-left">
-                <p className="text-green-400 font-semibold">15% Same-City Discount</p>
+                <p className="text-green-400 font-semibold">{sameCityDiscountPercent}% Same-City Discount</p>
                 <p className="text-green-400/70 text-sm">Book when I'm already in your area</p>
               </div>
             </div>
@@ -509,10 +513,10 @@ export default function SchedulePage() {
                                     <Percent className="w-5 h-5 text-gold" />
                                   </div>
                                   <div>
-                                    <p className="text-gold font-semibold">15% Discount Available!</p>
+                                    <p className="text-gold font-semibold">{sameCityDiscountPercent}% Discount Available!</p>
                                     <p className="text-cream-muted text-sm mt-1">
                                       If your property is in or near {selectedDay.cities.join(' or ')},
-                                      you'll automatically get 15% off since I'm already in the area.
+                                      you'll automatically get {sameCityDiscountPercent}% off since I'm already in the area.
                                     </p>
                                   </div>
                                 </div>
@@ -616,7 +620,7 @@ export default function SchedulePage() {
                     <ul className="space-y-1">
                       <li>• Purple dates have group bundles with discounts</li>
                       <li>• Green dates show where I'll already be working</li>
-                      <li>• Book on those dates in the same city for 15% off</li>
+                      <li>• Book on those dates in the same city for {sameCityDiscountPercent}% off</li>
                       <li>• Full bundles offer emergency requests at half discount</li>
                     </ul>
                   </div>

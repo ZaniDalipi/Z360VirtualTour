@@ -296,6 +296,10 @@ model BookingSettings {
   minBundleParticipants Int      @default(3)  // Min to activate bundle pricing
   bundleDiscountPercent Float    @default(10) // Default bundle discount
 
+  // Same-city discount settings
+  sameCityDiscountPercent Float  @default(15) // Discount when booking where photographer is scheduled
+  sameCityMaxDistanceKm   Float  @default(40) // Max distance to qualify for same-city discount
+
   updatedAt             DateTime @updatedAt
 }
 

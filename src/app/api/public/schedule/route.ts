@@ -172,10 +172,18 @@ export async function GET(request: NextRequest) {
       }
     })
 
+    // Get booking settings for discount info
+    const settings = await prisma.bookingSettings.findUnique({
+      where: { id: 'default' },
+    })
+
     return NextResponse.json({
       schedule,
       blockedDates: blocked,
       bundles: formattedBundles,
+      settings: {
+        sameCityDiscountPercent: settings?.sameCityDiscountPercent ?? 15,
+      },
     })
   } catch (error) {
     console.error('Failed to fetch public schedule:', error)

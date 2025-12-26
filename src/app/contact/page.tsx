@@ -128,6 +128,7 @@ function ContactPageContent() {
   const [quote, setQuote] = useState<QuoteResult | null>(null)
   const [isCalculating, setIsCalculating] = useState(false)
   const [bookingResponse, setBookingResponse] = useState<BookingResponse | null>(null)
+  const [sameCityDiscountPercent, setSameCityDiscountPercent] = useState(15)
   const confirmationRef = useRef<HTMLDivElement>(null)
 
   // Get URL params for schedule booking (date and cities where photographer will be)
@@ -194,6 +195,9 @@ function ContactPageContent() {
         if (availabilityRes.ok) {
           const data = await availabilityRes.json()
           setUrgencyTiers(data.urgencyTiers || [])
+          if (data.settings?.sameCityDiscountPercent) {
+            setSameCityDiscountPercent(data.settings.sameCityDiscountPercent)
+          }
         }
 
         if (bundlesRes.ok) {
@@ -726,14 +730,14 @@ function ContactPageContent() {
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <Sparkles className="w-4 h-4 text-green-400" />
-                          <p className="text-green-400 font-semibold">15% Same-City Discount Available!</p>
+                          <p className="text-green-400 font-semibold">{sameCityDiscountPercent}% Same-City Discount Available!</p>
                         </div>
                         <p className="text-cream-muted text-sm">
                           I'll be in <span className="text-green-300 font-medium">{scheduledCities.join(', ')}</span> on{' '}
                           <span className="text-green-300 font-medium">
                             {scheduledDate ? new Date(scheduledDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'this date'}
                           </span>.
-                          If your property is nearby, you'll automatically get 15% off!
+                          If your property is nearby, you'll automatically get {sameCityDiscountPercent}% off!
                         </p>
                         {quote?.matchedScheduledCity && (
                           <div className="mt-2 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/20 w-fit">

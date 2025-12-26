@@ -22,6 +22,8 @@ interface BookingSettings {
   depositPercent: number
   minBundleParticipants: number
   bundleDiscountPercent: number
+  sameCityDiscountPercent: number
+  sameCityMaxDistanceKm: number
 }
 
 interface UrgencyTier {
@@ -72,6 +74,8 @@ export default function BookingSettingsPage() {
     depositPercent: 30,
     minBundleParticipants: 3,
     bundleDiscountPercent: 10,
+    sameCityDiscountPercent: 15,
+    sameCityMaxDistanceKm: 40,
   })
 
   // Urgency tier form
@@ -133,6 +137,8 @@ export default function BookingSettingsPage() {
             depositPercent: data.depositPercent,
             minBundleParticipants: data.minBundleParticipants,
             bundleDiscountPercent: data.bundleDiscountPercent,
+            sameCityDiscountPercent: data.sameCityDiscountPercent ?? 15,
+            sameCityMaxDistanceKm: data.sameCityMaxDistanceKm ?? 40,
           })
         }
       }
@@ -511,6 +517,41 @@ export default function BookingSettingsPage() {
                   value={formData.bundleDiscountPercent}
                   onChange={(e) => setFormData({ ...formData, bundleDiscountPercent: parseFloat(e.target.value) || 0 })}
                 />
+              </div>
+            </div>
+          </Card>
+
+          {/* Same-City Discount Settings */}
+          <Card className="p-6">
+            <h3 className="text-lg font-semibold text-cream mb-4 flex items-center gap-2">
+              <Percent className="w-5 h-5 text-gold" />
+              Same-City Discount
+            </h3>
+            <p className="text-sm text-cream-muted mb-4">
+              Discount applied when a client books on a day you're already scheduled in their area
+            </p>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-cream mb-2">
+                  Same-City Discount (%)
+                </label>
+                <Input
+                  type="number"
+                  value={formData.sameCityDiscountPercent}
+                  onChange={(e) => setFormData({ ...formData, sameCityDiscountPercent: parseFloat(e.target.value) || 0 })}
+                />
+                <p className="text-xs text-cream-muted mt-1">Discount percentage for same-city bookings</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-cream mb-2">
+                  Max Distance for Same-City (km)
+                </label>
+                <Input
+                  type="number"
+                  value={formData.sameCityMaxDistanceKm}
+                  onChange={(e) => setFormData({ ...formData, sameCityMaxDistanceKm: parseFloat(e.target.value) || 0 })}
+                />
+                <p className="text-xs text-cream-muted mt-1">Maximum distance to qualify for same-city discount</p>
               </div>
             </div>
           </Card>

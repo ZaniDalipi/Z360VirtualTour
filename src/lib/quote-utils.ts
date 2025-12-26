@@ -76,11 +76,9 @@ export const cityToCityDistances: Record<string, number> = {
 // Maximum distance (km) from bundle city to qualify for bundle discount
 export const BUNDLE_MAX_DISTANCE_KM = 50
 
-// Same-city discount percentage (when booking where photographer is already scheduled)
-export const SAME_CITY_DISCOUNT_PERCENT = 15
-
-// Maximum distance to qualify for same-city discount
-export const SAME_CITY_MAX_DISTANCE_KM = 40
+// Fallback values (used if database settings not found)
+export const DEFAULT_SAME_CITY_DISCOUNT_PERCENT = 15
+export const DEFAULT_SAME_CITY_MAX_DISTANCE_KM = 40
 
 /**
  * Get distance from Skopje to a city
@@ -205,14 +203,18 @@ export async function calculateQuote(params: {
   let sameCityDiscountPercent = 0
   let matchedScheduledCity: string | null = null
 
+  // Get same-city discount settings from database or use defaults
+  const sameCityDiscountPercentSetting = settings?.sameCityDiscountPercent ?? DEFAULT_SAME_CITY_DISCOUNT_PERCENT
+  const sameCityMaxDistanceKm = settings?.sameCityMaxDistanceKm ?? DEFAULT_SAME_CITY_MAX_DISTANCE_KM
+
   // Check for same-city discount (when booking where photographer is already scheduled)
   if (params.userCity && params.scheduledCities && params.scheduledCities.length > 0) {
     for (const scheduledCity of params.scheduledCities) {
       const distance = getDistanceBetweenCities(params.userCity, scheduledCity)
-      if (distance !== null && distance <= SAME_CITY_MAX_DISTANCE_KM) {
+      if (distance !== null && distance <= sameCityMaxDistanceKm) {
         // User's city is within range of a scheduled city - apply discount
-        sameCityDiscountPercent = SAME_CITY_DISCOUNT_PERCENT
-        sameCityDiscount = params.pricingPlanPrice * (SAME_CITY_DISCOUNT_PERCENT / 100)
+        sameCityDiscountPercent = sameCityDiscountPercentSetting
+        sameCityDiscount = params.pricingPlanPrice * (sameCityDiscountPercentSetting / 100)
         matchedScheduledCity = scheduledCity
         break // Found a match, no need to check other cities
       }

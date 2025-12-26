@@ -108,6 +108,7 @@ export async function GET(request: NextRequest) {
         maxBookingDate: maxDate.toISOString().split('T')[0],
         workOnWeekends: settings?.workOnWeekends || false,
         workOnSunday: settings?.workOnSunday || false,
+        sameCityDiscountPercent: settings?.sameCityDiscountPercent ?? 15,
       },
     })
   } catch (error) {
