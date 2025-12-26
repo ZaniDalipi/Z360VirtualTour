@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
 
     const openBundles = await prisma.travelBundle.findMany({
       where: bundleWhere,
-      orderBy: { startDate: 'asc' },
+      orderBy: { scheduledDate: 'asc' },
     })
 
     // Calculate minimum booking date based on settings
