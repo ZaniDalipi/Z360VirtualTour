@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Save, Trash2 } from 'lucide-react'
+import { ArrowLeft, Save, Trash2, Copy, Check, Link as LinkIcon } from 'lucide-react'
 import Link from 'next/link'
 import { Card, Button, Input, ImageUpload } from '@/components/ui'
 import { motion } from 'framer-motion'
@@ -21,6 +21,27 @@ export default function EditTourPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://z360virtualtours.com'
+
+  const copyToClipboard = async (text: string, field: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedField(field)
+      setTimeout(() => setCopiedField(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopiedField(field)
+      setTimeout(() => setCopiedField(null), 2000)
+    }
+  }
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -265,6 +286,106 @@ export default function EditTourPage() {
                 </div>
               </div>
             </div>
+
+            {/* Share & Embed - for BalkanEstateAI integration */}
+            {formData.slug && (
+              <div className="bg-gradient-to-r from-purple-500/10 to-gold/10 border border-purple-500/30 rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <LinkIcon className="w-5 h-5 text-purple-400" />
+                  <h2 className="text-h4 font-semibold text-cream">
+                    Share & Embed
+                  </h2>
+                  <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
+                    For BalkanEstateAI
+                  </span>
+                </div>
+                <p className="text-sm text-cream-muted mb-4">
+                  Copy the embed URL below and paste it into your BalkanEstateAI property listing&apos;s &quot;360° Tour URL&quot; field.
+                </p>
+                <div className="space-y-4">
+                  {/* Main Embed URL */}
+                  <div>
+                    <label className="block text-sm font-medium text-cream mb-2">
+                      Embed URL (paste this in BalkanEstateAI)
+                    </label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={`${baseUrl}/embed/${formData.slug}`}
+                        readOnly
+                        className="bg-navy/50 font-mono text-sm"
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => copyToClipboard(`${baseUrl}/embed/${formData.slug}`, 'embed')}
+                        className="flex-shrink-0"
+                      >
+                        {copiedField === 'embed' ? (
+                          <>
+                            <Check className="w-4 h-4 mr-2 text-green-400" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4 mr-2" />
+                            Copy URL
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  {/* Additional URLs */}
+                  <div className="grid sm:grid-cols-2 gap-4 pt-4 border-t border-gold/10">
+                    <div>
+                      <label className="block text-xs font-medium text-cream-muted mb-1">
+                        Direct View URL
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={`${baseUrl}/tour/${formData.slug}`}
+                          readOnly
+                          className="bg-navy/50 text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(`${baseUrl}/tour/${formData.slug}`, 'view')}
+                          className="p-2 text-cream-muted hover:text-gold transition-colors"
+                        >
+                          {copiedField === 'view' ? (
+                            <Check className="w-4 h-4 text-green-400" />
+                          ) : (
+                            <Copy className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-cream-muted mb-1">
+                        API Endpoint
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={`${baseUrl}/api/public/tours/${formData.slug}`}
+                          readOnly
+                          className="bg-navy/50 text-xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(`${baseUrl}/api/public/tours/${formData.slug}`, 'api')}
+                          className="p-2 text-cream-muted hover:text-gold transition-colors"
+                        >
+                          {copiedField === 'api' ? (
+                            <Check className="w-4 h-4 text-green-400" />
+                          ) : (
+                            <Copy className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Description */}
             <div>

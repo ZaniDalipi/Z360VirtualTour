@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Plus, Search, Eye, Edit, Trash2, ExternalLink } from 'lucide-react'
+import { Plus, Search, Eye, Edit, Trash2, ExternalLink, Copy, Check } from 'lucide-react'
 import { Card, Button, Input } from '@/components/ui'
 import { motion } from 'framer-motion'
 
@@ -28,6 +28,29 @@ export default function AdminToursPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null)
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://z360virtualtours.com'
+
+  const copyEmbedUrl = async (slug: string) => {
+    const embedUrl = `${baseUrl}/embed/${slug}`
+    try {
+      await navigator.clipboard.writeText(embedUrl)
+      setCopiedSlug(slug)
+      setTimeout(() => setCopiedSlug(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = embedUrl
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      setCopiedSlug(slug)
+      setTimeout(() => setCopiedSlug(null), 2000)
+    }
+  }
 
   useEffect(() => {
     fetchTours()
@@ -166,16 +189,29 @@ export default function AdminToursPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => copyEmbedUrl(tour.slug)}
+                    className="p-2 text-cream-muted hover:text-gold transition-colors"
+                    title="Copy Embed URL for BalkanEstateAI"
+                  >
+                    {copiedSlug === tour.slug ? (
+                      <Check className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                  </button>
                   <Link
                     href={`/tour/${tour.slug}`}
                     target="_blank"
                     className="p-2 text-cream-muted hover:text-cream transition-colors"
+                    title="View Tour"
                   >
                     <ExternalLink className="w-4 h-4" />
                   </Link>
                   <Link
                     href={`/admin/tours/${tour.id}`}
                     className="p-2 text-cream-muted hover:text-cream transition-colors"
+                    title="Edit Tour"
                   >
                     <Edit className="w-4 h-4" />
                   </Link>
@@ -183,6 +219,7 @@ export default function AdminToursPage() {
                     onClick={() => handleDelete(tour.id)}
                     disabled={deleteId === tour.id}
                     className="p-2 text-cream-muted hover:text-red-400 transition-colors disabled:opacity-50"
+                    title="Delete Tour"
                   >
                     {deleteId === tour.id ? (
                       <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
