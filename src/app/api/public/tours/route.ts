@@ -71,7 +71,25 @@ export async function GET(request: NextRequest) {
     ])
 
     // Transform for public API response
-    const publicTours = tours.map((tour) => ({
+    const publicTours = tours.map((tour: {
+      id: string;
+      title: string;
+      slug: string;
+      description: string | null;
+      shortDesc: string | null;
+      clientName: string | null;
+      location: string | null;
+      coverImage: string;
+      images: string | null;
+      tourUrl: string | null;
+      tourEmbed: string | null;
+      category: { name: string; slug: string } | null;
+      premium: boolean;
+      highlight: boolean;
+      featured: boolean;
+      views: number;
+      completedAt: Date | null;
+    }) => ({
       id: tour.id,
       title: tour.title,
       slug: tour.slug,

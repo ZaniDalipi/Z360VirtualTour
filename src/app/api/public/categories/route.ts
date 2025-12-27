@@ -34,7 +34,7 @@ export async function GET() {
       orderBy: { sortOrder: 'asc' },
     })
 
-    const publicCategories = categories.map((category) => ({
+    const publicCategories = categories.map((category: { id: string; name: string; slug: string; description: string | null; icon: string | null; _count: { tours: number } }) => ({
       id: category.id,
       name: category.name,
       slug: category.slug,
