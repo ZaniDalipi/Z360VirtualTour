@@ -144,6 +144,22 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
   })
 
   console.log(`Payment successful for booking ${bookingId}: €${paidAmount}`)
+
+  // Send payment confirmation email to client
+  try {
+    const { sendEmail, emailTemplates } = await import('@/lib/email')
+    const template = emailTemplates.paymentReceived({
+      clientName: booking.clientName,
+      bookingId: booking.id,
+      amount: paidAmount,
+      paymentType: paymentType as 'deposit' | 'balance' | 'full',
+      totalQuote: totalQuote,
+      remainingBalance: totalQuote - totalPaid,
+    })
+    await sendEmail(booking.clientEmail, template)
+  } catch (err) {
+    console.error('Failed to send payment confirmation email:', err)
+  }
 }
 
 async function handleFailedPayment(paymentIntent: Stripe.PaymentIntent) {

@@ -270,7 +270,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Send notification email (async, don't block the response)
+    // Send notification emails (async, don't block the response)
     sendBookingNotification({
       id: booking.id,
       clientName: data.clientName,
@@ -293,7 +293,20 @@ export async function POST(request: NextRequest) {
         depositAmount: quote.depositAmount,
         depositPercent: quote.depositPercent,
       },
-    }).catch(err => console.error('Email error:', err))
+    }).catch(err => console.error('Admin email error:', err))
+
+    // Send confirmation email to client
+    import('@/lib/email').then(({ sendEmail, emailTemplates }) => {
+      const template = emailTemplates.bookingConfirmation({
+        clientName: data.clientName,
+        bookingId: booking.id,
+        totalQuote: quote.total,
+        depositAmount: quote.depositAmount || 0,
+        propertyAddress: data.propertyAddress,
+        preferredDate: data.preferredDate,
+      })
+      sendEmail(data.clientEmail, template).catch(err => console.error('Client email error:', err))
+    }).catch(err => console.error('Email import error:', err))
 
     return NextResponse.json({
       success: true,

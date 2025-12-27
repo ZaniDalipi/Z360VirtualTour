@@ -162,6 +162,36 @@ export async function PUT(
       data: updateData,
     })
 
+    // Send status update email if status changed
+    if (data.status && data.status !== existingBooking.status) {
+      try {
+        const { sendEmail, emailTemplates, getStatusMessage, getStatusLabel } = await import('@/lib/email')
+
+        // Determine which email template to use
+        if (data.status === 'delivered' && existingBooking.status !== 'delivered') {
+          // Tour delivered email
+          const template = emailTemplates.tourDelivered({
+            clientName: booking.clientName,
+            bookingId: booking.id,
+            tourUrl: undefined, // Can be added if tour URL is stored
+          })
+          await sendEmail(booking.clientEmail, template)
+        } else {
+          // General status update email
+          const template = emailTemplates.statusUpdate({
+            clientName: booking.clientName,
+            bookingId: booking.id,
+            status: data.status,
+            statusLabel: getStatusLabel(data.status),
+            message: getStatusMessage(data.status),
+          })
+          await sendEmail(booking.clientEmail, template)
+        }
+      } catch (err) {
+        console.error('Failed to send status update email:', err)
+      }
+    }
+
     return NextResponse.json(booking)
   } catch (error) {
     console.error('Failed to update booking:', error)
