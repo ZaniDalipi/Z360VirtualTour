@@ -1,76 +1,84 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe, formatAmountFromStripe } from '@/lib/stripe'
+import { verifyWebhookSignature } from '@/lib/lemonsqueezy'
 import { prisma } from '@/lib/prisma'
-import Stripe from 'stripe'
 
 export const dynamic = 'force-dynamic'
 
-// Stripe requires the raw body for webhook signature verification
+// LemonSqueezy webhook event types
+interface LemonSqueezyWebhookEvent {
+  meta: {
+    event_name: string
+    custom_data?: {
+      booking_id?: string
+      payment_type?: string
+    }
+  }
+  data: {
+    id: string
+    type: string
+    attributes: {
+      status: string
+      total: number
+      currency: string
+      first_order_item?: {
+        product_name: string
+        variant_name: string
+        price: number
+      }
+      user_email: string
+      user_name: string
+      created_at: string
+      refunded_at?: string
+      refunded?: boolean
+    }
+  }
+}
+
 export async function POST(request: NextRequest) {
   const body = await request.text()
-  const signature = request.headers.get('stripe-signature')
+  const signature = request.headers.get('x-signature') || ''
 
-  if (!signature) {
+  // Verify webhook signature
+  if (!verifyWebhookSignature(body, signature)) {
+    console.error('Invalid webhook signature')
     return NextResponse.json(
-      { error: 'Missing stripe-signature header' },
+      { error: 'Invalid signature' },
+      { status: 401 }
+    )
+  }
+
+  let event: LemonSqueezyWebhookEvent
+
+  try {
+    event = JSON.parse(body)
+  } catch {
+    return NextResponse.json(
+      { error: 'Invalid JSON' },
       { status: 400 }
     )
   }
 
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
-
-  if (!webhookSecret) {
-    console.error('STRIPE_WEBHOOK_SECRET is not set')
-    return NextResponse.json(
-      { error: 'Webhook secret not configured' },
-      { status: 500 }
-    )
-  }
-
-  let event: Stripe.Event
+  const eventName = event.meta.event_name
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err)
-    return NextResponse.json(
-      { error: 'Webhook signature verification failed' },
-      { status: 400 }
-    )
-  }
-
-  // Handle the event
-  try {
-    switch (event.type) {
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session
-
-        if (session.payment_status === 'paid') {
-          await handleSuccessfulPayment(session)
-        }
+    switch (eventName) {
+      case 'order_created':
+        await handleOrderCreated(event)
         break
-      }
 
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent
-        console.log('Payment intent succeeded:', paymentIntent.id)
+      case 'order_refunded':
+        await handleOrderRefunded(event)
         break
-      }
 
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent
-        await handleFailedPayment(paymentIntent)
+      case 'subscription_created':
+      case 'subscription_updated':
+      case 'subscription_cancelled':
+        // Handle subscription events if needed in the future
+        console.log(`Subscription event: ${eventName}`)
         break
-      }
-
-      case 'charge.refunded': {
-        const charge = event.data.object as Stripe.Charge
-        await handleRefund(charge)
-        break
-      }
 
       default:
-        console.log(`Unhandled event type: ${event.type}`)
+        console.log(`Unhandled event type: ${eventName}`)
     }
 
     return NextResponse.json({ received: true })
@@ -83,12 +91,19 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
-  const bookingId = session.metadata?.bookingId || session.client_reference_id
-  const paymentType = session.metadata?.paymentType || 'deposit'
+async function handleOrderCreated(event: LemonSqueezyWebhookEvent) {
+  const bookingId = event.meta.custom_data?.booking_id
+  const paymentType = event.meta.custom_data?.payment_type || 'deposit'
+  const order = event.data.attributes
 
   if (!bookingId) {
-    console.error('No booking ID in session')
+    console.error('No booking ID in webhook data')
+    return
+  }
+
+  // Only process paid orders
+  if (order.status !== 'paid') {
+    console.log(`Order status is ${order.status}, skipping...`)
     return
   }
 
@@ -101,7 +116,8 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     return
   }
 
-  const paidAmount = formatAmountFromStripe(session.amount_total || 0)
+  // Amount is in cents
+  const paidAmount = order.total / 100
   const previousPaid = booking.paidAmount || 0
   const totalPaid = previousPaid + paidAmount
   const totalQuote = booking.totalQuote || 0
@@ -116,17 +132,16 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
 
   // Update booking
   const updateData: Record<string, unknown> = {
-    stripePaymentIntentId: session.payment_intent as string,
+    lemonSqueezyOrderId: event.data.id,
     paymentStatus,
     paidAmount: totalPaid,
     paidAt: new Date(),
-    paymentMethod: 'card',
+    paymentMethod: 'lemonsqueezy',
   }
 
   if (paymentType === 'deposit') {
     updateData.depositPaid = true
     updateData.balanceAmount = totalQuote - totalPaid
-    updateData.status = 'pending_deposit' // Move to confirmed stage
   } else if (paymentType === 'balance') {
     updateData.balancePaidAt = new Date()
     updateData.balanceAmount = 0
@@ -145,7 +160,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
 
   console.log(`Payment successful for booking ${bookingId}: €${paidAmount}`)
 
-  // Send payment confirmation email to client
+  // Send payment confirmation email
   try {
     const { sendEmail, emailTemplates } = await import('@/lib/email')
     const template = emailTemplates.paymentReceived({
@@ -162,44 +177,29 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
   }
 }
 
-async function handleFailedPayment(paymentIntent: Stripe.PaymentIntent) {
-  const bookingId = paymentIntent.metadata?.bookingId
+async function handleOrderRefunded(event: LemonSqueezyWebhookEvent) {
+  const bookingId = event.meta.custom_data?.booking_id
+  const order = event.data.attributes
 
   if (!bookingId) {
+    console.error('No booking ID in refund webhook')
     return
   }
 
-  await prisma.booking.update({
+  const booking = await prisma.booking.findUnique({
     where: { id: bookingId },
-    data: {
-      paymentStatus: 'failed',
-    },
-  })
-
-  console.log(`Payment failed for booking ${bookingId}`)
-}
-
-async function handleRefund(charge: Stripe.Charge) {
-  // Find booking by payment intent
-  const paymentIntentId = charge.payment_intent as string
-
-  if (!paymentIntentId) {
-    return
-  }
-
-  const booking = await prisma.booking.findFirst({
-    where: { stripePaymentIntentId: paymentIntentId },
   })
 
   if (!booking) {
+    console.error('Booking not found:', bookingId)
     return
   }
 
-  const refundedAmount = formatAmountFromStripe(charge.amount_refunded)
+  const refundedAmount = order.total / 100
   const newPaidAmount = (booking.paidAmount || 0) - refundedAmount
 
   await prisma.booking.update({
-    where: { id: booking.id },
+    where: { id: bookingId },
     data: {
       paymentStatus: newPaidAmount <= 0 ? 'refunded' : 'partial',
       paidAmount: Math.max(0, newPaidAmount),
@@ -207,5 +207,5 @@ async function handleRefund(charge: Stripe.Charge) {
     },
   })
 
-  console.log(`Refund processed for booking ${booking.id}: €${refundedAmount}`)
+  console.log(`Refund processed for booking ${bookingId}: €${refundedAmount}`)
 }

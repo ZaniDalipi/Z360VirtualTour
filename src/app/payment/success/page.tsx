@@ -9,27 +9,30 @@ interface PaymentDetails {
   bookingId: string
   clientName: string
   clientEmail: string
-  amount: number
+  serviceName: string
+  totalQuote: number
+  paidAmount: number
+  balanceAmount: number
   paymentType: string
   status: string
+  depositPaid: boolean
 }
 
 export default function PaymentSuccessPage() {
   const searchParams = useSearchParams()
-  const sessionId = searchParams.get('session_id')
   const bookingId = searchParams.get('booking_id')
   const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function verifyPayment() {
-      if (!sessionId || !bookingId) {
+      if (!bookingId) {
         setLoading(false)
         return
       }
 
       try {
-        const response = await fetch(`/api/payments/verify?session_id=${sessionId}&booking_id=${bookingId}`)
+        const response = await fetch(`/api/payments/verify?booking_id=${bookingId}`)
         if (response.ok) {
           const data = await response.json()
           setPaymentDetails(data)
@@ -42,7 +45,7 @@ export default function PaymentSuccessPage() {
     }
 
     verifyPayment()
-  }, [sessionId, bookingId])
+  }, [bookingId])
 
   if (loading) {
     return (
@@ -84,16 +87,25 @@ export default function PaymentSuccessPage() {
                 </div>
 
                 <div className="flex justify-between items-center py-3 border-b border-gray-700">
-                  <span className="text-gray-400">Payment Type</span>
-                  <span className="capitalize">{paymentDetails.paymentType}</span>
+                  <span className="text-gray-400">Service</span>
+                  <span>{paymentDetails.serviceName}</span>
                 </div>
 
                 <div className="flex justify-between items-center py-3 border-b border-gray-700">
                   <span className="text-gray-400">Amount Paid</span>
                   <span className="text-2xl font-bold text-green-500">
-                    €{paymentDetails.amount.toFixed(2)}
+                    €{paymentDetails.paidAmount.toFixed(2)}
                   </span>
                 </div>
+
+                {paymentDetails.balanceAmount > 0 && (
+                  <div className="flex justify-between items-center py-3 border-b border-gray-700">
+                    <span className="text-gray-400">Remaining Balance</span>
+                    <span className="text-amber-400">
+                      €{paymentDetails.balanceAmount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
 
                 <div className="flex justify-between items-center py-3">
                   <span className="text-gray-400">Status</span>

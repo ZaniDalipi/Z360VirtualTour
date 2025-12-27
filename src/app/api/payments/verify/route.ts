@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe, formatAmountFromStripe } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
@@ -7,30 +6,11 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const sessionId = searchParams.get('session_id')
     const bookingId = searchParams.get('booking_id')
 
-    if (!sessionId || !bookingId) {
+    if (!bookingId) {
       return NextResponse.json(
-        { error: 'Missing session_id or booking_id' },
-        { status: 400 }
-      )
-    }
-
-    // Get the checkout session from Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId)
-
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      )
-    }
-
-    // Verify the session matches the booking
-    if (session.client_reference_id !== bookingId && session.metadata?.bookingId !== bookingId) {
-      return NextResponse.json(
-        { error: 'Session does not match booking' },
+        { error: 'Missing booking_id' },
         { status: 400 }
       )
     }
@@ -38,6 +18,13 @@ export async function GET(request: NextRequest) {
     // Get the booking
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
+      include: {
+        pricingPlan: {
+          select: {
+            name: true,
+          },
+        },
+      },
     })
 
     if (!booking) {
@@ -47,14 +34,26 @@ export async function GET(request: NextRequest) {
       )
     }
 
+    // Determine payment type from status
+    let paymentType = 'deposit'
+    if (booking.depositPaid && booking.paymentStatus !== 'paid') {
+      paymentType = 'balance'
+    } else if (booking.paymentStatus === 'paid') {
+      paymentType = 'full'
+    }
+
     return NextResponse.json({
       bookingId: booking.id,
       clientName: booking.clientName,
       clientEmail: booking.clientEmail,
-      amount: formatAmountFromStripe(session.amount_total || 0),
-      paymentType: session.metadata?.paymentType || 'deposit',
+      serviceName: booking.pricingPlan?.name || 'Virtual Tour',
+      totalQuote: booking.totalQuote,
+      paidAmount: booking.paidAmount || 0,
+      balanceAmount: booking.balanceAmount || 0,
+      paymentType,
       status: booking.paymentStatus,
-      sessionStatus: session.payment_status,
+      depositPaid: booking.depositPaid,
+      paidAt: booking.paidAt,
     })
   } catch (error) {
     console.error('Failed to verify payment:', error)
