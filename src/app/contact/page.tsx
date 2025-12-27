@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import {
   MapPin, Phone, Mail, Clock, Send, CheckCircle, Calendar, Users, AlertCircle,
   ChevronRight, Download, Facebook, Instagram, Linkedin, Youtube, Twitter,
-  FileText, Share2, ExternalLink, Percent, Sparkles
+  FileText, Share2, ExternalLink, Percent, Sparkles, CreditCard
 } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card, Input } from '@/components/ui'
@@ -176,6 +176,7 @@ function ContactPageContent() {
   ]
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false)
 
   // Fetch initial data
   useEffect(() => {
@@ -677,6 +678,36 @@ function ContactPageContent() {
   const selectedTier = urgencyTiers.find(t => t.id === formData.urgencyTierId)
   const selectedBundle = bundles.find(b => b.id === formData.bundleId)
 
+  // Handle Stripe payment
+  const handlePayDeposit = async () => {
+    if (!bookingResponse?.bookingId) return
+
+    setIsPaymentLoading(true)
+    try {
+      const response = await fetch('/api/payments/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: bookingResponse.bookingId,
+          paymentType: 'deposit',
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert('Failed to create payment session. Please try again.')
+      }
+    } catch (error) {
+      console.error('Payment error:', error)
+      alert('Failed to initiate payment. Please try again.')
+    } finally {
+      setIsPaymentLoading(false)
+    }
+  }
+
   // Filter bundles by city if one is selected
   const availableBundles = formData.propertyCity
     ? bundles.filter(b => b.city.toLowerCase().includes(formData.propertyCity.toLowerCase()))
@@ -926,9 +957,32 @@ function ContactPageContent() {
                         )}
                       </div>
 
+                      {/* Pay Deposit Button */}
+                      {quote?.depositAmount && quote.depositAmount > 0 && (
+                        <Button
+                          onClick={handlePayDeposit}
+                          className="w-full group mb-3"
+                          size="lg"
+                          disabled={isPaymentLoading}
+                        >
+                          {isPaymentLoading ? (
+                            <>
+                              <div className="w-5 h-5 border-2 border-navy border-t-transparent rounded-full animate-spin mr-2" />
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <CreditCard className="w-5 h-5 mr-2" />
+                              Pay Deposit Now - €{quote.depositAmount.toFixed(2)}
+                            </>
+                          )}
+                        </Button>
+                      )}
+
                       {/* Download Button */}
                       <Button
                         onClick={handleDownloadConfirmation}
+                        variant="secondary"
                         className="w-full group"
                         size="lg"
                       >
@@ -936,7 +990,7 @@ function ContactPageContent() {
                         Download Confirmation
                       </Button>
                       <p className="text-xs text-cream-muted text-center mt-3">
-                        Save this document for your records. You can print it or open it in your browser.
+                        {quote?.depositAmount ? 'Pay your deposit to confirm your booking, or save this document for your records.' : 'Save this document for your records. You can print it or open it in your browser.'}
                       </p>
                     </div>
 

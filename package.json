@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@prisma/client": "5.22.0",
+    "@stripe/stripe-js": "^8.6.0",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^12.5.0",
     "cloudinary": "^2.8.0",
@@ -41,6 +42,7 @@
     "nodemailer": "^7.0.11",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "stripe": "^20.1.0",
     "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {

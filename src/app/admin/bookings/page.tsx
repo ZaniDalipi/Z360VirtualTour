@@ -38,6 +38,11 @@ interface Booking {
   totalQuote: number | null
   depositAmount: number | null
   depositPaid: boolean
+  // Payment fields
+  paymentStatus: string
+  paidAmount: number | null
+  paidAt: string | null
+  balanceAmount: number | null
   status: string
   isRead: boolean
   createdAt: string

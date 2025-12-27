@@ -233,6 +233,16 @@ model Booking {
   depositAmount       Float?              // Required deposit
   depositPaid         Boolean   @default(false)
 
+  // Payment tracking (Stripe)
+  stripeSessionId     String?             // Stripe Checkout Session ID
+  stripePaymentIntentId String?           // Stripe Payment Intent ID
+  paymentStatus       String    @default("pending") // pending, paid, failed, refunded, partial
+  paidAmount          Float?              // Amount actually paid
+  paidAt              DateTime?           // When payment was received
+  paymentMethod       String?             // card, bank_transfer, etc.
+  balanceAmount       Float?              // Remaining balance after deposit
+  balancePaidAt       DateTime?           // When balance was paid
+
   // Admin notes & Communication
   internalNotes       String?             // Admin-only notes
   communicationLog    String?             // JSON array of communication entries
