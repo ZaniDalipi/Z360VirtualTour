@@ -21,6 +21,8 @@ interface TourData {
   tourUrl: string | null
   tourEmbed: string | null
   categoryId: string
+  premium: boolean
+  highlight: boolean
   featured: boolean
   isActive: boolean
   views: number
@@ -184,6 +186,8 @@ export async function PUT(
           tourUrl: data.tourUrl || null,
           tourEmbed: data.tourEmbed || null,
           categoryId: data.categoryId,
+          premium: data.premium || false,
+          highlight: data.highlight || false,
           featured: data.featured || false,
           isActive: data.isActive ?? true,
         },

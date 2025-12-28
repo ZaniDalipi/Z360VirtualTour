@@ -125,6 +125,8 @@ export async function POST(request: NextRequest) {
           tourUrl: data.tourUrl || null,
           tourEmbed: data.tourEmbed || null,
           categoryId: data.categoryId,
+          premium: data.premium || false,
+          highlight: data.highlight || false,
           featured: data.featured || false,
           isActive: data.isActive ?? true,
         },
