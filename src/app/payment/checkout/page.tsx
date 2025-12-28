@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { CreditCard, ArrowLeft, Shield, Lock, CheckCircle } from 'lucide-react'
+import { CreditCard, ArrowLeft, Lock, CheckCircle } from 'lucide-react'
 
 interface BookingDetails {
   id: string
@@ -16,7 +16,7 @@ interface BookingDetails {
   paidAmount: number | null
 }
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const searchParams = useSearchParams()
   const bookingId = searchParams.get('booking_id')
   const paymentType = searchParams.get('type') || 'deposit'
@@ -42,7 +42,7 @@ export default function CheckoutPage() {
         } else {
           setError('Booking not found')
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load booking details')
       } finally {
         setLoading(false)
@@ -73,7 +73,7 @@ export default function CheckoutPage() {
       } else {
         setError('Failed to create payment session')
       }
-    } catch (err) {
+    } catch {
       setError('Payment initialization failed')
     } finally {
       setProcessing(false)
@@ -204,7 +204,7 @@ export default function CheckoutPage() {
           <Lock className="w-8 h-8 text-green-500" />
           <div className="text-sm">
             <p className="font-semibold">Secure Payment</p>
-            <p className="text-gray-400">Your payment is processed securely by Stripe</p>
+            <p className="text-gray-400">Your payment is processed securely by LemonSqueezy</p>
           </div>
         </div>
 
@@ -249,5 +249,21 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
+    </div>
+  )
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <CheckoutContent />
+    </Suspense>
   )
 }
