@@ -78,8 +78,11 @@ export default function TourDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [showShareModal, setShowShareModal] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [copiedEmbed, setCopiedEmbed] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
   const [showFullscreen, setShowFullscreen] = useState(false)
+
+  const baseUrl = 'https://z360-virtual-tour.vercel.app'
 
   useEffect(() => {
     const fetchTour = async () => {
@@ -119,6 +122,13 @@ export default function TourDetailPage() {
     await navigator.clipboard.writeText(shareUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleCopyEmbedUrl = async () => {
+    const embedUrl = `${baseUrl}/embed/${slug}`
+    await navigator.clipboard.writeText(embedUrl)
+    setCopiedEmbed(true)
+    setTimeout(() => setCopiedEmbed(false), 2000)
   }
 
   const formatDate = (dateString: string) => {
@@ -572,9 +582,10 @@ export default function TourDetailPage() {
                   })}
                 </div>
 
+                {/* Copy page link */}
                 <div className="space-y-2">
                   <label className="text-sm text-cream-muted">
-                    Or copy link
+                    Copy page link
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -589,6 +600,36 @@ export default function TourDetailPage() {
                       className="flex-shrink-0"
                     >
                       {copied ? (
+                        <Check className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Embed URL for BalkanEstateAI */}
+                <div className="space-y-2 pt-4 border-t border-gold/10">
+                  <label className="text-sm text-cream-muted flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4" />
+                    Embed URL for Property Listings
+                  </label>
+                  <p className="text-xs text-cream-muted/70 mb-2">
+                    Use this URL to embed this tour in BalkanEstateAI or other property websites
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={`${baseUrl}/embed/${slug}`}
+                      readOnly
+                      className="flex-1 px-4 py-2 rounded-xl bg-navy border border-purple-500/30 text-cream text-sm truncate font-mono"
+                    />
+                    <Button
+                      variant="secondary"
+                      onClick={handleCopyEmbedUrl}
+                      className="flex-shrink-0 border-purple-500/30 hover:bg-purple-500/20"
+                    >
+                      {copiedEmbed ? (
                         <Check className="w-4 h-4 text-green-400" />
                       ) : (
                         <Copy className="w-4 h-4" />
