@@ -108,8 +108,8 @@ export async function GET(request: NextRequest) {
       views: tour.views,
       completedAt: tour.completedAt,
       // Generate embed URL for this tour
-      embedUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://z360virtualtours.com'}/embed/${tour.slug}`,
-      viewUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://z360virtualtours.com'}/tour/${tour.slug}`,
+      embedUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://z360-virtual-tour.vercel.app'}/embed/${tour.slug}`,
+      viewUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'https://z360-virtual-tour.vercel.app'}/tour/${tour.slug}`,
     }))
 
     return NextResponse.json({

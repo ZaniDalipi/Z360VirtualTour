@@ -30,7 +30,7 @@ export default function AdminToursPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null)
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://z360virtualtours.com'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://z360-virtual-tour.vercel.app'
 
   const copyEmbedUrl = async (slug: string) => {
     const embedUrl = `${baseUrl}/embed/${slug}`

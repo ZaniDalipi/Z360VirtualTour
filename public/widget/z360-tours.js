@@ -3,10 +3,10 @@
  *
  * Usage:
  * 1. Include this script on your page:
- *    <script src="https://z360virtualtours.com/widget/z360-tours.js"></script>
+ *    <script src="https://z360-virtual-tour.vercel.app/widget/z360-tours.js"></script>
  *
  * 2. Initialize the widget:
- *    Z360Tours.init({ apiUrl: 'https://z360virtualtours.com' });
+ *    Z360Tours.init({ apiUrl: 'https://z360-virtual-tour.vercel.app' });
  *
  * 3. Embed a tour:
  *    <div data-z360-tour="tour-slug"></div>
@@ -21,7 +21,7 @@
 
   const Z360Tours = {
     config: {
-      apiUrl: 'https://z360virtualtours.com',
+      apiUrl: 'https://z360-virtual-tour.vercel.app',
     },
 
     /**

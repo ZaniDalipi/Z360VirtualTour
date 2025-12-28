@@ -43,7 +43,7 @@ export async function createCheckout(options: LemonSqueezyCheckoutOptions): Prom
     throw new Error('LemonSqueezy API key or Store ID not configured')
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://z360virtualtours.com'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://z360-virtual-tour.vercel.app'
 
   const response = await fetch(`${LEMONSQUEEZY_API_URL}/checkouts`, {
     method: 'POST',

@@ -23,7 +23,7 @@ export default function EditTourPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [copiedField, setCopiedField] = useState<string | null>(null)
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://z360virtualtours.com'
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://z360-virtual-tour.vercel.app'
 
   const copyToClipboard = async (text: string, field: string) => {
     try {

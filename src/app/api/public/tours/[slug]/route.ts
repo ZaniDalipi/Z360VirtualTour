@@ -51,7 +51,7 @@ export async function GET(
       data: { views: { increment: 1 } },
     })
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://z360virtualtours.com'
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://z360-virtual-tour.vercel.app'
 
     // Transform for public API response
     const publicTour = {
