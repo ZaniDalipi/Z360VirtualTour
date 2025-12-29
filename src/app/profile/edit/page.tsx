@@ -164,39 +164,47 @@ export default function EditProfilePage() {
           >
             <h2 className="text-body font-semibold text-cream mb-4">Profile Information</h2>
             <Card className="p-4 space-y-4">
-              <Input
-                label="Full Name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-              <Input
-                label="Email"
-                name="email"
-                type="email"
-                value={formData.email}
-                disabled
-                className="opacity-60"
-              />
-              <p className="text-caption text-cream-muted -mt-2">
-                Email cannot be changed. Contact support if needed.
-              </p>
-              <Input
-                label="Phone (optional)"
-                name="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+389 71 234 567"
-              />
-              <Input
-                label="Company (optional)"
-                name="company"
-                value={formData.company}
-                onChange={handleChange}
-                placeholder="Your company name"
-              />
+              <div>
+                <label className="block text-body-sm text-cream-muted mb-2">Full Name</label>
+                <Input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-body-sm text-cream-muted mb-2">Email</label>
+                <Input
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  disabled
+                  className="opacity-60"
+                />
+                <p className="text-caption text-cream-muted mt-1">
+                  Email cannot be changed. Contact support if needed.
+                </p>
+              </div>
+              <div>
+                <label className="block text-body-sm text-cream-muted mb-2">Phone (optional)</label>
+                <Input
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+389 71 234 567"
+                />
+              </div>
+              <div>
+                <label className="block text-body-sm text-cream-muted mb-2">Company (optional)</label>
+                <Input
+                  name="company"
+                  value={formData.company}
+                  onChange={handleChange}
+                  placeholder="Your company name"
+                />
+              </div>
             </Card>
           </motion.div>
 
@@ -209,48 +217,54 @@ export default function EditProfilePage() {
           >
             <h2 className="text-body font-semibold text-cream mb-4">Change Password</h2>
             <Card className="p-4 space-y-4">
-              <div className="relative">
-                <Input
-                  label="Current Password"
-                  name="currentPassword"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.currentPassword}
-                  onChange={handleChange}
-                  placeholder="Enter current password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-9 text-cream-muted hover:text-cream"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
+              <div>
+                <label className="block text-body-sm text-cream-muted mb-2">Current Password</label>
+                <div className="relative">
+                  <Input
+                    name="currentPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.currentPassword}
+                    onChange={handleChange}
+                    placeholder="Enter current password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-cream-muted hover:text-cream"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
-              <div className="relative">
+              <div>
+                <label className="block text-body-sm text-cream-muted mb-2">New Password</label>
+                <div className="relative">
+                  <Input
+                    name="newPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.newPassword}
+                    onChange={handleChange}
+                    placeholder="Enter new password (min 8 characters)"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-cream-muted hover:text-cream"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-body-sm text-cream-muted mb-2">Confirm New Password</label>
                 <Input
-                  label="New Password"
-                  name="newPassword"
+                  name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
-                  value={formData.newPassword}
+                  value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder="Enter new password (min 8 characters)"
+                  placeholder="Confirm new password"
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-9 text-cream-muted hover:text-cream"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
               </div>
-              <Input
-                label="Confirm New Password"
-                name="confirmPassword"
-                type={showConfirmPassword ? 'text' : 'password'}
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder="Confirm new password"
-              />
               <p className="text-caption text-cream-muted">
                 Leave password fields empty if you don&apos;t want to change it.
               </p>
