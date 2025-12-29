@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromCookies } from '@/lib/user-auth'
 import { findUserById } from '@/lib/user-db'
 import { prisma } from '@/lib/prisma'
+import { sendEmail, sendAdminNotification, emailTemplates, getStatusLabel } from '@/lib/email'
 
 export const dynamic = 'force-dynamic'
 
@@ -128,7 +129,14 @@ export async function POST(
     // Find the booking and verify ownership
     const booking = await prisma.booking.findUnique({
       where: { id },
-      select: { id: true, status: true, clientName: true, clientEmail: true }
+      select: {
+        id: true,
+        status: true,
+        clientName: true,
+        clientEmail: true,
+        clientPhone: true,
+        propertyAddress: true,
+      }
     })
 
     if (!booking) {
@@ -168,13 +176,39 @@ export async function POST(
       }
     })
 
-    // TODO: Send notification email to admin about the change request
+    // Send confirmation email to user
+    const userEmailData = {
+      clientName: booking.clientName,
+      bookingId: booking.id,
+      requestType: requestType as 'date_change' | 'cancellation' | 'other',
+      message: message || undefined,
+      newPreferredDate: newPreferredDate || undefined,
+      newPreferredTime: newPreferredTime || undefined,
+      propertyAddress: booking.propertyAddress,
+      currentStatus: getStatusLabel(booking.status),
+    }
+
+    await sendEmail(
+      booking.clientEmail,
+      emailTemplates.changeRequestConfirmation(userEmailData)
+    )
+
+    // Send notification email to admin
+    const adminEmailData = {
+      ...userEmailData,
+      clientEmail: booking.clientEmail,
+      clientPhone: booking.clientPhone || undefined,
+    }
+
+    await sendAdminNotification(
+      emailTemplates.changeRequestAdmin(adminEmailData)
+    )
 
     return NextResponse.json({
       success: true,
       message: requestType === 'cancellation'
-        ? 'Cancellation request submitted. We will contact you shortly.'
-        : 'Change request submitted. We will review and contact you shortly.'
+        ? 'Cancellation request submitted. We will contact you shortly. A confirmation has been sent to your email.'
+        : 'Change request submitted. We will review and contact you shortly. A confirmation has been sent to your email.'
     })
   } catch (error) {
     console.error('Failed to submit change request:', error)

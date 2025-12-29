@@ -337,6 +337,210 @@ export const emailTemplates = {
       </div>
     `),
   }),
+
+  // Change request confirmation to user
+  changeRequestConfirmation: (data: {
+    clientName: string
+    bookingId: string
+    requestType: 'date_change' | 'cancellation' | 'other'
+    message?: string
+    newPreferredDate?: string
+    newPreferredTime?: string
+    propertyAddress: string
+    currentStatus: string
+  }) => {
+    const requestTypeLabels = {
+      date_change: 'Date Change Request',
+      cancellation: 'Cancellation Request',
+      other: 'Change Request',
+    }
+
+    return {
+      subject: `${requestTypeLabels[data.requestType]} Received - Reference #${data.bookingId.slice(-8).toUpperCase()}`,
+      html: baseTemplate(`
+        <h2 style="color: #C9A962; margin-top: 0;">Your Request Has Been Submitted</h2>
+
+        <p style="font-size: 16px; line-height: 1.6;">
+          Hi ${data.clientName},
+        </p>
+
+        <p style="font-size: 16px; line-height: 1.6;">
+          We have received your ${requestTypeLabels[data.requestType].toLowerCase()} and our team will review it shortly. You will receive an update within 24-48 hours.
+        </p>
+
+        <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin: 25px 0;">
+          <p style="margin: 0 0 15px; color: #C9A962; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Request Details</p>
+
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px 0; color: #888; border-bottom: 1px solid #333;">Request Type</td>
+              <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid #333; color: #C9A962; font-weight: 600;">${requestTypeLabels[data.requestType]}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #888; border-bottom: 1px solid #333;">Property</td>
+              <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid #333;">${data.propertyAddress}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #888; border-bottom: 1px solid #333;">Reference</td>
+              <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid #333; font-family: monospace;">#${data.bookingId.slice(-8).toUpperCase()}</td>
+            </tr>
+            ${data.newPreferredDate ? `
+            <tr>
+              <td style="padding: 10px 0; color: #888; border-bottom: 1px solid #333;">New Preferred Date</td>
+              <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid #333;">${new Date(data.newPreferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}${data.newPreferredTime ? ` at ${data.newPreferredTime}` : ''}</td>
+            </tr>
+            ` : ''}
+            ${data.message ? `
+            <tr>
+              <td colspan="2" style="padding: 15px 0;">
+                <p style="margin: 0 0 5px; color: #888; font-size: 12px;">Your Message:</p>
+                <p style="margin: 0; background-color: #1B2838; padding: 12px; border-radius: 8px; font-style: italic;">"${data.message}"</p>
+              </td>
+            </tr>
+            ` : ''}
+          </table>
+        </div>
+
+        <div style="background-color: ${data.requestType === 'cancellation' ? '#dc262620' : '#C9A96220'}; border-radius: 12px; padding: 20px; margin: 25px 0;">
+          <h3 style="color: ${data.requestType === 'cancellation' ? '#dc2626' : '#C9A962'}; margin-top: 0; font-size: 16px;">What Happens Next?</h3>
+          ${data.requestType === 'cancellation' ? `
+          <ul style="color: #F5F1E6; line-height: 1.8; padding-left: 20px; margin: 0;">
+            <li>Our team will review your cancellation request</li>
+            <li>We will check if a refund is applicable based on our cancellation policy</li>
+            <li>You will receive a confirmation email once processed</li>
+            <li>If you paid a deposit, refund details will be included in the confirmation</li>
+          </ul>
+          ` : data.requestType === 'date_change' ? `
+          <ul style="color: #F5F1E6; line-height: 1.8; padding-left: 20px; margin: 0;">
+            <li>Our team will check availability for your requested date</li>
+            <li>If the date is available, we will update your booking</li>
+            <li>If not, we will suggest alternative dates</li>
+            <li>No additional fees apply for date changes made 48+ hours before the shoot</li>
+          </ul>
+          ` : `
+          <ul style="color: #F5F1E6; line-height: 1.8; padding-left: 20px; margin: 0;">
+            <li>Our team will review your request carefully</li>
+            <li>We may reach out if we need additional information</li>
+            <li>You will receive an update via email once we have a response</li>
+          </ul>
+          `}
+        </div>
+
+        <p style="font-size: 14px; color: #888; line-height: 1.6;">
+          If you have any urgent questions, feel free to contact us directly at <a href="mailto:z360virtualtours@gmail.com" style="color: #C9A962;">z360virtualtours@gmail.com</a> or call us at <a href="tel:+38971967915" style="color: #C9A962;">+389 71 967 915</a>.
+        </p>
+
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="${BASE_URL}/booking/status?id=${data.bookingId}" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 600;">
+            Track Your Booking
+          </a>
+        </div>
+      `),
+    }
+  },
+
+  // Change request notification to admin
+  changeRequestAdmin: (data: {
+    clientName: string
+    clientEmail: string
+    clientPhone?: string
+    bookingId: string
+    requestType: 'date_change' | 'cancellation' | 'other'
+    message?: string
+    newPreferredDate?: string
+    newPreferredTime?: string
+    propertyAddress: string
+    currentStatus: string
+  }) => {
+    const requestTypeLabels = {
+      date_change: '📅 Date Change Request',
+      cancellation: '❌ Cancellation Request',
+      other: '📝 Change Request',
+    }
+    const urgencyColors = {
+      date_change: '#f59e0b',
+      cancellation: '#dc2626',
+      other: '#3b82f6',
+    }
+
+    return {
+      subject: `[ACTION REQUIRED] ${requestTypeLabels[data.requestType]} - ${data.clientName}`,
+      html: baseTemplate(`
+        <div style="background-color: ${urgencyColors[data.requestType]}20; border-left: 4px solid ${urgencyColors[data.requestType]}; padding: 15px; margin-bottom: 25px; border-radius: 0 8px 8px 0;">
+          <h2 style="color: ${urgencyColors[data.requestType]}; margin: 0; font-size: 20px;">${requestTypeLabels[data.requestType]}</h2>
+          <p style="margin: 5px 0 0; color: #888;">A client has submitted a change request that requires your attention.</p>
+        </div>
+
+        <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin: 25px 0;">
+          <h3 style="color: #C9A962; margin-top: 0;">Client Information</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px 0; color: #888; width: 120px;">Name</td>
+              <td style="padding: 10px 0; font-weight: 600;">${data.clientName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #888;">Email</td>
+              <td style="padding: 10px 0;"><a href="mailto:${data.clientEmail}" style="color: #C9A962;">${data.clientEmail}</a></td>
+            </tr>
+            ${data.clientPhone ? `
+            <tr>
+              <td style="padding: 10px 0; color: #888;">Phone</td>
+              <td style="padding: 10px 0;"><a href="tel:${data.clientPhone}" style="color: #C9A962;">${data.clientPhone}</a></td>
+            </tr>
+            ` : ''}
+          </table>
+        </div>
+
+        <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin: 25px 0;">
+          <h3 style="color: #C9A962; margin-top: 0;">Booking Details</h3>
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 10px 0; color: #888; width: 120px;">Reference</td>
+              <td style="padding: 10px 0; font-family: monospace; font-size: 16px;">#${data.bookingId.slice(-8).toUpperCase()}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #888;">Property</td>
+              <td style="padding: 10px 0;">${data.propertyAddress}</td>
+            </tr>
+            <tr>
+              <td style="padding: 10px 0; color: #888;">Current Status</td>
+              <td style="padding: 10px 0;">${data.currentStatus}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin: 25px 0;">
+          <h3 style="color: #C9A962; margin-top: 0;">Request Details</h3>
+          ${data.newPreferredDate ? `
+          <div style="margin-bottom: 15px;">
+            <p style="margin: 0 0 5px; color: #888; font-size: 12px; text-transform: uppercase;">Requested New Date</p>
+            <p style="margin: 0; font-size: 18px; color: #f59e0b;">${new Date(data.newPreferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}${data.newPreferredTime ? ` at ${data.newPreferredTime}` : ''}</p>
+          </div>
+          ` : ''}
+          ${data.message ? `
+          <div>
+            <p style="margin: 0 0 5px; color: #888; font-size: 12px; text-transform: uppercase;">Client Message</p>
+            <div style="background-color: #1B2838; padding: 15px; border-radius: 8px; border-left: 3px solid #C9A962;">
+              <p style="margin: 0; font-style: italic; line-height: 1.6;">"${data.message}"</p>
+            </div>
+          </div>
+          ` : '<p style="color: #888; font-style: italic;">No additional message provided.</p>'}
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="${BASE_URL}/admin/bookings" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 600; margin: 0 10px;">
+            View in Admin Panel
+          </a>
+        </div>
+
+        <div style="background-color: #dc262620; border-radius: 8px; padding: 15px; margin-top: 25px; text-align: center;">
+          <p style="margin: 0; font-size: 14px; color: #dc2626;">
+            ⏰ Please respond to this request within 24-48 hours
+          </p>
+        </div>
+      `),
+    }
+  },
 }
 
 // Send email function
