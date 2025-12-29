@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { X, Eye, Home, FolderOpen, MessageSquare, DollarSign, Mail, ChevronRight, CalendarDays } from 'lucide-react'
+import { X, Eye, Home, FolderOpen, MessageSquare, DollarSign, Mail, ChevronRight, CalendarDays, User, LogIn } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -11,6 +11,12 @@ interface NavLink {
   href: string
   label: string
   icon: React.ComponentType<{ className?: string }>
+}
+
+interface UserData {
+  id: string
+  name: string
+  email: string
 }
 
 const navLinks: NavLink[] = [
@@ -24,9 +30,10 @@ const navLinks: NavLink[] = [
 interface MobileDrawerProps {
   isOpen: boolean
   onClose: () => void
+  user: UserData | null
 }
 
-export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
+export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
   const pathname = usePathname()
   const drawerRef = useRef<HTMLDivElement>(null)
 
@@ -127,6 +134,31 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
                 })}
               </div>
             </nav>
+
+            {/* Login/Profile Link */}
+            <div className="px-4 pb-2">
+              {user ? (
+                <Link
+                  href="/profile"
+                  onClick={onClose}
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-body-lg text-cream-soft hover:text-cream hover:bg-gold/10 transition-all duration-200"
+                >
+                  <User className="w-5 h-5" />
+                  <span className="flex-1">My Profile</span>
+                  <ChevronRight className="w-4 h-4 text-cream-dim" />
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={onClose}
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl text-body-lg text-cream-soft hover:text-cream hover:bg-gold/10 transition-all duration-200"
+                >
+                  <LogIn className="w-5 h-5" />
+                  <span className="flex-1">Login</span>
+                  <ChevronRight className="w-4 h-4 text-cream-dim" />
+                </Link>
+              )}
+            </div>
 
             {/* CTA Button */}
             <div className="p-4 border-t border-gold/10 safe-bottom">

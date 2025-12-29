@@ -3,9 +3,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Menu, Eye, Phone } from 'lucide-react'
+import { Menu, Phone, User, LogIn } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MobileDrawer } from './MobileDrawer'
+
+interface UserData {
+  id: string
+  name: string
+  email: string
+}
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -19,6 +25,26 @@ export function PublicHeader() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [user, setUser] = useState<UserData | null>(null)
+  const [isLoadingUser, setIsLoadingUser] = useState(true)
+
+  // Check if user is logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/user/auth/me')
+        if (res.ok) {
+          const data = await res.json()
+          setUser(data.user)
+        }
+      } catch (error) {
+        // Not logged in
+      } finally {
+        setIsLoadingUser(false)
+      }
+    }
+    checkAuth()
+  }, [])
 
   // Handle scroll for header background
   useEffect(() => {
@@ -89,6 +115,29 @@ export function PublicHeader() {
                 <span className="text-sm font-medium">Call Us</span>
               </a>
 
+              {/* Login/Profile Button - Desktop */}
+              {!isLoadingUser && (
+                <div className="hidden lg:block">
+                  {user ? (
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-cream-soft hover:text-cream hover:bg-cream/5 transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      <span className="text-sm font-medium">{user.name.split(' ')[0]}</span>
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-cream-soft hover:text-cream hover:bg-cream/5 transition-colors"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span className="text-sm font-medium">Login</span>
+                    </Link>
+                  )}
+                </div>
+              )}
+
               {/* CTA Button - Desktop */}
               <Link href="/contact" className="hidden lg:block">
                 <button className="bg-gold hover:bg-gold-soft text-navy font-bold px-6 py-2.5 rounded-lg transition-all shadow-lg shadow-gold/20 hover:shadow-xl hover:shadow-gold/30 hover:scale-105">
@@ -111,7 +160,7 @@ export function PublicHeader() {
       </header>
 
       {/* Mobile Drawer */}
-      <MobileDrawer isOpen={mobileMenuOpen} onClose={handleCloseMenu} />
+      <MobileDrawer isOpen={mobileMenuOpen} onClose={handleCloseMenu} user={user} />
 
       {/* Spacer to push content below fixed header */}
       <div className="h-16 md:h-20" />
