@@ -93,7 +93,7 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
 
 export default function TourDetailPage() {
   const params = useParams()
-  const id = params.id as string
+  const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : ''
   const router = useRouter()
   const [booking, setBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
@@ -108,6 +108,11 @@ export default function TourDetailPage() {
 
   useEffect(() => {
     async function loadBooking() {
+      if (!id) {
+        setError('Invalid booking ID')
+        setLoading(false)
+        return
+      }
       try {
         const res = await fetch(`/api/user/bookings/${id}`)
         if (!res.ok) {
