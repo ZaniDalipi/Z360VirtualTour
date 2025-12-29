@@ -135,6 +135,8 @@ function ContactPageContent() {
   const scheduledDate = searchParams.get('date')
   const scheduledCitiesParam = searchParams.get('cities')
   const scheduledCities = scheduledCitiesParam ? scheduledCitiesParam.split(',') : []
+  const urlDiscountPercent = searchParams.get('discountPercent')
+  const bundleIdParam = searchParams.get('bundleId')
 
   const [formData, setFormData] = useState({
     name: '',
@@ -161,6 +163,23 @@ function ContactPageContent() {
       setFormData(prev => ({ ...prev, preferredDate: scheduledDate }))
     }
   }, [scheduledDate])
+
+  // Update discount from URL param (from bundle or same-city discount)
+  useEffect(() => {
+    if (urlDiscountPercent) {
+      const discount = parseFloat(urlDiscountPercent)
+      if (!isNaN(discount) && discount > 0) {
+        setSameCityDiscountPercent(discount)
+      }
+    }
+  }, [urlDiscountPercent])
+
+  // Set bundleId from URL if provided
+  useEffect(() => {
+    if (bundleIdParam && !formData.bundleId) {
+      setFormData(prev => ({ ...prev, bundleId: bundleIdParam }))
+    }
+  }, [bundleIdParam])
 
   // Available time slots for booking
   const timeSlots = [

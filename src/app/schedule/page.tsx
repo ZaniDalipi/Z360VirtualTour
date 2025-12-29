@@ -473,7 +473,7 @@ export default function SchedulePage() {
                                       </Link>
                                     </div>
                                   ) : (
-                                    <Link href={`/contact?date=${selectedDay.dateStr}&cities=${bundle.city}&bundleId=${bundle.id}`}>
+                                    <Link href={`/contact?date=${selectedDay.dateStr}&cities=${bundle.city}&bundleId=${bundle.id}&discountPercent=${bundle.discountPercent}`}>
                                       <Button className="w-full" size="sm">
                                         Join Bundle ({bundle.discountPercent}% off)
                                       </Button>
@@ -522,7 +522,7 @@ export default function SchedulePage() {
                                 </div>
                               </div>
 
-                              <Link href={`/contact?date=${selectedDay.dateStr}&cities=${selectedDay.cities.join(',')}`}>
+                              <Link href={`/contact?date=${selectedDay.dateStr}&cities=${selectedDay.cities.join(',')}&discountPercent=${sameCityDiscountPercent}`}>
                                 <Button className="w-full">
                                   Book This Date
                                 </Button>

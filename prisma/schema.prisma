@@ -22,7 +22,7 @@ model Admin {
 
 // Regular user for client profiles
 model User {
-  id        String    @id @default(cuid())
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
   email     String    @unique
   password  String
   name      String
@@ -203,8 +203,8 @@ model Booking {
   id                  String        @id @default(auto()) @map("_id") @db.ObjectId
 
   // User relationship (optional - booking can exist without user account)
-  userId              String?
-  user                User?        @relation(fields: [userId], references: [id])
+  userId              String?       @db.ObjectId
+  user                User?         @relation(fields: [userId], references: [id])
 
   // Client Info
   clientName          String
