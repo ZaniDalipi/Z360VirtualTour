@@ -26,10 +26,11 @@ export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [user, setUser] = useState<UserData | null>(null)
-  const [isLoadingUser, setIsLoadingUser] = useState(true)
+  const [isMounted, setIsMounted] = useState(false)
 
-  // Check if user is logged in
+  // Mark as mounted and check auth
   useEffect(() => {
+    setIsMounted(true)
     const checkAuth = async () => {
       try {
         const res = await fetch('/api/user/auth/me')
@@ -37,10 +38,8 @@ export function PublicHeader() {
           const data = await res.json()
           setUser(data.user)
         }
-      } catch (error) {
+      } catch {
         // Not logged in
-      } finally {
-        setIsLoadingUser(false)
       }
     }
     checkAuth()
@@ -116,7 +115,7 @@ export function PublicHeader() {
               </a>
 
               {/* Login/Profile Button - Desktop */}
-              {!isLoadingUser && (
+              {isMounted && (
                 <div className="hidden lg:block">
                   {user ? (
                     <Link
