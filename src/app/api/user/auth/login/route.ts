@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { findUserByEmail } from '@/lib/user-db'
 import { signUserToken, checkUserRateLimit, recordUserLoginAttempt } from '@/lib/user-auth'
 import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
@@ -35,17 +35,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Find user by email (case-insensitive)
-    const user = await prisma.user.findFirst({
-      where: {
-        email: {
-          equals: email,
-          mode: 'insensitive'
-        },
-        isActive: true
-      },
-    })
+    const user = await findUserByEmail(email)
 
-    if (!user) {
+    // Check if user exists and is active
+    if (!user || !user.isActive) {
       recordUserLoginAttempt(rateLimitKey, false)
       return NextResponse.json(
         {

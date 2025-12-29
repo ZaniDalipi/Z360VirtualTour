@@ -803,6 +803,45 @@ function ContactPageContent() {
                 </motion.div>
               )}
 
+              {/* Selected Bundle Banner - shown when coming from schedule page with a bundle */}
+              {selectedBundle && bundleIdParam && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Card className="p-4 border-purple-500/30 bg-gradient-to-br from-purple-500/10 to-indigo-500/5">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                        <Users className="w-5 h-5 text-purple-400" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="text-purple-400 font-semibold">Group Bundle Selected!</p>
+                          <span className="px-2 py-0.5 bg-purple-500/20 text-purple-300 text-xs font-medium rounded">
+                            {selectedBundle.discountPercent}% off
+                          </span>
+                        </div>
+                        <p className="text-cream font-medium mb-1">{selectedBundle.name}</p>
+                        <p className="text-cream-muted text-sm">
+                          <span className="text-purple-300">{selectedBundle.city}</span> • {' '}
+                          {new Date(selectedBundle.scheduledDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                        </p>
+                        <div className="mt-2 flex items-center justify-between text-xs">
+                          <span className="text-cream-muted">
+                            {selectedBundle.spotsRemaining} spots remaining
+                          </span>
+                          {selectedBundle.perPersonTravelFee && (
+                            <span className="text-cream-muted">
+                              €{selectedBundle.perPersonTravelFee}/person travel fee
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              )}
+
               {/* Quote Preview */}
               {quote && (
                 <Card className="p-6 border-gold/30">

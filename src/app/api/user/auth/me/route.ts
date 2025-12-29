@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getUserFromCookies } from '@/lib/user-auth'
-import { prisma } from '@/lib/prisma'
+import { findUserById } from '@/lib/user-db'
 
 export async function GET() {
   try {
@@ -14,19 +14,7 @@ export async function GET() {
     }
 
     // Fetch fresh user data from database
-    const user = await prisma.user.findUnique({
-      where: { id: userPayload.id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        phone: true,
-        company: true,
-        avatar: true,
-        isActive: true,
-        createdAt: true,
-      }
-    })
+    const user = await findUserById(userPayload.id)
 
     if (!user || !user.isActive) {
       return NextResponse.json(
@@ -35,7 +23,18 @@ export async function GET() {
       )
     }
 
-    return NextResponse.json({ user })
+    return NextResponse.json({
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        phone: user.phone,
+        company: user.company,
+        avatar: user.avatar,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+      }
+    })
   } catch (error) {
     console.error('Auth check error:', error)
     return NextResponse.json(
