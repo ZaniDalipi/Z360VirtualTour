@@ -181,6 +181,29 @@ function ContactPageContent() {
     }
   }, [bundleIdParam])
 
+  // Pre-fill form with user data if logged in
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const res = await fetch('/api/user/auth/me')
+        if (res.ok) {
+          const data = await res.json()
+          const user = data.user
+          setFormData(prev => ({
+            ...prev,
+            name: prev.name || user.name || '',
+            email: prev.email || user.email || '',
+            phone: prev.phone || user.phone || '',
+            company: prev.company || user.company || '',
+          }))
+        }
+      } catch {
+        // Not logged in, ignore
+      }
+    }
+    fetchUserData()
+  }, [])
+
   // Available time slots for booking
   const timeSlots = [
     { value: '09:00', label: '9:00 AM' },
