@@ -234,38 +234,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-<<<<<<< HEAD
-    // Create booking (link to user if authenticated)
-    const booking = bookings.create({
-      userId: user?.id || null,
-      clientName: data.clientName,
-      clientEmail: data.clientEmail,
-      clientPhone: data.clientPhone,
-      companyName: data.companyName,
-      propertyAddress: data.propertyAddress,
-      propertyCity: data.propertyCity,
-      estimatedDistance: distanceKm,
-      serviceType: data.serviceType || planName,
-      projectDescription: data.projectDescription,
-      specialRequests: data.specialRequests,
-      pricingPlanId: data.pricingPlanId,
-      urgencyTierId: data.urgencyTierId,
-      preferredDate: data.preferredDate,
-      alternateDate: data.alternateDate,
-      deadlineDate: data.deadlineDate,
-      isFlexible: data.isFlexible ?? true,
-      travelBundleId: data.travelBundleId,
-      basePrice: quote.basePrice,
-      urgencySurcharge: quote.urgencySurchargeAmount,
-      travelFee: quote.travelFee,
-      bundleDiscount: quote.bundleDiscount,
-      totalQuote: quote.total,
-      depositAmount: quote.depositAmount,
-      status: 'quote_requested',
-=======
+    // Get authenticated user if available (to link booking to user account)
+    const userPayload = await getUserFromCookies()
+
     // Create booking with relation connections
     const booking = await prisma.booking.create({
       data: {
+        // Link to user if authenticated
+        ...(userPayload?.id && {
+          userId: userPayload.id
+        }),
         clientName: data.clientName,
         clientEmail: data.clientEmail,
         clientPhone: data.clientPhone || null,
@@ -301,7 +279,6 @@ export async function POST(request: NextRequest) {
           travelBundle: { connect: { id: data.travelBundleId } }
         }),
       },
->>>>>>> origin/main
     })
 
     // Send notification emails (async, don't block the response)
