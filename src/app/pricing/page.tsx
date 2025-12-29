@@ -1,62 +1,23 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Check, ArrowRight, Sparkles } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
 import { motion } from 'framer-motion'
 
-const pricingPlans = [
-  {
-    name: 'Starter',
-    description: 'Perfect for small spaces and single rooms',
-    price: '$299',
-    priceLabel: 'per tour',
-    features: [
-      'Up to 5 panorama scenes',
-      'Basic hotspot navigation',
-      'Mobile-friendly tour',
-      'Social sharing links',
-      '30-day delivery',
-      'Email support',
-    ],
-    isPopular: false,
-  },
-  {
-    name: 'Professional',
-    description: 'Ideal for homes, offices, and retail spaces',
-    price: '$599',
-    priceLabel: 'per tour',
-    features: [
-      'Up to 15 panorama scenes',
-      'Interactive hotspots & info cards',
-      'Custom branding & colors',
-      'Lead capture forms',
-      'Google Street View publishing',
-      'Analytics dashboard',
-      '14-day delivery',
-      'Priority support',
-    ],
-    isPopular: true,
-  },
-  {
-    name: 'Enterprise',
-    description: 'For large properties and ongoing needs',
-    price: 'Custom',
-    priceLabel: 'contact us',
-    features: [
-      'Unlimited panorama scenes',
-      'Advanced interactive features',
-      'Full white-label solution',
-      'API access & integrations',
-      'Dedicated account manager',
-      'Custom development',
-      'Rush delivery available',
-      '24/7 premium support',
-    ],
-    isPopular: false,
-  },
-]
+interface PricingPlan {
+  id: string
+  name: string
+  description: string
+  price: number
+  priceLabel: string | null
+  features: string[]
+  isPopular: boolean
+  isActive: boolean
+  order: number
+}
 
 const faqs = [
   {
@@ -86,6 +47,33 @@ const faqs = [
 ]
 
 export default function PricingPage() {
+  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchPricing = async () => {
+      try {
+        const res = await fetch('/api/pricing')
+        if (res.ok) {
+          const data = await res.json()
+          setPricingPlans(data)
+        }
+      } catch (error) {
+        console.error('Failed to fetch pricing:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchPricing()
+  }, [])
+
+  // Format price for display
+  const formatPrice = (price: number) => {
+    if (price === 0) return 'Custom'
+    return `€${price}`
+  }
+
   return (
     <div className="min-h-screen bg-navy">
       <PublicHeader />
@@ -113,60 +101,81 @@ export default function PricingPage() {
       {/* Pricing Cards */}
       <section className="py-12 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            {pricingPlans.map((plan, index) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="relative"
-              >
-                {plan.isPopular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                    <div className="flex items-center gap-1 bg-gold text-navy px-4 py-1 rounded-full text-sm font-semibold">
-                      <Sparkles className="w-4 h-4" />
-                      Most Popular
-                    </div>
-                  </div>
-                )}
-                <Card
-                  className={`p-8 h-full flex flex-col ${
-                    plan.isPopular ? 'border-gold ring-2 ring-gold/20' : ''
-                  }`}
+          {isLoading ? (
+            <div className="grid md:grid-cols-3 gap-8">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-96 bg-navy-dark/50 rounded-2xl animate-pulse" />
+              ))}
+            </div>
+          ) : pricingPlans.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-cream-muted">No pricing plans available at the moment.</p>
+              <Link href="/contact">
+                <Button className="mt-4">Contact Us for Pricing</Button>
+              </Link>
+            </div>
+          ) : (
+            <div className={`grid gap-8 ${
+              pricingPlans.length === 1 ? 'md:grid-cols-1 max-w-md mx-auto' :
+              pricingPlans.length === 2 ? 'md:grid-cols-2 max-w-3xl mx-auto' :
+              'md:grid-cols-3'
+            }`}>
+              {pricingPlans.map((plan, index) => (
+                <motion.div
+                  key={plan.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="relative"
                 >
-                  <div className="mb-6">
-                    <h3 className="text-h3 font-bold text-cream mb-2">{plan.name}</h3>
-                    <p className="text-body text-cream-muted">{plan.description}</p>
-                  </div>
+                  {plan.isPopular && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
+                      <div className="flex items-center gap-1 bg-gold text-navy px-4 py-1 rounded-full text-sm font-semibold">
+                        <Sparkles className="w-4 h-4" />
+                        Most Popular
+                      </div>
+                    </div>
+                  )}
+                  <Card
+                    className={`p-8 h-full flex flex-col ${
+                      plan.isPopular ? 'border-gold ring-2 ring-gold/20' : ''
+                    }`}
+                  >
+                    <div className="mb-6">
+                      <h3 className="text-h3 font-bold text-cream mb-2">{plan.name}</h3>
+                      <p className="text-body text-cream-muted">{plan.description}</p>
+                    </div>
 
-                  <div className="mb-6">
-                    <span className="text-display font-bold text-gold">{plan.price}</span>
-                    <span className="text-body text-cream-muted ml-2">{plan.priceLabel}</span>
-                  </div>
+                    <div className="mb-6">
+                      <span className="text-display font-bold text-gold">{formatPrice(plan.price)}</span>
+                      {plan.priceLabel && (
+                        <span className="text-body text-cream-muted ml-2">{plan.priceLabel}</span>
+                      )}
+                    </div>
 
-                  <ul className="space-y-3 mb-8 flex-1">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                        <span className="text-body text-cream-soft">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
+                    <ul className="space-y-3 mb-8 flex-1">
+                      {plan.features.map((feature, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                          <span className="text-body text-cream-soft">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
 
-                  <Link href="/contact">
-                    <Button
-                      variant={plan.isPopular ? 'primary' : 'secondary'}
-                      className="w-full"
-                    >
-                      Get Started
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
-                  </Link>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                    <Link href="/contact">
+                      <Button
+                        variant={plan.isPopular ? 'primary' : 'secondary'}
+                        className="w-full"
+                      >
+                        Get Started
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Button>
+                    </Link>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

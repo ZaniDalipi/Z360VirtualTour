@@ -17,9 +17,16 @@ import {
   Check,
   X,
   Play,
+  Calendar,
+  Hash,
+  ChevronLeft,
+  ChevronRight,
+  Grid3X3,
+  Maximize,
+  Heart,
 } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
-import { Button, Card } from '@/components/ui'
+import { Button, Card, ImageGallery3D } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface Tour {
@@ -43,14 +50,39 @@ interface Tour {
   }
 }
 
+interface RelatedTour {
+  id: string
+  title: string
+  slug: string
+  coverImage: string
+}
+
+// Helper to safely parse images from API response (handles both string and array)
+function parseImages(images: string | string[] | null | undefined): string[] {
+  if (!images) return []
+  if (Array.isArray(images)) return images
+  try {
+    const parsed = JSON.parse(images)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export default function TourDetailPage() {
   const params = useParams()
   const slug = params.slug as string
 
   const [tour, setTour] = useState<Tour | null>(null)
+  const [relatedTours, setRelatedTours] = useState<RelatedTour[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showShareModal, setShowShareModal] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [copiedEmbed, setCopiedEmbed] = useState(false)
+  const [isLiked, setIsLiked] = useState(false)
+  const [showFullscreen, setShowFullscreen] = useState(false)
+
+  const baseUrl = 'https://z360-virtual-tour.vercel.app'
 
   useEffect(() => {
     const fetchTour = async () => {
@@ -58,7 +90,18 @@ export default function TourDetailPage() {
         const res = await fetch(`/api/tours/${slug}`)
         if (res.ok) {
           const data = await res.json()
-          setTour(data)
+          // Defensively parse images to ensure it's always an array
+          setTour({
+            ...data,
+            images: parseImages(data.images),
+          })
+
+          // Fetch related tours from same category
+          const relatedRes = await fetch(`/api/tours?category=${data.category.slug}&limit=4`)
+          if (relatedRes.ok) {
+            const relatedData = await relatedRes.json()
+            setRelatedTours(relatedData.tours?.filter((t: RelatedTour) => t.slug !== slug).slice(0, 3) || [])
+          }
         }
       } catch (error) {
         console.error('Failed to fetch tour:', error)
@@ -79,6 +122,21 @@ export default function TourDetailPage() {
     await navigator.clipboard.writeText(shareUrl)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  const handleCopyEmbedUrl = async () => {
+    const embedUrl = `${baseUrl}/embed/${slug}`
+    await navigator.clipboard.writeText(embedUrl)
+    setCopiedEmbed(true)
+    setTimeout(() => setCopiedEmbed(false), 2000)
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    })
   }
 
   const shareLinks = [
@@ -140,8 +198,83 @@ export default function TourDetailPage() {
     <div className="min-h-screen bg-navy">
       <PublicHeader />
 
+      {/* Fixed Top Navigation Bar - Below Header */}
+      <div className="sticky top-16 z-40 bg-navy-dark/95 backdrop-blur-md border-b border-gold/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            {/* Left: Back Button & Breadcrumb */}
+            <div className="flex items-center gap-3">
+              <Link
+                href="/tours"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gold/10 hover:bg-gold/20 text-cream transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="hidden sm:inline text-sm">All Tours</span>
+              </Link>
+              <div className="hidden md:flex items-center gap-2 text-cream-muted text-sm">
+                <span>/</span>
+                <Link href={`/tours?category=${tour.category.slug}`} className="hover:text-gold transition-colors">
+                  {tour.category.name}
+                </Link>
+                <span>/</span>
+                <span className="text-cream truncate max-w-[200px]">{tour.title}</span>
+              </div>
+            </div>
+
+            {/* Right: Stats & Actions */}
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Tour ID */}
+              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-navy border border-gold/20 text-xs text-cream-muted">
+                <Hash className="w-3 h-3" />
+                <span className="font-mono">{tour.id.slice(-8)}</span>
+              </div>
+
+              {/* Views */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-navy border border-gold/20 text-xs">
+                <Eye className="w-3 h-3 text-gold" />
+                <span className="text-cream font-medium">{tour.views.toLocaleString()}</span>
+              </div>
+
+              {/* Date */}
+              <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-navy border border-gold/20 text-xs text-cream-muted">
+                <Calendar className="w-3 h-3" />
+                <span>{formatDate(tour.createdAt)}</span>
+              </div>
+
+              {/* Like Button */}
+              <button
+                onClick={() => setIsLiked(!isLiked)}
+                className={`p-2 rounded-lg border transition-all ${
+                  isLiked
+                    ? 'bg-red-500/20 border-red-500/50 text-red-400'
+                    : 'bg-navy border-gold/20 text-cream-muted hover:text-red-400 hover:border-red-400/50'
+                }`}
+              >
+                <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+              </button>
+
+              {/* Share Button */}
+              <button
+                onClick={() => setShowShareModal(true)}
+                className="p-2 rounded-lg bg-navy border border-gold/20 text-cream-muted hover:text-gold hover:border-gold/50 transition-all"
+              >
+                <Share2 className="w-4 h-4" />
+              </button>
+
+              {/* All Tours Grid */}
+              <Link
+                href="/tours"
+                className="p-2 rounded-lg bg-navy border border-gold/20 text-cream-muted hover:text-gold hover:border-gold/50 transition-all"
+              >
+                <Grid3X3 className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section with Cover Image */}
-      <section className="relative h-[70vh] min-h-[500px] max-h-[800px]" style={{ marginTop: '-64px', paddingTop: '64px' }}>
+      <section className="relative h-[60vh] min-h-[450px] max-h-[700px]">
         {/* Background Image */}
         <div className="absolute inset-0">
           <Image
@@ -155,16 +288,20 @@ export default function TourDetailPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/60 to-navy/30" />
         </div>
 
-        {/* Back Button */}
-        <div className="absolute top-6 left-4 sm:left-8 z-10">
-          <Link
-            href="/tours"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-navy/60 backdrop-blur-sm border border-gold/20 text-cream hover:bg-navy/80 transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Back to Tours</span>
-          </Link>
-        </div>
+        {/* Fullscreen Button */}
+        {tour.tourUrl && (
+          <div className="absolute top-4 right-4 z-10">
+            <a
+              href={tour.tourUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-navy/60 backdrop-blur-sm border border-gold/20 text-cream hover:bg-gold hover:text-navy transition-all"
+            >
+              <Maximize className="w-4 h-4" />
+              <span className="hidden sm:inline text-sm">Full Experience</span>
+            </a>
+          </div>
+        )}
 
         {/* Hero Content */}
         <div className="absolute inset-0 flex items-end">
@@ -181,7 +318,7 @@ export default function TourDetailPage() {
               </span>
 
               {/* Title */}
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-cream max-w-3xl">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-cream max-w-3xl">
                 {tour.title}
               </h1>
 
@@ -196,10 +333,6 @@ export default function TourDetailPage() {
                     {tour.location}
                   </span>
                 )}
-                <span className="flex items-center gap-1.5">
-                  <Eye className="w-4 h-4" />
-                  {tour.views.toLocaleString()} views
-                </span>
               </div>
 
               {/* Action Buttons */}
@@ -208,7 +341,7 @@ export default function TourDetailPage() {
                   <a href={tour.tourUrl} target="_blank" rel="noopener noreferrer">
                     <Button size="lg" className="group">
                       <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                      View Virtual Tour
+                      Start Virtual Tour
                     </Button>
                   </a>
                 )}
@@ -219,7 +352,7 @@ export default function TourDetailPage() {
                   className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
                 >
                   <Share2 className="w-4 h-4 mr-2" />
-                  Share
+                  Share Tour
                 </Button>
               </div>
             </motion.div>
@@ -275,35 +408,83 @@ export default function TourDetailPage() {
         </section>
       )}
 
-      {/* Gallery Section */}
+      {/* Gallery Section - 3D Carousel */}
       {tour.images && tour.images.length > 0 && (
-        <section className="py-12 md:py-16 bg-navy-dark/50">
+        <section className="py-12 md:py-20 bg-gradient-to-b from-navy-dark/50 to-navy overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <h2 className="text-h3 font-bold text-cream mb-8">
-                Project Gallery
-              </h2>
+              <div className="text-center mb-8 md:mb-12">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-cream mb-3">
+                  Project Gallery
+                </h2>
+                <p className="text-cream-muted">
+                  Click on images to view in fullscreen • Use arrows or swipe to navigate
+                </p>
+              </div>
+              <ImageGallery3D
+                images={tour.images}
+                title={tour.title}
+                autoPlay={false}
+              />
+            </motion.div>
+          </div>
+        </section>
+      )}
+
+      {/* Related Tours Section */}
+      {relatedTours.length > 0 && (
+        <section className="py-12 md:py-16 bg-navy-dark/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-h3 font-bold text-cream">
+                  More in {tour.category.name}
+                </h2>
+                <Link
+                  href={`/tours?category=${tour.category.slug}`}
+                  className="flex items-center gap-2 text-gold hover:text-gold-light transition-colors"
+                >
+                  View All
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tour.images.map((image, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.1 * index }}
-                    className="group relative aspect-[4/3] rounded-2xl overflow-hidden border border-gold/20"
-                  >
-                    <Image
-                      src={image}
-                      alt={`${tour.title} - Image ${index + 1}`}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-navy/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </motion.div>
+                {relatedTours.map((relatedTour, index) => (
+                  <Link key={relatedTour.id} href={`/tour/${relatedTour.slug}`}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 * index }}
+                      className="group relative aspect-[16/10] rounded-2xl overflow-hidden border border-gold/20 hover:border-gold/50 transition-all"
+                    >
+                      <Image
+                        src={relatedTour.coverImage}
+                        alt={relatedTour.title}
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/40 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <h3 className="text-cream font-semibold group-hover:text-gold transition-colors line-clamp-2">
+                          {relatedTour.title}
+                        </h3>
+                      </div>
+                      {/* Hover Play Icon */}
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="w-14 h-14 rounded-full bg-gold/90 flex items-center justify-center">
+                          <Play className="w-6 h-6 text-navy ml-1" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  </Link>
                 ))}
               </div>
             </motion.div>
@@ -317,7 +498,7 @@ export default function TourDetailPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.6 }}
           >
             <Card className="p-12 md:p-16 text-center relative overflow-hidden">
               {/* Background Pattern */}
@@ -401,9 +582,10 @@ export default function TourDetailPage() {
                   })}
                 </div>
 
+                {/* Copy page link */}
                 <div className="space-y-2">
                   <label className="text-sm text-cream-muted">
-                    Or copy link
+                    Copy page link
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -418,6 +600,36 @@ export default function TourDetailPage() {
                       className="flex-shrink-0"
                     >
                       {copied ? (
+                        <Check className="w-4 h-4 text-green-400" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Embed URL for BalkanEstateAI */}
+                <div className="space-y-2 pt-4 border-t border-gold/10">
+                  <label className="text-sm text-cream-muted flex items-center gap-2">
+                    <ExternalLink className="w-4 h-4" />
+                    Embed URL for Property Listings
+                  </label>
+                  <p className="text-xs text-cream-muted/70 mb-2">
+                    Use this URL to embed this tour in BalkanEstateAI or other property websites
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={`${baseUrl}/embed/${slug}`}
+                      readOnly
+                      className="flex-1 px-4 py-2 rounded-xl bg-navy border border-purple-500/30 text-cream text-sm truncate font-mono"
+                    />
+                    <Button
+                      variant="secondary"
+                      onClick={handleCopyEmbedUrl}
+                      className="flex-shrink-0 border-purple-500/30 hover:bg-purple-500/20"
+                    >
+                      {copiedEmbed ? (
                         <Check className="w-4 h-4 text-green-400" />
                       ) : (
                         <Copy className="w-4 h-4" />

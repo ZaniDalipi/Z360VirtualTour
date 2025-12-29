@@ -228,13 +228,14 @@ export default function TestimonialsPage() {
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
               onClick={resetForm}
             />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-lg px-4"
-            >
-              <Card className="p-6">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-lg pointer-events-auto"
+              >
+                <Card className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-h3 font-semibold text-cream">
                     {editingId ? 'Edit Testimonial' : 'Add Testimonial'}
@@ -352,7 +353,8 @@ export default function TestimonialsPage() {
                   </div>
                 </form>
               </Card>
-            </motion.div>
+              </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>

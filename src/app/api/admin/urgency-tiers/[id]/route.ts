@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { urgencyTiers } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -13,8 +15,8 @@ export async function GET(
   }
 
   try {
-    const { id } = await params
-    const tier = urgencyTiers.findUnique(id)
+    const { id } = params
+    const tier = await prisma.urgencyTier.findUnique({ where: { id } })
 
     if (!tier) {
       return NextResponse.json({ error: 'Tier not found' }, { status: 404 })
@@ -32,7 +34,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -41,18 +43,22 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const data = await request.json()
 
-    const tier = urgencyTiers.update(id, {
-      name: data.name,
-      displayName: data.displayName,
-      description: data.description,
-      minLeadDays: data.minLeadDays !== undefined ? parseInt(data.minLeadDays) : undefined,
-      maxLeadDays: data.maxLeadDays !== undefined ? (data.maxLeadDays ? parseInt(data.maxLeadDays) : null) : undefined,
-      surchargePercent: data.surchargePercent !== undefined ? parseFloat(data.surchargePercent) : undefined,
-      isActive: data.isActive,
-      order: data.order !== undefined ? parseInt(data.order) : undefined,
+    const updateData: Record<string, unknown> = {}
+    if (data.name !== undefined) updateData.name = data.name
+    if (data.displayName !== undefined) updateData.displayName = data.displayName
+    if (data.description !== undefined) updateData.description = data.description
+    if (data.minLeadDays !== undefined) updateData.minLeadDays = parseInt(data.minLeadDays)
+    if (data.maxLeadDays !== undefined) updateData.maxLeadDays = data.maxLeadDays ? parseInt(data.maxLeadDays) : null
+    if (data.surchargePercent !== undefined) updateData.surchargePercent = parseFloat(data.surchargePercent)
+    if (data.isActive !== undefined) updateData.isActive = data.isActive
+    if (data.order !== undefined) updateData.order = parseInt(data.order)
+
+    const tier = await prisma.urgencyTier.update({
+      where: { id },
+      data: updateData,
     })
 
     return NextResponse.json(tier)
@@ -67,7 +73,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -76,8 +82,8 @@ export async function DELETE(
   }
 
   try {
-    const { id } = await params
-    urgencyTiers.delete(id)
+    const { id } = params
+    await prisma.urgencyTier.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete urgency tier:', error)

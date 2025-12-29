@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { bookings, travelBundles, calculateQuote, getDistanceByCity } from '@/lib/booking-db'
+import { calculateQuote, getDistanceByCity } from '@/lib/quote-utils'
 import { prisma } from '@/lib/prisma'
 import { getUserFromCookies } from '@/lib/user-auth'
+
+export const dynamic = 'force-dynamic'
 
 // Send email notification for new booking
 async function sendBookingNotification(booking: {
@@ -19,6 +21,9 @@ async function sendBookingNotification(booking: {
     urgencySurchargeAmount: number
     travelFee: number
     bundleDiscount: number
+    sameCityDiscount: number
+    sameCityDiscountPercent: number
+    matchedScheduledCity: string | null
     total: number
     depositAmount: number | null
     depositPercent: number | null
@@ -120,6 +125,12 @@ async function sendBookingNotification(booking: {
                 <td style="padding: 5px 0; text-align: right; color: #27ae60;">-€${booking.quote.bundleDiscount.toFixed(2)}</td>
               </tr>
               ` : ''}
+              ${booking.quote.sameCityDiscount > 0 ? `
+              <tr>
+                <td style="padding: 5px 0; color: #27ae60;">Same-City Discount (${booking.quote.sameCityDiscountPercent}%)${booking.quote.matchedScheduledCity ? ` - ${booking.quote.matchedScheduledCity}` : ''}:</td>
+                <td style="padding: 5px 0; text-align: right; color: #27ae60;">-€${booking.quote.sameCityDiscount.toFixed(2)}</td>
+              </tr>
+              ` : ''}
               <tr style="border-top: 2px solid #C9A962;">
                 <td style="padding: 10px 0; font-weight: bold; font-size: 18px;">Total:</td>
                 <td style="padding: 10px 0; text-align: right; font-weight: bold; font-size: 18px; color: #C9A962;">€${booking.quote.total.toFixed(2)}</td>
@@ -189,16 +200,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate quote
-    const quote = calculateQuote({
+    const quote = await calculateQuote({
       pricingPlanPrice: basePrice,
       urgencyTierId: data.urgencyTierId,
       distanceKm,
       bundleId: data.travelBundleId,
+      userCity: data.propertyCity,  // Pass user's city for bundle eligibility check
+      scheduledCities: data.scheduledCities,  // For same-city discount
     })
 
     // If joining a bundle, validate it
     if (data.travelBundleId) {
-      const bundle = travelBundles.findUnique(data.travelBundleId)
+      const bundle = await prisma.travelBundle.findUnique({
+        where: { id: data.travelBundleId },
+      })
       if (!bundle) {
         return NextResponse.json(
           { error: 'Selected bundle not found' },
@@ -219,6 +234,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+<<<<<<< HEAD
     // Create booking (link to user if authenticated)
     const booking = bookings.create({
       userId: user?.id || null,
@@ -246,9 +262,49 @@ export async function POST(request: NextRequest) {
       totalQuote: quote.total,
       depositAmount: quote.depositAmount,
       status: 'quote_requested',
+=======
+    // Create booking with relation connections
+    const booking = await prisma.booking.create({
+      data: {
+        clientName: data.clientName,
+        clientEmail: data.clientEmail,
+        clientPhone: data.clientPhone || null,
+        companyName: data.companyName || null,
+        propertyAddress: data.propertyAddress,
+        propertyCity: data.propertyCity || null,
+        estimatedDistance: distanceKm || null,
+        serviceType: data.serviceType || planName || null,
+        projectDescription: data.projectDescription || null,
+        specialRequests: data.specialRequests || null,
+        preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
+        preferredTime: data.preferredTime || null,
+        alternateDate: data.alternateDate ? new Date(data.alternateDate) : null,
+        alternateTime: data.alternateTime || null,
+        deadlineDate: data.deadlineDate ? new Date(data.deadlineDate) : null,
+        isFlexible: data.isFlexible ?? true,
+        basePrice: quote.basePrice,
+        urgencySurcharge: quote.urgencySurchargeAmount,
+        travelFee: quote.travelFee,
+        bundleDiscount: quote.bundleDiscount,
+        sameCityDiscount: quote.sameCityDiscount || null,
+        totalQuote: quote.total,
+        depositAmount: quote.depositAmount,
+        status: 'quote_requested',
+        // Use connect syntax for relations
+        ...(data.pricingPlanId && {
+          pricingPlan: { connect: { id: data.pricingPlanId } }
+        }),
+        ...(data.urgencyTierId && {
+          urgencyTier: { connect: { id: data.urgencyTierId } }
+        }),
+        ...(data.travelBundleId && {
+          travelBundle: { connect: { id: data.travelBundleId } }
+        }),
+      },
+>>>>>>> origin/main
     })
 
-    // Send notification email (async, don't block the response)
+    // Send notification emails (async, don't block the response)
     sendBookingNotification({
       id: booking.id,
       clientName: data.clientName,
@@ -264,11 +320,27 @@ export async function POST(request: NextRequest) {
         urgencySurchargeAmount: quote.urgencySurchargeAmount,
         travelFee: quote.travelFee,
         bundleDiscount: quote.bundleDiscount,
+        sameCityDiscount: quote.sameCityDiscount,
+        sameCityDiscountPercent: quote.sameCityDiscountPercent,
+        matchedScheduledCity: quote.matchedScheduledCity,
         total: quote.total,
         depositAmount: quote.depositAmount,
         depositPercent: quote.depositPercent,
       },
-    }).catch(err => console.error('Email error:', err))
+    }).catch(err => console.error('Admin email error:', err))
+
+    // Send confirmation email to client
+    import('@/lib/email').then(({ sendEmail, emailTemplates }) => {
+      const template = emailTemplates.bookingConfirmation({
+        clientName: data.clientName,
+        bookingId: booking.id,
+        totalQuote: quote.total,
+        depositAmount: quote.depositAmount || 0,
+        propertyAddress: data.propertyAddress,
+        preferredDate: data.preferredDate,
+      })
+      sendEmail(data.clientEmail, template).catch(err => console.error('Client email error:', err))
+    }).catch(err => console.error('Email import error:', err))
 
     return NextResponse.json({
       success: true,
@@ -278,6 +350,7 @@ export async function POST(request: NextRequest) {
         urgencySurcharge: quote.urgencySurchargeAmount,
         travelFee: quote.travelFee,
         bundleDiscount: quote.bundleDiscount,
+        sameCityDiscount: quote.sameCityDiscount,
         total: quote.total,
         depositAmount: quote.depositAmount,
       },

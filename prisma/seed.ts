@@ -260,6 +260,110 @@ async function main() {
   }
   console.log('✅ Site settings created')
 
+  // Create booking settings
+  await prisma.bookingSettings.upsert({
+    where: { id: 'default' },
+    update: {},
+    create: {
+      id: 'default',
+      defaultMinLeadDays: 3,
+      maxAdvanceBookingDays: 90,
+      businessCity: 'Skopje',
+      includeReturnTrip: true,
+      freeDistanceKm: 15,
+      workOnWeekends: false,
+      workOnSunday: false,
+      quoteValidDays: 14,
+      requireDeposit: true,
+      depositPercent: 30,
+      minBundleParticipants: 3,
+      bundleDiscountPercent: 10,
+    },
+  })
+  console.log('✅ Booking settings created')
+
+  // Create urgency tiers
+  const urgencyTiers = [
+    {
+      name: 'standard',
+      displayName: 'Standard Delivery',
+      description: '7-14 day turnaround',
+      minLeadDays: 7,
+      maxLeadDays: 14,
+      surchargePercent: 0,
+      order: 1,
+    },
+    {
+      name: 'express',
+      displayName: 'Express Delivery',
+      description: '3-6 day turnaround',
+      minLeadDays: 3,
+      maxLeadDays: 6,
+      surchargePercent: 25,
+      order: 2,
+    },
+    {
+      name: 'rush',
+      displayName: 'Rush/Urgent',
+      description: '1-2 day turnaround',
+      minLeadDays: 1,
+      maxLeadDays: 2,
+      surchargePercent: 50,
+      order: 3,
+    },
+  ]
+
+  await prisma.urgencyTier.deleteMany({})
+  for (const tier of urgencyTiers) {
+    await prisma.urgencyTier.create({ data: tier })
+  }
+  console.log('✅ Urgency tiers created')
+
+  // Create travel zones
+  const travelZones = [
+    {
+      name: 'Local',
+      description: 'Within 15km of Skopje',
+      minDistanceKm: 0,
+      maxDistanceKm: 15,
+      isIncluded: true,
+      order: 1,
+    },
+    {
+      name: 'Regional',
+      description: '15-50km from Skopje',
+      minDistanceKm: 15,
+      maxDistanceKm: 50,
+      flatFee: 20,
+      perKmRate: 0.5,
+      order: 2,
+    },
+    {
+      name: 'Extended',
+      description: '50-150km from Skopje',
+      minDistanceKm: 50,
+      maxDistanceKm: 150,
+      flatFee: 40,
+      perKmRate: 0.4,
+      order: 3,
+    },
+    {
+      name: 'Remote',
+      description: 'Over 150km from Skopje',
+      minDistanceKm: 150,
+      maxDistanceKm: null,
+      flatFee: 80,
+      perKmRate: 0.3,
+      order: 4,
+    },
+  ]
+
+  await prisma.travelZone.deleteMany({})
+  for (const zone of travelZones) {
+    await prisma.travelZone.create({ data: zone })
+  }
+  console.log('✅ Travel zones created')
+
   console.log('🎉 Database seeded successfully!')
 }
 

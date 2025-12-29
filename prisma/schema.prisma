@@ -1,17 +1,18 @@
 // Prisma Schema for Z360 Virtual Tours Business Platform
+// MongoDB version
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 // Admin user for authentication
 model Admin {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
   password  String
   name      String
@@ -36,7 +37,7 @@ model User {
 
 // Tour categories (Real Estate, Business, Hospitality, etc.)
 model Category {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String   @unique
   slug        String   @unique
   description String?
@@ -50,30 +51,32 @@ model Category {
 
 // Main tour entity
 model Tour {
-  id            String   @id @default(cuid())
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
   title         String
-  slug          String   @unique
+  slug          String    @unique
   description   String
-  shortDesc     String?  // Short description for cards
-  clientName    String?  // Client/business name
+  shortDesc     String?   // Short description for cards
+  clientName    String?   // Client/business name
   location      String?
-  coverImage    String   // Main thumbnail
-  images        String?  // JSON array of additional images
-  tourUrl       String?  // External 360 tour URL (e.g., from Kuula, Matterport)
-  tourEmbed     String?  // Embed code for 360 viewer
-  categoryId    String
-  category      Category @relation(fields: [categoryId], references: [id])
-  featured      Boolean  @default(false)
-  isActive      Boolean  @default(true)
-  views         Int      @default(0)
+  coverImage    String    // Main thumbnail
+  images        String?   // JSON array of additional images
+  tourUrl       String?   // External 360 tour URL (e.g., from Kuula, Matterport)
+  tourEmbed     String?   // Embed code for 360 viewer
+  categoryId    String    @db.ObjectId
+  category      Category  @relation(fields: [categoryId], references: [id])
+  premium       Boolean   @default(false)  // Gold border, always first
+  highlight     Boolean   @default(false)  // Pink style, second priority
+  featured      Boolean   @default(false)  // Third priority
+  isActive      Boolean   @default(true)
+  views         Int       @default(0)
   completedAt   DateTime? // When the tour project was completed
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 // Client testimonials
 model Testimonial {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   clientName  String
   clientTitle String?  // e.g., "CEO at Company"
   clientImage String?
@@ -88,7 +91,7 @@ model Testimonial {
 
 // Pricing packages
 model PricingPlan {
-  id          String    @id @default(cuid())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String
   price       Float
@@ -97,6 +100,8 @@ model PricingPlan {
   isPopular   Boolean   @default(false)
   isActive    Boolean   @default(true)
   order       Int       @default(0)
+  // LemonSqueezy integration
+  lemonSqueezyVariantId String?  // Product variant ID in LemonSqueezy
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   bookings    Booking[]
@@ -104,7 +109,7 @@ model PricingPlan {
 
 // Contact form submissions
 model ContactSubmission {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String
   phone     String?
@@ -117,7 +122,7 @@ model ContactSubmission {
 
 // Site settings (about content, contact info, etc.)
 model SiteSetting {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
@@ -129,7 +134,7 @@ model SiteSetting {
 
 // Urgency tiers with surcharge percentages
 model UrgencyTier {
-  id                String    @id @default(cuid())
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
   name              String    @unique  // "standard", "express", "rush"
   displayName       String              // "Standard Delivery", "Express", "Rush/Urgent"
   description       String?             // "7-14 day turnaround"
@@ -145,7 +150,7 @@ model UrgencyTier {
 
 // Travel zones for distance-based pricing
 model TravelZone {
-  id                String    @id @default(cuid())
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
   name              String              // "Local", "Regional", "Extended"
   description       String?             // "Within 15km of base location"
   minDistanceKm     Float     @default(0)
@@ -160,31 +165,33 @@ model TravelZone {
   bookings          Booking[]
 }
 
-// Travel bundles - group bookings for same city/date
+// Travel bundles - group bookings for same city/date range
 model TravelBundle {
-  id                String    @id @default(cuid())
-  name              String              // "Ohrid Bundle - January 2025"
-  city              String              // Target city
-  region            String?             // Region/area
-  scheduledDate     DateTime            // When the photographer will be there
-  maxParticipants   Int       @default(10) // Maximum clients in bundle
-  currentCount      Int       @default(0)  // Current participants
-  distanceKm        Float?              // Distance from base
-  totalTravelCost   Float?              // Total travel cost to split
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  name               String              // "Ohrid Bundle - January 2025"
+  city               String              // Target city
+  region             String?             // Region/area
+  startDate          DateTime?           // When the bundle period starts (optional for backward compat)
+  endDate            DateTime?           // When the bundle period ends (optional for backward compat)
+  scheduledDate      DateTime            // Main working date (required, used as fallback)
+  maxParticipants    Int       @default(10) // Maximum clients in bundle
+  currentCount       Int       @default(0)  // Current participants
+  distanceKm         Float?              // Distance from base
+  totalTravelCost    Float?              // Total travel cost to split
   perPersonTravelFee Float?             // Calculated: totalTravelCost / participants
-  discountPercent   Float     @default(0)  // Additional discount for bundle participants
-  description       String?             // "Join our Ohrid trip and save on travel!"
-  status            String    @default("open") // open, full, scheduled, completed, cancelled
-  isActive          Boolean   @default(true)
+  discountPercent    Float     @default(0)  // Additional discount for bundle participants
+  description        String?             // "Join our Ohrid trip and save on travel!"
+  status             String    @default("open") // open, full, scheduled, completed, cancelled
+  isActive           Boolean   @default(true)
   registrationDeadline DateTime?        // Last date to join
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  bookings          Booking[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  bookings           Booking[]
 }
 
 // Blocked dates (unavailable for booking)
 model BlockedDate {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   date        DateTime @unique
   reason      String?  // "Holiday", "Personal", "Fully Booked"
   isAllDay    Boolean  @default(true)
@@ -193,7 +200,7 @@ model BlockedDate {
 
 // Main booking/quote request entity
 model Booking {
-  id                  String       @id @default(cuid())
+  id                  String        @id @default(auto()) @map("_id") @db.ObjectId
 
   // User relationship (optional - booking can exist without user account)
   userId              String?
@@ -214,24 +221,27 @@ model Booking {
   specialRequests     String?             // Any special needs
 
   // Pricing Plan
-  pricingPlanId       String?
-  pricingPlan         PricingPlan? @relation(fields: [pricingPlanId], references: [id])
+  pricingPlanId       String?       @db.ObjectId
+  pricingPlan         PricingPlan?  @relation(fields: [pricingPlanId], references: [id])
 
   // Scheduling
-  urgencyTierId       String?
-  urgencyTier         UrgencyTier? @relation(fields: [urgencyTierId], references: [id])
+  urgencyTierId       String?       @db.ObjectId
+  urgencyTier         UrgencyTier?  @relation(fields: [urgencyTierId], references: [id])
   preferredDate       DateTime?           // Client's preferred date
+  preferredTime       String?             // Client's preferred time (e.g., "09:00", "14:00")
   alternateDate       DateTime?           // Backup date option
+  alternateTime       String?             // Backup time option
   deadlineDate        DateTime?           // For urgent: must be done by this date
   confirmedDate       DateTime?           // Admin-confirmed date
+  confirmedTime       String?             // Admin-confirmed time
   isFlexible          Boolean   @default(true)
 
   // Travel
-  travelZoneId        String?
-  travelZone          TravelZone?  @relation(fields: [travelZoneId], references: [id])
+  travelZoneId        String?       @db.ObjectId
+  travelZone          TravelZone?   @relation(fields: [travelZoneId], references: [id])
 
   // Bundle (optional - if joining a bundle)
-  travelBundleId      String?
+  travelBundleId      String?       @db.ObjectId
   travelBundle        TravelBundle? @relation(fields: [travelBundleId], references: [id])
 
   // Pricing (calculated quote)
@@ -239,17 +249,29 @@ model Booking {
   urgencySurcharge    Float?              // Calculated surcharge amount
   travelFee           Float?              // Calculated travel fee (or bundle share)
   bundleDiscount      Float?              // Discount from bundle
+  sameCityDiscount    Float?              // 15% discount when booking same city/date as existing job
   totalQuote          Float?              // Total estimated price
   depositAmount       Float?              // Required deposit
   depositPaid         Boolean   @default(false)
 
-  // Admin notes
+  // Payment tracking (LemonSqueezy)
+  lemonSqueezyOrderId String?             // LemonSqueezy Order ID
+  paymentStatus       String    @default("pending") // pending, paid, failed, refunded, partial
+  paidAmount          Float?              // Amount actually paid
+  paidAt              DateTime?           // When payment was received
+  paymentMethod       String?             // lemonsqueezy, bank_transfer, cash, etc.
+  balanceAmount       Float?              // Remaining balance after deposit
+  balancePaidAt       DateTime?           // When balance was paid
+
+  // Admin notes & Communication
   internalNotes       String?             // Admin-only notes
+  communicationLog    String?             // JSON array of communication entries
+  stageNotes          String?             // JSON object with notes per stage
 
   // Status Tracking
   status              String    @default("quote_requested")
-  // Status values: quote_requested, quote_sent, pending_confirmation,
-  //                confirmed, scheduled, in_progress, completed, cancelled
+  // Status values: quote_requested, quote_sent, negotiating, pending_deposit,
+  //                confirmed, scheduled, in_progress, editing, delivered, completed, cancelled
   isRead              Boolean   @default(false)
 
   // Timestamps
@@ -258,11 +280,22 @@ model Booking {
   quoteSentAt         DateTime?           // When quote was sent
   confirmedAt         DateTime?           // When client confirmed
   completedAt         DateTime?           // When project completed
+  deliveredAt         DateTime?           // When final files were delivered
+
+  // Work session tracking
+  workStartedAt       DateTime?           // When work actually started
+  workEndedAt         DateTime?           // When work actually ended
+  workDurationMinutes Int?                // Total minutes worked
+
+  // Deliverables tracking
+  deliverables        String?             // JSON: files delivered, links, etc.
+  clientFeedback      String?             // Client's feedback after delivery
+  rating              Int?                // Client rating 1-5
 }
 
 // Booking settings (singleton-style config)
 model BookingSettings {
-  id                    String   @id @default("default")
+  id                    String   @id @default("default") @map("_id")
 
   // Lead time defaults
   defaultMinLeadDays    Int      @default(3)
@@ -293,5 +326,61 @@ model BookingSettings {
   minBundleParticipants Int      @default(3)  // Min to activate bundle pricing
   bundleDiscountPercent Float    @default(10) // Default bundle discount
 
+  // Same-city discount settings
+  sameCityDiscountPercent Float  @default(15) // Discount when booking where photographer is scheduled
+  sameCityMaxDistanceKm   Float  @default(40) // Max distance to qualify for same-city discount
+
   updatedAt             DateTime @updatedAt
+}
+
+// ==========================================
+// EXPENSE & FINANCIAL TRACKING
+// ==========================================
+
+// Expense categories
+model ExpenseCategory {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String    @unique  // "Travel", "Equipment", "Software", "Marketing", etc.
+  description String?
+  color       String?   // Hex color for charts
+  icon        String?   // Icon name from lucide-react
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  expenses    Expense[]
+}
+
+// Individual expense entries
+model Expense {
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  description String                    // What was the expense for
+  amount      Float                     // Expense amount in EUR
+  date        DateTime                  // Date of expense
+  categoryId  String          @db.ObjectId
+  category    ExpenseCategory @relation(fields: [categoryId], references: [id])
+  vendor      String?                   // Who was paid (supplier, vendor name)
+  receiptUrl  String?                   // Link to receipt image/document
+  notes       String?                   // Additional notes
+  isRecurring Boolean         @default(false)
+  recurringFrequency String?            // "weekly", "monthly", "yearly"
+  bookingId   String?         @db.ObjectId  // Optional link to a booking (travel expense, etc.)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+// Financial reports/snapshots (for historical tracking)
+model FinancialReport {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  reportType    String             // "weekly", "monthly", "yearly"
+  periodStart   DateTime           // Start of reporting period
+  periodEnd     DateTime           // End of reporting period
+  totalIncome   Float              // Total income for the period
+  totalExpenses Float              // Total expenses for the period
+  netProfit     Float              // Income - Expenses
+  bookingsCount Int                // Number of completed bookings
+  avgBookingValue Float?           // Average booking value
+  topCategory   String?            // Category with most income
+  expensesByCategory String?       // JSON: {"Travel": 500, "Equipment": 200, ...}
+  notes         String?            // Admin notes for the period
+  createdAt     DateTime @default(now())
 }
