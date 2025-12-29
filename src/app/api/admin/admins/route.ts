@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
 
+export const dynamic = 'force-dynamic'
+
 // GET: List all admins
 export async function GET() {
   try {

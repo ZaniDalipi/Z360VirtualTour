@@ -4,6 +4,8 @@ import { signUserToken } from '@/lib/user-auth'
 import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { email, password, name, phone, company } = await request.json()

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { getUserFromCookies } from '@/lib/user-auth'
 import { findUserById } from '@/lib/user-db'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const userPayload = await getUserFromCookies()

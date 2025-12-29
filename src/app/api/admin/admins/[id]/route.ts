@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
 
+export const dynamic = 'force-dynamic'
+
 // DELETE: Remove an admin
 export async function DELETE(
   request: NextRequest,

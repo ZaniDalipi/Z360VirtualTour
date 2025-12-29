@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { cookies } from 'next/headers'
 import bcrypt from 'bcryptjs'
 
+export const dynamic = 'force-dynamic'
+
 // GET: Get user profile
 export async function GET() {
   try {

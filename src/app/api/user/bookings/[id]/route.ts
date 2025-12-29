@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromCookies } from '@/lib/user-auth'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 // GET: Fetch a specific booking for the authenticated user
 export async function GET(
   request: NextRequest,
