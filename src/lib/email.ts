@@ -541,6 +541,104 @@ export const emailTemplates = {
       `),
     }
   },
+
+  // Change request response to user (when admin approves/rejects)
+  changeRequestResponse: (data: {
+    clientName: string
+    bookingId: string
+    requestType: 'date_change' | 'cancellation' | 'other'
+    approved: boolean
+    adminMessage?: string
+    propertyAddress: string
+    newConfirmedDate?: string
+    newConfirmedTime?: string
+  }) => {
+    const requestTypeLabels = {
+      date_change: 'Date Change',
+      cancellation: 'Cancellation',
+      other: 'Change',
+    }
+
+    return {
+      subject: data.approved
+        ? `Your ${requestTypeLabels[data.requestType]} Request Has Been Approved - Z360 Virtual Tours`
+        : `Update on Your ${requestTypeLabels[data.requestType]} Request - Z360 Virtual Tours`,
+      html: baseTemplate(`
+        <div style="text-align: center; margin-bottom: 30px;">
+          <div style="width: 60px; height: 60px; margin: 0 auto 15px; border-radius: 50%; background-color: ${data.approved ? '#22c55e20' : '#f59e0b20'}; display: flex; align-items: center; justify-content: center;">
+            <span style="font-size: 28px;">${data.approved ? '✓' : '!'}</span>
+          </div>
+          <h1 style="color: ${data.approved ? '#22c55e' : '#f59e0b'}; margin: 0 0 10px; font-size: 24px;">
+            ${data.approved ? 'Request Approved' : 'Request Update'}
+          </h1>
+          <p style="color: #888; margin: 0; font-size: 16px;">
+            Booking Reference: #${data.bookingId.slice(-8).toUpperCase()}
+          </p>
+        </div>
+
+        <p style="font-size: 16px; line-height: 1.6;">Hi ${data.clientName},</p>
+
+        ${data.approved ? `
+        <p style="font-size: 16px; line-height: 1.6;">
+          Great news! Your <strong>${requestTypeLabels[data.requestType].toLowerCase()} request</strong> for the booking at <strong>${data.propertyAddress}</strong> has been approved.
+        </p>
+        ` : `
+        <p style="font-size: 16px; line-height: 1.6;">
+          We've reviewed your <strong>${requestTypeLabels[data.requestType].toLowerCase()} request</strong> for the booking at <strong>${data.propertyAddress}</strong>. Unfortunately, we were unable to approve this request at this time.
+        </p>
+        `}
+
+        ${data.approved && data.requestType === 'date_change' && data.newConfirmedDate ? `
+        <div style="background-color: #22c55e20; border-radius: 12px; padding: 20px; margin: 25px 0; text-align: center;">
+          <h3 style="color: #22c55e; margin-top: 0;">New Confirmed Date</h3>
+          <p style="font-size: 20px; font-weight: 600; margin: 0; color: #F5F1E6;">
+            ${data.newConfirmedDate}${data.newConfirmedTime ? ` at ${data.newConfirmedTime}` : ''}
+          </p>
+        </div>
+        ` : ''}
+
+        ${data.approved && data.requestType === 'cancellation' ? `
+        <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin: 25px 0;">
+          <h3 style="color: #C9A962; margin-top: 0;">What Happens Next?</h3>
+          <ul style="color: #F5F1E6; line-height: 1.8; padding-left: 20px; margin: 0;">
+            <li>Your booking has been cancelled</li>
+            <li>If you paid a deposit, our team will process your refund within 5-7 business days</li>
+            <li>You will receive a separate email confirmation once the refund is processed</li>
+            <li>If you have any questions, please don't hesitate to contact us</li>
+          </ul>
+        </div>
+        ` : ''}
+
+        ${data.adminMessage ? `
+        <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin: 25px 0;">
+          <h3 style="color: #C9A962; margin-top: 0;">Message from Z360 Team</h3>
+          <div style="background-color: #1B2838; padding: 15px; border-radius: 8px; border-left: 3px solid #C9A962;">
+            <p style="margin: 0; font-style: italic; line-height: 1.6;">"${data.adminMessage}"</p>
+          </div>
+        </div>
+        ` : ''}
+
+        ${!data.approved ? `
+        <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin: 25px 0;">
+          <h3 style="color: #C9A962; margin-top: 0;">Need Help?</h3>
+          <p style="color: #F5F1E6; line-height: 1.6; margin: 0;">
+            If you'd like to discuss alternative options or have questions about this decision, please contact us. We're happy to help find a solution that works for you.
+          </p>
+        </div>
+        ` : ''}
+
+        <p style="font-size: 14px; color: #888; line-height: 1.6; margin-top: 30px;">
+          If you have any questions, feel free to contact us at <a href="mailto:z360virtualtours@gmail.com" style="color: #C9A962;">z360virtualtours@gmail.com</a> or call us at <a href="tel:+38971967915" style="color: #C9A962;">+389 71 967 915</a>.
+        </p>
+
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="${BASE_URL}/booking/status?id=${data.bookingId}" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 600;">
+            View Booking Details
+          </a>
+        </div>
+      `),
+    }
+  },
 }
 
 // Send email function

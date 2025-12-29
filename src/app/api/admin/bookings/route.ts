@@ -108,6 +108,13 @@ export async function GET(request: NextRequest) {
           workStartedAt: true,
           workEndedAt: true,
           workDurationMinutes: true,
+          // Change request fields
+          changeRequestType: true,
+          changeRequestMessage: true,
+          changeRequestDate: true,
+          changeRequestStatus: true,
+          requestedNewDate: true,
+          requestedNewTime: true,
         },
       }),
       prisma.booking.count({ where }),

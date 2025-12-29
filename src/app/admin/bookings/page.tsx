@@ -55,6 +55,13 @@ interface Booking {
   workStartedAt: string | null
   workEndedAt: string | null
   workDurationMinutes: number | null
+  // Change request fields
+  changeRequestType: string | null
+  changeRequestMessage: string | null
+  changeRequestDate: string | null
+  changeRequestStatus: string | null
+  requestedNewDate: string | null
+  requestedNewTime: string | null
   // Related data
   pricingPlanName?: string | null
   urgencyTierName?: string | null
@@ -140,6 +147,8 @@ export default function BookingsAdminPage() {
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
   const [showForm, setShowForm] = useState(false)
+  const [processingRequest, setProcessingRequest] = useState<string | null>(null)
+  const [changeRequestResponse, setChangeRequestResponse] = useState('')
   const [formData, setFormData] = useState({
     clientName: '',
     clientEmail: '',
@@ -273,6 +282,37 @@ export default function BookingsAdminPage() {
       if (expandedId === id) setExpandedId(null)
     } catch (error) {
       console.error('Failed to delete booking:', error)
+    }
+  }
+
+  const handleChangeRequest = async (id: string, action: 'approve' | 'reject', booking: Booking) => {
+    setProcessingRequest(id)
+    try {
+      const res = await fetch(`/api/admin/bookings/${id}/change-request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          adminResponse: changeRequestResponse,
+          // If approving a date change, include the new date
+          ...(action === 'approve' && booking.changeRequestType === 'date_change' && {
+            newConfirmedDate: booking.requestedNewDate,
+            newConfirmedTime: booking.requestedNewTime,
+          }),
+        }),
+      })
+
+      if (res.ok) {
+        fetchBookings()
+        setChangeRequestResponse('')
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Failed to process request')
+      }
+    } catch (error) {
+      console.error('Failed to process change request:', error)
+    } finally {
+      setProcessingRequest(null)
     }
   }
 
@@ -631,6 +671,17 @@ export default function BookingsAdminPage() {
                               Urgent
                             </span>
                           )}
+                          {booking.changeRequestType && booking.changeRequestStatus === 'pending' && (
+                            <span className={`flex items-center gap-1 text-xs px-2 py-0.5 rounded ${
+                              booking.changeRequestType === 'cancellation'
+                                ? 'bg-red-500/20 text-red-400'
+                                : 'bg-orange-500/20 text-orange-400'
+                            }`}>
+                              <AlertCircle className="w-3 h-3" />
+                              {booking.changeRequestType === 'cancellation' ? 'Cancel Request' :
+                               booking.changeRequestType === 'date_change' ? 'Date Change' : 'Change Request'}
+                            </span>
+                          )}
                         </div>
                         <div className="flex flex-wrap items-center gap-4 text-sm text-cream-muted">
                           {booking.clientPhone && (
@@ -720,6 +771,143 @@ export default function BookingsAdminPage() {
                               </div>
                             </div>
                           </div>
+
+                          {/* Change Request Alert */}
+                          {booking.changeRequestType && booking.changeRequestStatus === 'pending' && (
+                            <div className={`p-4 rounded-xl border ${
+                              booking.changeRequestType === 'cancellation'
+                                ? 'bg-red-500/10 border-red-500/30'
+                                : booking.changeRequestType === 'date_change'
+                                ? 'bg-orange-500/10 border-orange-500/30'
+                                : 'bg-blue-500/10 border-blue-500/30'
+                            }`}>
+                              <div className="flex items-start gap-3 mb-3">
+                                <AlertCircle className={`w-5 h-5 mt-0.5 ${
+                                  booking.changeRequestType === 'cancellation' ? 'text-red-400' :
+                                  booking.changeRequestType === 'date_change' ? 'text-orange-400' : 'text-blue-400'
+                                }`} />
+                                <div className="flex-1">
+                                  <h4 className={`font-semibold ${
+                                    booking.changeRequestType === 'cancellation' ? 'text-red-400' :
+                                    booking.changeRequestType === 'date_change' ? 'text-orange-400' : 'text-blue-400'
+                                  }`}>
+                                    {booking.changeRequestType === 'cancellation' ? 'Cancellation Request' :
+                                     booking.changeRequestType === 'date_change' ? 'Date Change Request' : 'Change Request'}
+                                  </h4>
+                                  <p className="text-cream-muted text-sm">
+                                    Submitted {booking.changeRequestDate && formatDateTime(booking.changeRequestDate)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Request Details */}
+                              {booking.changeRequestType === 'date_change' && booking.requestedNewDate && (
+                                <div className="mb-3 p-3 rounded-lg bg-navy">
+                                  <p className="text-sm text-cream-muted mb-1">Requested New Date:</p>
+                                  <p className="text-cream font-medium">
+                                    {formatDate(booking.requestedNewDate)}
+                                    {booking.requestedNewTime && (
+                                      <span className="text-gold ml-2">at {booking.requestedNewTime}</span>
+                                    )}
+                                  </p>
+                                </div>
+                              )}
+
+                              {booking.changeRequestMessage && (
+                                <div className="mb-4 p-3 rounded-lg bg-navy">
+                                  <p className="text-sm text-cream-muted mb-1">Client's Message:</p>
+                                  <p className="text-cream italic">"{booking.changeRequestMessage}"</p>
+                                </div>
+                              )}
+
+                              {/* Admin Response */}
+                              <div className="mb-3">
+                                <label className="block text-sm text-cream-muted mb-2">
+                                  Response to Client (optional):
+                                </label>
+                                <textarea
+                                  value={changeRequestResponse}
+                                  onChange={(e) => setChangeRequestResponse(e.target.value)}
+                                  placeholder="Add a message for the client..."
+                                  rows={2}
+                                  className="w-full px-3 py-2 rounded-lg bg-navy border border-gold/20 text-cream placeholder:text-cream-dim text-sm resize-none focus:outline-none focus:border-gold/50"
+                                />
+                              </div>
+
+                              {/* Action Buttons */}
+                              <div className="flex gap-2">
+                                {booking.changeRequestType === 'cancellation' ? (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleChangeRequest(booking.id, 'approve', booking)}
+                                      disabled={processingRequest === booking.id}
+                                      className="bg-red-500 hover:bg-red-600"
+                                    >
+                                      {processingRequest === booking.id ? (
+                                        <Clock className="w-4 h-4 mr-1 animate-spin" />
+                                      ) : (
+                                        <Check className="w-4 h-4 mr-1" />
+                                      )}
+                                      Approve Cancellation
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="secondary"
+                                      onClick={() => handleChangeRequest(booking.id, 'reject', booking)}
+                                      disabled={processingRequest === booking.id}
+                                    >
+                                      <X className="w-4 h-4 mr-1" />
+                                      Reject
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleChangeRequest(booking.id, 'approve', booking)}
+                                      disabled={processingRequest === booking.id}
+                                    >
+                                      {processingRequest === booking.id ? (
+                                        <Clock className="w-4 h-4 mr-1 animate-spin" />
+                                      ) : (
+                                        <Check className="w-4 h-4 mr-1" />
+                                      )}
+                                      Approve
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="secondary"
+                                      onClick={() => handleChangeRequest(booking.id, 'reject', booking)}
+                                      disabled={processingRequest === booking.id}
+                                    >
+                                      <X className="w-4 h-4 mr-1" />
+                                      Reject
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Past Change Request (already processed) */}
+                          {booking.changeRequestType && booking.changeRequestStatus && booking.changeRequestStatus !== 'pending' && (
+                            <div className={`p-3 rounded-lg ${
+                              booking.changeRequestStatus === 'approved' ? 'bg-green-500/10' : 'bg-gray-500/10'
+                            }`}>
+                              <p className="text-sm">
+                                <span className={booking.changeRequestStatus === 'approved' ? 'text-green-400' : 'text-gray-400'}>
+                                  {booking.changeRequestType === 'cancellation' ? 'Cancellation' :
+                                   booking.changeRequestType === 'date_change' ? 'Date Change' : 'Change'} Request {booking.changeRequestStatus}
+                                </span>
+                                {booking.changeRequestDate && (
+                                  <span className="text-cream-dim ml-2">
+                                    ({formatDate(booking.changeRequestDate)})
+                                  </span>
+                                )}
+                              </p>
+                            </div>
+                          )}
 
                           {/* Property Location */}
                           <div>
