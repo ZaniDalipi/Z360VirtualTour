@@ -1,9 +1,22 @@
 import { MongoClient, ObjectId, Db } from 'mongodb'
 
-// User interface
-export interface User {
+// User interface for database storage
+export interface UserDocument {
   _id?: ObjectId
-  id?: string
+  email: string
+  password: string
+  name: string
+  phone?: string | null
+  company?: string | null
+  avatar?: string | null
+  isActive: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+// User interface for API responses (with guaranteed id)
+export interface User {
+  id: string
   email: string
   password: string
   name: string
@@ -40,16 +53,24 @@ async function getDatabase(): Promise<Db> {
 // Find user by email (case-insensitive)
 export async function findUserByEmail(email: string): Promise<User | null> {
   const database = await getDatabase()
-  const users = database.collection<User>('User')
+  const users = database.collection<UserDocument>('User')
 
   const user = await users.findOne({
     email: { $regex: new RegExp(`^${email}$`, 'i') }
   })
 
-  if (user) {
+  if (user && user._id) {
     return {
-      ...user,
-      id: user._id?.toString()
+      id: user._id.toString(),
+      email: user.email,
+      password: user.password,
+      name: user.name,
+      phone: user.phone,
+      company: user.company,
+      avatar: user.avatar,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     }
   }
 
@@ -59,15 +80,23 @@ export async function findUserByEmail(email: string): Promise<User | null> {
 // Find user by ID
 export async function findUserById(id: string): Promise<User | null> {
   const database = await getDatabase()
-  const users = database.collection<User>('User')
+  const users = database.collection<UserDocument>('User')
 
   try {
     const user = await users.findOne({ _id: new ObjectId(id) })
 
-    if (user) {
+    if (user && user._id) {
       return {
-        ...user,
-        id: user._id?.toString()
+        id: user._id.toString(),
+        email: user.email,
+        password: user.password,
+        name: user.name,
+        phone: user.phone,
+        company: user.company,
+        avatar: user.avatar,
+        isActive: user.isActive,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       }
     }
   } catch {
@@ -86,10 +115,10 @@ export async function createUser(userData: {
   company?: string | null
 }): Promise<User> {
   const database = await getDatabase()
-  const users = database.collection<User>('User')
+  const users = database.collection<UserDocument>('User')
 
   const now = new Date()
-  const newUser: Omit<User, '_id' | 'id'> = {
+  const newUser: Omit<UserDocument, '_id'> = {
     email: userData.email.toLowerCase(),
     password: userData.password,
     name: userData.name,
@@ -101,12 +130,19 @@ export async function createUser(userData: {
     updatedAt: now
   }
 
-  const result = await users.insertOne(newUser as User)
+  const result = await users.insertOne(newUser as UserDocument)
 
   return {
-    ...newUser,
-    _id: result.insertedId,
-    id: result.insertedId.toString()
+    id: result.insertedId.toString(),
+    email: newUser.email,
+    password: newUser.password,
+    name: newUser.name,
+    phone: newUser.phone,
+    company: newUser.company,
+    avatar: newUser.avatar,
+    isActive: newUser.isActive,
+    createdAt: newUser.createdAt,
+    updatedAt: newUser.updatedAt,
   }
 }
 
@@ -116,7 +152,7 @@ export async function updateUser(
   updates: Partial<Pick<User, 'name' | 'phone' | 'company' | 'avatar' | 'password'>>
 ): Promise<User | null> {
   const database = await getDatabase()
-  const users = database.collection<User>('User')
+  const users = database.collection<UserDocument>('User')
 
   try {
     const result = await users.findOneAndUpdate(
@@ -130,10 +166,18 @@ export async function updateUser(
       { returnDocument: 'after' }
     )
 
-    if (result) {
+    if (result && result._id) {
       return {
-        ...result,
-        id: result._id?.toString()
+        id: result._id.toString(),
+        email: result.email,
+        password: result.password,
+        name: result.name,
+        phone: result.phone,
+        company: result.company,
+        avatar: result.avatar,
+        isActive: result.isActive,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt,
       }
     }
   } catch {
