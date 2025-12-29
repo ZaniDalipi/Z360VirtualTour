@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -42,7 +42,7 @@ const filterOptions = [
   { value: 'completed', label: 'Completed' },
 ]
 
-export default function MyToursPage() {
+function MyToursContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const initialFilter = searchParams.get('filter') || 'all'
@@ -279,5 +279,21 @@ export default function MyToursPage() {
 
       <Navbar />
     </div>
+  )
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-navy flex items-center justify-center">
+      <Loader2 className="w-8 h-8 text-gold animate-spin" />
+    </div>
+  )
+}
+
+export default function MyToursPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <MyToursContent />
+    </Suspense>
   )
 }
