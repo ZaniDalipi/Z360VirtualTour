@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  ClipboardList, Calendar, Bell, Palette, Shield, HelpCircle,
-  FileText, LogOut, ChevronRight, Settings, Loader2
+  ClipboardList, Calendar, Bell, Shield, HelpCircle,
+  FileText, LogOut, ChevronRight, Settings, Loader2, Search, Camera
 } from 'lucide-react'
 import { Navbar } from '@/components/layout'
 import { Card, Button } from '@/components/ui'
@@ -31,6 +31,8 @@ interface Stats {
 const menuItems = [
   { icon: ClipboardList, label: 'My Tours', href: '/profile/tours', description: 'View your tour bookings' },
   { icon: Calendar, label: 'Scheduled Visits', href: '/profile/tours?filter=scheduled', badge: null },
+  { icon: Search, label: 'Track Booking', href: '/booking/status', description: 'Track any booking by reference' },
+  { icon: Camera, label: 'Book a Tour', href: '/contact', description: 'Book a new virtual tour' },
   { icon: Bell, label: 'Notifications', href: '/profile/notifications' },
   { icon: Settings, label: 'Account Settings', href: '/profile/settings' },
   { icon: Shield, label: 'Privacy & Security', href: '/profile/security' },
