@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  ClipboardList, Calendar, Bell, Shield, HelpCircle,
-  FileText, LogOut, ChevronRight, Settings, Loader2, Search, Camera
+  ClipboardList, Calendar, HelpCircle,
+  LogOut, ChevronRight, Settings, Loader2, Search, Camera, UserCircle
 } from 'lucide-react'
 import { Navbar } from '@/components/layout'
 import { Card, Button } from '@/components/ui'
@@ -33,11 +33,8 @@ const menuItems = [
   { icon: Calendar, label: 'Scheduled Visits', href: '/profile/tours?filter=scheduled', badge: null },
   { icon: Search, label: 'Track Booking', href: '/booking/status', description: 'Track any booking by reference' },
   { icon: Camera, label: 'Book a Tour', href: '/contact', description: 'Book a new virtual tour' },
-  { icon: Bell, label: 'Notifications', href: '/profile/notifications' },
-  { icon: Settings, label: 'Account Settings', href: '/profile/settings' },
-  { icon: Shield, label: 'Privacy & Security', href: '/profile/security' },
-  { icon: HelpCircle, label: 'Help & Support', href: '/profile/support' },
-  { icon: FileText, label: 'Terms & Privacy', href: '/terms' },
+  { icon: UserCircle, label: 'Edit Profile', href: '/profile/edit' },
+  { icon: HelpCircle, label: 'Help & Support', href: '/contact' },
 ]
 
 export default function ProfilePage() {
@@ -120,7 +117,7 @@ export default function ProfilePage() {
       <header className="sticky top-0 z-40 bg-navy/95 backdrop-blur-lg border-b border-gold/10">
         <div className="flex items-center justify-between h-16 px-4 max-w-7xl mx-auto">
           <h1 className="text-h4 font-semibold text-cream">Profile</h1>
-          <Link href="/profile/settings">
+          <Link href="/profile/edit">
             <Button variant="icon" size="sm">
               <Settings className="w-5 h-5" />
             </Button>
