@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { bookings, travelBundles, calculateQuote, getDistanceByCity } from '@/lib/booking-db'
 import { prisma } from '@/lib/prisma'
+import { getUserFromCookies } from '@/lib/user-auth'
 
 // Send email notification for new booking
 async function sendBookingNotification(booking: {
@@ -157,6 +158,9 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
+    // Check if user is authenticated (optional - bookings can be made without account)
+    const user = await getUserFromCookies()
+
     // Validate required fields
     if (!data.clientName || !data.clientEmail || !data.propertyAddress) {
       return NextResponse.json(
@@ -215,8 +219,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create booking
+    // Create booking (link to user if authenticated)
     const booking = bookings.create({
+      userId: user?.id || null,
       clientName: data.clientName,
       clientEmail: data.clientEmail,
       clientPhone: data.clientPhone,

@@ -75,6 +75,7 @@ export interface BlockedDate {
 
 export interface Booking {
   id: string
+  userId: string | null
   clientName: string
   clientEmail: string
   clientPhone: string | null
@@ -466,7 +467,7 @@ export const blockedDates = {
 // BOOKINGS
 // ==========================================
 export const bookings = {
-  findMany: (options?: { where?: { status?: string; isRead?: boolean }; limit?: number; offset?: number }): Booking[] => {
+  findMany: (options?: { where?: { status?: string; isRead?: boolean; userId?: string }; limit?: number; offset?: number }): Booking[] => {
     let sql = 'SELECT * FROM Booking WHERE 1=1'
     const params: unknown[] = []
 
@@ -477,6 +478,10 @@ export const bookings = {
     if (options?.where?.isRead !== undefined) {
       sql += ' AND isRead = ?'
       params.push(toInt(options.where.isRead))
+    }
+    if (options?.where?.userId) {
+      sql += ' AND userId = ?'
+      params.push(options.where.userId)
     }
 
     sql += ' ORDER BY createdAt DESC'
@@ -491,6 +496,16 @@ export const bookings = {
     }
 
     const rows = db.prepare(sql).all(...params) as Record<string, unknown>[]
+    return rows.map(row => ({
+      ...row,
+      isFlexible: toBool(row.isFlexible as number),
+      depositPaid: toBool(row.depositPaid as number),
+      isRead: toBool(row.isRead as number),
+    })) as Booking[]
+  },
+
+  findByUserId: (userId: string): Booking[] => {
+    const rows = db.prepare('SELECT * FROM Booking WHERE userId = ? ORDER BY createdAt DESC').all(userId) as Record<string, unknown>[]
     return rows.map(row => ({
       ...row,
       isFlexible: toBool(row.isFlexible as number),
@@ -533,16 +548,16 @@ export const bookings = {
 
     db.prepare(`
       INSERT INTO Booking (
-        id, clientName, clientEmail, clientPhone, companyName,
+        id, userId, clientName, clientEmail, clientPhone, companyName,
         propertyAddress, propertyCity, estimatedDistance, serviceType,
         projectDescription, specialRequests, pricingPlanId, urgencyTierId,
         preferredDate, alternateDate, deadlineDate, confirmedDate, isFlexible,
         travelZoneId, travelBundleId, basePrice, urgencySurcharge, travelFee,
         bundleDiscount, totalQuote, depositAmount, depositPaid, internalNotes,
         status, isRead, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
-      id, data.clientName, data.clientEmail, data.clientPhone || null,
+      id, data.userId || null, data.clientName, data.clientEmail, data.clientPhone || null,
       data.companyName || null, data.propertyAddress, data.propertyCity || null,
       data.estimatedDistance || null, data.serviceType || null,
       data.projectDescription || null, data.specialRequests || null,
@@ -567,7 +582,7 @@ export const bookings = {
     const values: unknown[] = []
 
     // Add all possible fields
-    const stringFields = ['clientName', 'clientEmail', 'clientPhone', 'companyName', 'propertyAddress', 'propertyCity', 'serviceType', 'projectDescription', 'specialRequests', 'pricingPlanId', 'urgencyTierId', 'preferredDate', 'alternateDate', 'deadlineDate', 'confirmedDate', 'travelZoneId', 'travelBundleId', 'internalNotes', 'status', 'quoteSentAt', 'confirmedAt', 'completedAt']
+    const stringFields = ['userId', 'clientName', 'clientEmail', 'clientPhone', 'companyName', 'propertyAddress', 'propertyCity', 'serviceType', 'projectDescription', 'specialRequests', 'pricingPlanId', 'urgencyTierId', 'preferredDate', 'alternateDate', 'deadlineDate', 'confirmedDate', 'travelZoneId', 'travelBundleId', 'internalNotes', 'status', 'quoteSentAt', 'confirmedAt', 'completedAt']
     const numberFields = ['estimatedDistance', 'basePrice', 'urgencySurcharge', 'travelFee', 'bundleDiscount', 'totalQuote', 'depositAmount']
     const boolFields = ['isFlexible', 'depositPaid', 'isRead']
 

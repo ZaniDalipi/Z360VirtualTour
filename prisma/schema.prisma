@@ -19,6 +19,21 @@ model Admin {
   updatedAt DateTime @updatedAt
 }
 
+// Regular user for client profiles
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  name      String
+  phone     String?
+  company   String?
+  avatar    String?   // Profile image URL
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+}
+
 // Tour categories (Real Estate, Business, Hospitality, etc.)
 model Category {
   id          String   @id @default(cuid())
@@ -179,6 +194,10 @@ model BlockedDate {
 // Main booking/quote request entity
 model Booking {
   id                  String       @id @default(cuid())
+
+  // User relationship (optional - booking can exist without user account)
+  userId              String?
+  user                User?        @relation(fields: [userId], references: [id])
 
   // Client Info
   clientName          String

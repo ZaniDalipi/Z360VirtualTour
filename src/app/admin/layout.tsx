@@ -20,6 +20,7 @@ import {
   MapPin,
   Users,
   CalendarCheck,
+  UserCog,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -34,6 +35,7 @@ const sidebarLinks = [
   { href: '/admin/bookings', icon: CalendarCheck, label: 'All Bookings' },
   { href: '/admin/bundles', icon: Users, label: 'Travel Bundles' },
   { href: '/admin/booking-settings', icon: Settings, label: 'Booking Settings' },
+  { href: '/admin/admins', icon: UserCog, label: 'Admin Users', divider: true },
 ]
 
 export default function AdminLayout({
