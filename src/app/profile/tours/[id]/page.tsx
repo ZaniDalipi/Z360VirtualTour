@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, use } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, Clock, CheckCircle, Calendar, MapPin,
@@ -91,8 +91,9 @@ const statusConfig: Record<string, { label: string; color: string; bgColor: stri
   },
 }
 
-export default function TourDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function TourDetailPage() {
+  const params = useParams()
+  const id = params.id as string
   const router = useRouter()
   const [booking, setBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
