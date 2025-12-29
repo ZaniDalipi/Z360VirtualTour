@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserFromCookies } from '@/lib/user-auth'
+import { findUserById } from '@/lib/user-db'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
@@ -10,11 +11,20 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getUserFromCookies()
+    const userPayload = await getUserFromCookies()
 
-    if (!user) {
+    if (!userPayload) {
       return NextResponse.json(
         { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Get full user data for email fallback
+    const user = await findUserById(userPayload.id)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
         { status: 401 }
       )
     }
@@ -24,7 +34,6 @@ export async function GET(
       where: { id },
       select: {
         id: true,
-        userId: true,
         clientName: true,
         clientEmail: true,
         clientPhone: true,
@@ -62,8 +71,8 @@ export async function GET(
       )
     }
 
-    // Check if this booking belongs to the user
-    if (booking.userId !== user.id) {
+    // Check if this booking belongs to the user (by email match)
+    if (booking.clientEmail.toLowerCase() !== user.email.toLowerCase()) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
@@ -86,11 +95,20 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getUserFromCookies()
+    const userPayload = await getUserFromCookies()
 
-    if (!user) {
+    if (!userPayload) {
       return NextResponse.json(
         { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
+    // Get full user data for email fallback
+    const user = await findUserById(userPayload.id)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
         { status: 401 }
       )
     }
@@ -110,7 +128,7 @@ export async function POST(
     // Find the booking and verify ownership
     const booking = await prisma.booking.findUnique({
       where: { id },
-      select: { id: true, userId: true, status: true, clientName: true, clientEmail: true }
+      select: { id: true, status: true, clientName: true, clientEmail: true }
     })
 
     if (!booking) {
@@ -120,7 +138,8 @@ export async function POST(
       )
     }
 
-    if (booking.userId !== user.id) {
+    // Check ownership by email
+    if (booking.clientEmail.toLowerCase() !== user.email.toLowerCase()) {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }

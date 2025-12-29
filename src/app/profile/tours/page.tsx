@@ -65,9 +65,10 @@ function MyToursContent() {
         }
 
         const data = await res.json()
-        setBookings(data.bookings)
+        setBookings(data.bookings || [])
       } catch (error) {
         console.error('Failed to load bookings:', error)
+        setBookings([])
       } finally {
         setLoading(false)
       }
