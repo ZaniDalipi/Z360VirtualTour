@@ -235,15 +235,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Get authenticated user if available (to link booking to user account)
-    const userPayload = await getUserFromCookies()
+    // Note: userId linking is handled via clientEmail matching until Prisma is regenerated
+    // const userPayload = await getUserFromCookies()
 
     // Create booking with relation connections
     const booking = await prisma.booking.create({
       data: {
-        // Link to user if authenticated
-        ...(userPayload?.id && {
-          userId: userPayload.id
-        }),
+        // Note: userId linking temporarily disabled - use email matching instead
+        // After running 'npx prisma generate', you can re-enable:
+        // ...(userPayload?.id && { user: { connect: { id: userPayload.id } } }),
         clientName: data.clientName,
         clientEmail: data.clientEmail,
         clientPhone: data.clientPhone || null,
