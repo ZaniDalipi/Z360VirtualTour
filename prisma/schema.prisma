@@ -291,6 +291,14 @@ model Booking {
   deliverables        String?             // JSON: files delivered, links, etc.
   clientFeedback      String?             // Client's feedback after delivery
   rating              Int?                // Client rating 1-5
+
+  // Change Request (user can request changes, admin approves)
+  changeRequestType     String?           // date_change, cancellation, other
+  changeRequestMessage  String?           // User's message explaining the request
+  changeRequestDate     DateTime?         // When the request was submitted
+  requestedNewDate      DateTime?         // For date change requests
+  requestedNewTime      String?           // For date change requests
+  changeRequestStatus   String?           // pending, approved, rejected
 }
 
 // Booking settings (singleton-style config)

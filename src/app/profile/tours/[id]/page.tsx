@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   ArrowLeft, Clock, CheckCircle, Calendar, MapPin,
-  Loader2, Phone, Mail, Building, FileText, X
+  Loader2, Phone, Mail, Building, FileText, X,
+  AlertTriangle, Send, CalendarClock
 } from 'lucide-react'
 import { Card, Button } from '@/components/ui'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 
 interface Booking {
   id: string
@@ -26,13 +27,17 @@ interface Booking {
   urgencySurcharge: number | null
   travelFee: number | null
   bundleDiscount: number | null
+  sameCityDiscount: number | null
   totalQuote: number | null
   depositAmount: number | null
   depositPaid: boolean
   confirmedDate: string | null
+  confirmedTime: string | null
   preferredDate: string | null
   alternateDate: string | null
   createdAt: string
+  changeRequestType?: string | null
+  changeRequestStatus?: string | null
 }
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string; description: string }> = {
@@ -92,6 +97,13 @@ export default function TourDetailPage({ params }: { params: Promise<{ id: strin
   const [booking, setBooking] = useState<Booking | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [showRequestModal, setShowRequestModal] = useState(false)
+  const [requestType, setRequestType] = useState<'date_change' | 'cancellation' | 'other'>('date_change')
+  const [requestMessage, setRequestMessage] = useState('')
+  const [newDate, setNewDate] = useState('')
+  const [newTime, setNewTime] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [requestSuccess, setRequestSuccess] = useState(false)
 
   useEffect(() => {
     async function loadBooking() {
@@ -134,6 +146,42 @@ export default function TourDetailPage({ params }: { params: Promise<{ id: strin
       day: 'numeric',
     })
   }
+
+  const handleSubmitRequest = async () => {
+    setSubmitting(true)
+    try {
+      const res = await fetch(`/api/user/bookings/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestType,
+          message: requestMessage,
+          newPreferredDate: newDate || null,
+          newPreferredTime: newTime || null,
+        }),
+      })
+
+      if (res.ok) {
+        setRequestSuccess(true)
+        setTimeout(() => {
+          setShowRequestModal(false)
+          setRequestSuccess(false)
+          // Reload booking to show updated status
+          window.location.reload()
+        }, 2000)
+      } else {
+        const data = await res.json()
+        alert(data.error || 'Failed to submit request')
+      }
+    } catch {
+      alert('Failed to submit request')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const canRequestChange = booking && !['completed', 'cancelled'].includes(booking.status)
+  const hasPendingRequest = booking?.changeRequestType && booking?.changeRequestStatus === 'pending'
 
   if (loading) {
     return (
@@ -203,6 +251,26 @@ export default function TourDetailPage({ params }: { params: Promise<{ id: strin
           </Card>
         </motion.div>
 
+        {/* Pending Change Request Banner */}
+        {hasPendingRequest && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <Card className="p-4 bg-orange-500/10 border-orange-500/30">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-5 h-5 text-orange-400" />
+                <div>
+                  <p className="text-orange-400 font-medium">Change Request Pending</p>
+                  <p className="text-cream-muted text-sm">
+                    Your {booking.changeRequestType === 'date_change' ? 'date change' : booking.changeRequestType} request is being reviewed.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Property Details */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -267,6 +335,7 @@ export default function TourDetailPage({ params }: { params: Promise<{ id: strin
                     <p className="text-body-sm text-cream-muted">Confirmed Date</p>
                     <p className="text-body text-cream font-medium">
                       {formatDate(booking.confirmedDate)}
+                      {booking.confirmedTime && ` at ${booking.confirmedTime}`}
                     </p>
                   </div>
                 </div>
@@ -338,6 +407,12 @@ export default function TourDetailPage({ params }: { params: Promise<{ id: strin
                     <span className="text-green-400">-€{booking.bundleDiscount.toFixed(2)}</span>
                   </div>
                 )}
+                {booking.sameCityDiscount && booking.sameCityDiscount > 0 && (
+                  <div className="flex justify-between text-body">
+                    <span className="text-cream-muted">Same-City Discount</span>
+                    <span className="text-green-400">-€{booking.sameCityDiscount.toFixed(2)}</span>
+                  </div>
+                )}
 
                 <div className="flex justify-between text-h4 font-bold pt-3 border-t border-gold/20">
                   <span className="text-cream">Total</span>
@@ -391,11 +466,35 @@ export default function TourDetailPage({ params }: { params: Promise<{ id: strin
           </Card>
         </motion.div>
 
+        {/* Request Change Section */}
+        {canRequestChange && !hasPendingRequest && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card className="p-6">
+              <h3 className="text-body font-semibold text-cream mb-2">Need to Make Changes?</h3>
+              <p className="text-body-sm text-cream-muted mb-4">
+                You can request a date change or cancellation. We'll review your request and get back to you.
+              </p>
+              <Button
+                variant="secondary"
+                className="w-full"
+                onClick={() => setShowRequestModal(true)}
+              >
+                <CalendarClock className="w-4 h-4 mr-2" />
+                Request Change
+              </Button>
+            </Card>
+          </motion.div>
+        )}
+
         {/* Support */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.6 }}
         >
           <Card className="p-6 text-center">
             <p className="text-body-sm text-cream-muted mb-3">
@@ -407,6 +506,153 @@ export default function TourDetailPage({ params }: { params: Promise<{ id: strin
           </Card>
         </motion.div>
       </main>
+
+      {/* Request Change Modal */}
+      <AnimatePresence>
+        {showRequestModal && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+              onClick={() => !submitting && setShowRequestModal(false)}
+            />
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-md pointer-events-auto"
+              >
+                <Card className="p-6">
+                  {requestSuccess ? (
+                    <div className="text-center py-6">
+                      <CheckCircle className="w-12 h-12 text-green-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-cream mb-2">Request Submitted!</h3>
+                      <p className="text-cream-muted">We'll review your request and contact you soon.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-semibold text-cream">Request Change</h3>
+                        <button
+                          onClick={() => setShowRequestModal(false)}
+                          className="text-cream-muted hover:text-cream"
+                          disabled={submitting}
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        {/* Request Type */}
+                        <div>
+                          <label className="block text-sm text-cream-muted mb-2">Request Type</label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { value: 'date_change', label: 'Date Change' },
+                              { value: 'cancellation', label: 'Cancel' },
+                              { value: 'other', label: 'Other' },
+                            ].map((option) => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => setRequestType(option.value as typeof requestType)}
+                                className={`px-3 py-2 rounded-lg text-sm transition-colors ${
+                                  requestType === option.value
+                                    ? 'bg-gold text-navy font-medium'
+                                    : 'bg-navy-medium text-cream-muted hover:text-cream'
+                                }`}
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* New Date (for date change) */}
+                        {requestType === 'date_change' && (
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm text-cream-muted mb-2">New Date</label>
+                              <input
+                                type="date"
+                                value={newDate}
+                                onChange={(e) => setNewDate(e.target.value)}
+                                className="w-full px-3 py-2 rounded-lg bg-navy-medium border border-gold/20 text-cream focus:outline-none focus:border-gold/50"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm text-cream-muted mb-2">Preferred Time</label>
+                              <select
+                                value={newTime}
+                                onChange={(e) => setNewTime(e.target.value)}
+                                className="w-full px-3 py-2 rounded-lg bg-navy-medium border border-gold/20 text-cream focus:outline-none focus:border-gold/50"
+                              >
+                                <option value="">Any time</option>
+                                <option value="09:00">9:00 AM</option>
+                                <option value="10:00">10:00 AM</option>
+                                <option value="11:00">11:00 AM</option>
+                                <option value="12:00">12:00 PM</option>
+                                <option value="14:00">2:00 PM</option>
+                                <option value="15:00">3:00 PM</option>
+                                <option value="16:00">4:00 PM</option>
+                              </select>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Message */}
+                        <div>
+                          <label className="block text-sm text-cream-muted mb-2">
+                            {requestType === 'cancellation' ? 'Reason for cancellation' : 'Additional details'}
+                          </label>
+                          <textarea
+                            value={requestMessage}
+                            onChange={(e) => setRequestMessage(e.target.value)}
+                            rows={3}
+                            placeholder={
+                              requestType === 'cancellation'
+                                ? 'Please let us know why you need to cancel...'
+                                : 'Any additional information...'
+                            }
+                            className="w-full px-3 py-2 rounded-lg bg-navy-medium border border-gold/20 text-cream placeholder:text-cream-dim resize-none focus:outline-none focus:border-gold/50"
+                          />
+                        </div>
+
+                        {/* Warning for cancellation */}
+                        {requestType === 'cancellation' && (
+                          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                            <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+                            <p className="text-red-400 text-sm">
+                              Cancellation may be subject to fees depending on how close to the scheduled date.
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Submit Button */}
+                        <Button
+                          className="w-full"
+                          onClick={handleSubmitRequest}
+                          disabled={submitting || (requestType === 'date_change' && !newDate)}
+                        >
+                          {submitting ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Send className="w-4 h-4 mr-2" />
+                          )}
+                          {submitting ? 'Submitting...' : 'Submit Request'}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </Card>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

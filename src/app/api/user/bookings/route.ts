@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getUserFromCookies } from '@/lib/user-auth'
-import { bookings } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
 
 // GET: Fetch all bookings for the authenticated user
 export async function GET() {
@@ -15,7 +15,39 @@ export async function GET() {
     }
 
     // Get all bookings for this user
-    const userBookings = bookings.findByUserId(user.id)
+    const userBookings = await prisma.booking.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        clientName: true,
+        clientEmail: true,
+        clientPhone: true,
+        companyName: true,
+        propertyAddress: true,
+        propertyCity: true,
+        serviceType: true,
+        projectDescription: true,
+        specialRequests: true,
+        status: true,
+        basePrice: true,
+        urgencySurcharge: true,
+        travelFee: true,
+        bundleDiscount: true,
+        sameCityDiscount: true,
+        totalQuote: true,
+        depositAmount: true,
+        depositPaid: true,
+        confirmedDate: true,
+        confirmedTime: true,
+        preferredDate: true,
+        preferredTime: true,
+        alternateDate: true,
+        alternateTime: true,
+        createdAt: true,
+        updatedAt: true,
+      }
+    })
 
     // Calculate stats
     const stats = {

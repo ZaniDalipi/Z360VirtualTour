@@ -188,7 +188,7 @@ export default function MyToursPage() {
                 ? "You haven't booked any tours yet"
                 : `No ${filter} tours found`}
             </p>
-            <Link href="/booking">
+            <Link href="/contact">
               <Button>Book a Tour</Button>
             </Link>
           </motion.div>
@@ -268,7 +268,7 @@ export default function MyToursPage() {
             transition={{ delay: 0.3 }}
             className="mt-8"
           >
-            <Link href="/booking">
+            <Link href="/contact">
               <Button variant="secondary" className="w-full">
                 Book Another Tour
               </Button>
