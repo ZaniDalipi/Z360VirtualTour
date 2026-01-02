@@ -167,13 +167,60 @@ export async function PUT(
       try {
         const { sendEmail, emailTemplates, getStatusMessage, getStatusLabel } = await import('@/lib/email')
 
-        // Determine which email template to use
-        if (data.status === 'delivered' && existingBooking.status !== 'delivered') {
+        // Determine which email template to use based on the new status
+        if (data.status === 'quote_sent') {
+          // Quote sent - include payment link
+          const paymentUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:4000'}/booking/pay?id=${booking.id}`
+          const template = emailTemplates.quoteSent({
+            clientName: booking.clientName,
+            bookingId: booking.id,
+            totalQuote: booking.totalQuote || 0,
+            depositAmount: booking.depositAmount || 0,
+            paymentUrl,
+            validDays: 14,
+          })
+          await sendEmail(booking.clientEmail, template)
+        } else if (data.status === 'confirmed' || data.status === 'scheduled') {
+          // Booking confirmed with date - send special confirmation
+          const confirmedDate = booking.confirmedDate
+            ? new Date(booking.confirmedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+            : 'To be scheduled'
+          const confirmedTime = booking.confirmedTime || ''
+
+          const template = emailTemplates.statusUpdate({
+            clientName: booking.clientName,
+            bookingId: booking.id,
+            status: data.status,
+            statusLabel: data.status === 'confirmed' ? 'Booking Confirmed' : 'Shoot Scheduled',
+            message: `Great news! Your virtual tour booking has been ${data.status === 'confirmed' ? 'confirmed' : 'scheduled'}. ${booking.confirmedDate ? `Your shoot is set for ${confirmedDate}${confirmedTime ? ` at ${confirmedTime}` : ''}. Please make sure the property is ready for the shoot.` : 'We will contact you shortly to finalize the exact date and time.'}`,
+          })
+          await sendEmail(booking.clientEmail, template)
+        } else if (data.status === 'delivered') {
           // Tour delivered email
           const template = emailTemplates.tourDelivered({
             clientName: booking.clientName,
             bookingId: booking.id,
-            tourUrl: undefined, // Can be added if tour URL is stored
+            tourUrl: undefined,
+          })
+          await sendEmail(booking.clientEmail, template)
+        } else if (data.status === 'completed') {
+          // Tour completed - thank you email
+          const template = emailTemplates.statusUpdate({
+            clientName: booking.clientName,
+            bookingId: booking.id,
+            status: data.status,
+            statusLabel: 'Project Completed',
+            message: 'Your virtual tour project has been completed! Thank you for choosing Z360 Virtual Tours. We hope you love your new 360° virtual tour. If you have any questions or need any adjustments, please don\'t hesitate to contact us.',
+          })
+          await sendEmail(booking.clientEmail, template)
+        } else if (data.status === 'cancelled') {
+          // Booking cancelled
+          const template = emailTemplates.statusUpdate({
+            clientName: booking.clientName,
+            bookingId: booking.id,
+            status: data.status,
+            statusLabel: 'Booking Cancelled',
+            message: 'Your booking has been cancelled. If you paid a deposit, our team will process your refund within 5-7 business days. If you have any questions or would like to rebook, please contact us.',
           })
           await sendEmail(booking.clientEmail, template)
         } else {
@@ -189,6 +236,28 @@ export async function PUT(
         }
       } catch (err) {
         console.error('Failed to send status update email:', err)
+      }
+    }
+
+    // Send email if date is confirmed (even without status change)
+    if (data.confirmedDate && !existingBooking.confirmedDate) {
+      try {
+        const { sendEmail, emailTemplates } = await import('@/lib/email')
+        const confirmedDate = new Date(data.confirmedDate).toLocaleDateString('en-US', {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        })
+        const confirmedTime = data.confirmedTime || booking.confirmedTime || ''
+
+        const template = emailTemplates.statusUpdate({
+          clientName: booking.clientName,
+          bookingId: booking.id,
+          status: 'scheduled',
+          statusLabel: 'Date Confirmed',
+          message: `Your virtual tour shoot has been scheduled for ${confirmedDate}${confirmedTime ? ` at ${confirmedTime}` : ''}. Please ensure the property is ready and accessible at the scheduled time. We look forward to creating your stunning 360° virtual tour!`,
+        })
+        await sendEmail(booking.clientEmail, template)
+      } catch (err) {
+        console.error('Failed to send date confirmation email:', err)
       }
     }
 
