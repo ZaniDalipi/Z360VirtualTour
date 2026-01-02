@@ -169,17 +169,21 @@ export async function PUT(
 
         // Determine which email template to use based on the new status
         if (data.status === 'quote_sent') {
-          // Quote sent - include payment link
-          const paymentUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:4000'}/booking/pay?id=${booking.id}`
-          const template = emailTemplates.quoteSent({
-            clientName: booking.clientName,
-            bookingId: booking.id,
-            totalQuote: booking.totalQuote || 0,
-            depositAmount: booking.depositAmount || 0,
-            paymentUrl,
-            validDays: 14,
-          })
-          await sendEmail(booking.clientEmail, template)
+          // Only send quote email if deposit is NOT already paid
+          if (!booking.depositPaid) {
+            const paymentUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:4000'}/booking/pay?id=${booking.id}`
+            const template = emailTemplates.quoteSent({
+              clientName: booking.clientName,
+              bookingId: booking.id,
+              totalQuote: booking.totalQuote || 0,
+              depositAmount: booking.depositAmount || 0,
+              paymentUrl,
+              validDays: 14,
+            })
+            await sendEmail(booking.clientEmail, template)
+          } else {
+            console.log(`Skipping quote email for booking ${booking.id} - deposit already paid`)
+          }
         } else if (data.status === 'confirmed' || data.status === 'scheduled') {
           // Booking confirmed with date - send special confirmation
           const confirmedDate = booking.confirmedDate
@@ -187,12 +191,19 @@ export async function PUT(
             : 'To be scheduled'
           const confirmedTime = booking.confirmedTime || ''
 
+          // Include deposit status in message
+          const depositMessage = booking.depositPaid
+            ? 'Your deposit has been received - thank you!'
+            : booking.depositAmount
+              ? `Please ensure your deposit of €${booking.depositAmount.toFixed(2)} is paid to finalize the booking.`
+              : ''
+
           const template = emailTemplates.statusUpdate({
             clientName: booking.clientName,
             bookingId: booking.id,
             status: data.status,
             statusLabel: data.status === 'confirmed' ? 'Booking Confirmed' : 'Shoot Scheduled',
-            message: `Great news! Your virtual tour booking has been ${data.status === 'confirmed' ? 'confirmed' : 'scheduled'}. ${booking.confirmedDate ? `Your shoot is set for ${confirmedDate}${confirmedTime ? ` at ${confirmedTime}` : ''}. Please make sure the property is ready for the shoot.` : 'We will contact you shortly to finalize the exact date and time.'}`,
+            message: `Great news! Your virtual tour booking has been ${data.status === 'confirmed' ? 'confirmed' : 'scheduled'}. ${booking.confirmedDate ? `Your shoot is set for ${confirmedDate}${confirmedTime ? ` at ${confirmedTime}` : ''}. Please make sure the property is ready for the shoot.` : 'We will contact you shortly to finalize the exact date and time.'} ${depositMessage}`,
           })
           await sendEmail(booking.clientEmail, template)
         } else if (data.status === 'delivered') {
