@@ -59,8 +59,8 @@ export function TabBar() {
   const tabs = [
     { href: '/', icon: Home, label: 'Home' },
     { href: '/tours', icon: Grid3X3, label: 'Tours' },
-    { href: '/search', icon: Search, label: 'Search' },
-    { href: '/contact', icon: Mail, label: 'Work with Us' },
+    { href: '/contact', icon: Mail, label: 'Book' },
+    { href: '/profile', icon: User, label: 'Profile' },
   ]
 
   return (
