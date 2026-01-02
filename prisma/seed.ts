@@ -319,7 +319,7 @@ async function main() {
   }
   console.log('✅ Urgency tiers created')
 
-  // Create travel zones
+  // Create travel zones - Realistic pricing (200km round trip = ~30-50 EUR)
   const travelZones = [
     {
       name: 'Local',
@@ -330,31 +330,37 @@ async function main() {
       order: 1,
     },
     {
-      name: 'Regional',
-      description: '15-50km from Skopje',
+      name: 'Nearby',
+      description: '15-40km from Skopje',
       minDistanceKm: 15,
-      maxDistanceKm: 50,
-      flatFee: 20,
-      perKmRate: 0.5,
+      maxDistanceKm: 40,
+      flatFee: 10,
       order: 2,
     },
     {
-      name: 'Extended',
-      description: '50-150km from Skopje',
-      minDistanceKm: 50,
-      maxDistanceKm: 150,
-      flatFee: 40,
-      perKmRate: 0.4,
+      name: 'Regional',
+      description: '40-80km from Skopje (Tetovo, Kumanovo, Veles)',
+      minDistanceKm: 40,
+      maxDistanceKm: 80,
+      flatFee: 15,
       order: 3,
     },
     {
-      name: 'Remote',
-      description: 'Over 150km from Skopje',
+      name: 'Extended',
+      description: '80-150km from Skopje (Shtip, Prilep, Gostivar)',
+      minDistanceKm: 80,
+      maxDistanceKm: 150,
+      flatFee: 25,
+      order: 4,
+    },
+    {
+      name: 'Distant',
+      description: 'Over 150km from Skopje (Bitola, Ohrid, Strumica)',
       minDistanceKm: 150,
       maxDistanceKm: null,
-      flatFee: 80,
-      perKmRate: 0.3,
-      order: 4,
+      flatFee: 35,
+      perKmRate: 0.10,
+      order: 5,
     },
   ]
 
