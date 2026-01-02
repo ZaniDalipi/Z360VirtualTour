@@ -209,36 +209,99 @@ export async function POST(request: NextRequest) {
       scheduledCities: data.scheduledCities,  // For same-city discount
     })
 
-    // If joining a bundle, validate it
+    // If joining a bundle, validate it thoroughly
+    let validatedBundleId = data.travelBundleId
+    let bundleValidationWarning: string | null = null
+
     if (data.travelBundleId) {
       const bundle = await prisma.travelBundle.findUnique({
         where: { id: data.travelBundleId },
       })
+
       if (!bundle) {
         return NextResponse.json(
           { error: 'Selected bundle not found' },
           { status: 400 }
         )
       }
+
       if (bundle.status !== 'open') {
         return NextResponse.json(
           { error: 'Selected bundle is no longer accepting participants' },
           { status: 400 }
         )
       }
+
       if (bundle.currentCount >= bundle.maxParticipants) {
         return NextResponse.json(
           { error: 'Selected bundle is full' },
           { status: 400 }
         )
       }
+
+      // Validate city matches bundle area (within 50km of bundle city)
+      if (data.propertyCity) {
+        const { isCityWithinBundleRange } = await import('@/lib/quote-utils')
+        const isEligible = isCityWithinBundleRange(data.propertyCity, bundle.city)
+        if (!isEligible) {
+          // City is too far from bundle - remove bundle and discount
+          validatedBundleId = null
+          bundleValidationWarning = `Your property in ${data.propertyCity} is outside the eligible area for the "${bundle.name}" bundle (${bundle.city} area). Bundle discount has been removed.`
+        }
+      }
+
+      // Validate preferred date falls within bundle dates
+      if (data.preferredDate && validatedBundleId) {
+        const preferredDate = new Date(data.preferredDate)
+        const bundleStart = bundle.startDate || bundle.scheduledDate
+        const bundleEnd = bundle.endDate || bundle.scheduledDate
+
+        // Reset hours for date comparison
+        preferredDate.setHours(0, 0, 0, 0)
+        const startDate = new Date(bundleStart)
+        startDate.setHours(0, 0, 0, 0)
+        const endDate = new Date(bundleEnd)
+        endDate.setHours(23, 59, 59, 999)
+
+        if (preferredDate < startDate || preferredDate > endDate) {
+          // Date is outside bundle period - remove bundle
+          validatedBundleId = null
+          bundleValidationWarning = `Your preferred date is outside the "${bundle.name}" bundle period (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}). Bundle discount has been removed.`
+        }
+      }
+
+      // Check registration deadline
+      if (bundle.registrationDeadline && validatedBundleId) {
+        const now = new Date()
+        const deadline = new Date(bundle.registrationDeadline)
+        if (now > deadline) {
+          return NextResponse.json(
+            { error: `Registration for "${bundle.name}" bundle has closed` },
+            { status: 400 }
+          )
+        }
+      }
+    }
+
+    // Recalculate quote if bundle was invalidated
+    let finalQuote = quote
+    if (data.travelBundleId && !validatedBundleId) {
+      // Bundle was removed due to validation - recalculate without bundle
+      finalQuote = await calculateQuote({
+        pricingPlanPrice: basePrice,
+        urgencyTierId: data.urgencyTierId,
+        distanceKm,
+        bundleId: null, // No bundle
+        userCity: data.propertyCity,
+        scheduledCities: data.scheduledCities,
+      })
     }
 
     // Get authenticated user if available (to link booking to user account)
     // Note: userId linking is handled via clientEmail matching until Prisma is regenerated
     // const userPayload = await getUserFromCookies()
 
-    // Create booking with relation connections
+    // Create booking with relation connections (using validated bundle)
     const booking = await prisma.booking.create({
       data: {
         // Note: userId linking temporarily disabled - use email matching instead
@@ -260,13 +323,13 @@ export async function POST(request: NextRequest) {
         alternateTime: data.alternateTime || null,
         deadlineDate: data.deadlineDate ? new Date(data.deadlineDate) : null,
         isFlexible: data.isFlexible ?? true,
-        basePrice: quote.basePrice,
-        urgencySurcharge: quote.urgencySurchargeAmount,
-        travelFee: quote.travelFee,
-        bundleDiscount: quote.bundleDiscount,
-        sameCityDiscount: quote.sameCityDiscount || null,
-        totalQuote: quote.total,
-        depositAmount: quote.depositAmount,
+        basePrice: finalQuote.basePrice,
+        urgencySurcharge: finalQuote.urgencySurchargeAmount,
+        travelFee: finalQuote.travelFee,
+        bundleDiscount: finalQuote.bundleDiscount,
+        sameCityDiscount: finalQuote.sameCityDiscount || null,
+        totalQuote: finalQuote.total,
+        depositAmount: finalQuote.depositAmount,
         status: 'quote_requested',
         // Use connect syntax for relations
         ...(data.pricingPlanId && {
@@ -275,8 +338,9 @@ export async function POST(request: NextRequest) {
         ...(data.urgencyTierId && {
           urgencyTier: { connect: { id: data.urgencyTierId } }
         }),
-        ...(data.travelBundleId && {
-          travelBundle: { connect: { id: data.travelBundleId } }
+        // Only connect validated bundle
+        ...(validatedBundleId && {
+          travelBundle: { connect: { id: validatedBundleId } }
         }),
       },
     })
@@ -292,17 +356,17 @@ export async function POST(request: NextRequest) {
       propertyCity: data.propertyCity || null,
       distanceKm,
       quote: {
-        basePrice: quote.basePrice,
-        urgencySurchargePercent: quote.urgencySurchargePercent,
-        urgencySurchargeAmount: quote.urgencySurchargeAmount,
-        travelFee: quote.travelFee,
-        bundleDiscount: quote.bundleDiscount,
-        sameCityDiscount: quote.sameCityDiscount,
-        sameCityDiscountPercent: quote.sameCityDiscountPercent,
-        matchedScheduledCity: quote.matchedScheduledCity,
-        total: quote.total,
-        depositAmount: quote.depositAmount,
-        depositPercent: quote.depositPercent,
+        basePrice: finalQuote.basePrice,
+        urgencySurchargePercent: finalQuote.urgencySurchargePercent,
+        urgencySurchargeAmount: finalQuote.urgencySurchargeAmount,
+        travelFee: finalQuote.travelFee,
+        bundleDiscount: finalQuote.bundleDiscount,
+        sameCityDiscount: finalQuote.sameCityDiscount,
+        sameCityDiscountPercent: finalQuote.sameCityDiscountPercent,
+        matchedScheduledCity: finalQuote.matchedScheduledCity,
+        total: finalQuote.total,
+        depositAmount: finalQuote.depositAmount,
+        depositPercent: finalQuote.depositPercent,
       },
     }).catch(err => console.error('Admin email error:', err))
 
@@ -311,8 +375,8 @@ export async function POST(request: NextRequest) {
       const template = emailTemplates.bookingConfirmation({
         clientName: data.clientName,
         bookingId: booking.id,
-        totalQuote: quote.total,
-        depositAmount: quote.depositAmount || 0,
+        totalQuote: finalQuote.total,
+        depositAmount: finalQuote.depositAmount || 0,
         propertyAddress: data.propertyAddress,
         preferredDate: data.preferredDate,
       })
@@ -323,14 +387,17 @@ export async function POST(request: NextRequest) {
       success: true,
       bookingId: booking.id,
       quote: {
-        basePrice: quote.basePrice,
-        urgencySurcharge: quote.urgencySurchargeAmount,
-        travelFee: quote.travelFee,
-        bundleDiscount: quote.bundleDiscount,
-        sameCityDiscount: quote.sameCityDiscount,
-        total: quote.total,
-        depositAmount: quote.depositAmount,
+        basePrice: finalQuote.basePrice,
+        urgencySurcharge: finalQuote.urgencySurchargeAmount,
+        travelFee: finalQuote.travelFee,
+        bundleDiscount: finalQuote.bundleDiscount,
+        sameCityDiscount: finalQuote.sameCityDiscount,
+        total: finalQuote.total,
+        depositAmount: finalQuote.depositAmount,
       },
+      // Include warning if bundle was invalidated
+      ...(bundleValidationWarning && { warning: bundleValidationWarning }),
+      bundleApplied: !!validatedBundleId,
     }, { status: 201 })
   } catch (error) {
     console.error('Failed to create booking:', error)

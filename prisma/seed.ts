@@ -319,47 +319,51 @@ async function main() {
   }
   console.log('✅ Urgency tiers created')
 
-  // Create travel zones - Realistic pricing (200km round trip = ~30-50 EUR)
+  // Create travel zones - Per-km pricing (~€0.35/km one-way, doubled for round trip = €0.70/km total)
+  // Examples: 50km one-way (100km round trip) = €35, 100km one-way (200km round trip) = €70
   const travelZones = [
     {
       name: 'Local',
-      description: 'Within 15km of Skopje',
+      description: 'Within Skopje city area - included free',
       minDistanceKm: 0,
-      maxDistanceKm: 15,
+      maxDistanceKm: 10,
       isIncluded: true,
       order: 1,
     },
     {
-      name: 'Nearby',
-      description: '15-40km from Skopje',
-      minDistanceKm: 15,
-      maxDistanceKm: 40,
-      flatFee: 10,
+      name: 'Near Skopje',
+      description: '10-30km - nearby suburbs and villages',
+      minDistanceKm: 10,
+      maxDistanceKm: 30,
+      flatFee: 0,
+      perKmRate: 0.35, // €0.35/km one-way, becomes €0.70/km round trip
       order: 2,
     },
     {
       name: 'Regional',
-      description: '40-80km from Skopje (Tetovo, Kumanovo, Veles)',
-      minDistanceKm: 40,
-      maxDistanceKm: 80,
-      flatFee: 15,
+      description: '30-100km - Tetovo, Kumanovo, Veles, Gostivar area',
+      minDistanceKm: 30,
+      maxDistanceKm: 100,
+      flatFee: 0,
+      perKmRate: 0.35, // 50km one-way = €17.50, round trip = €35
       order: 3,
     },
     {
       name: 'Extended',
-      description: '80-150km from Skopje (Shtip, Prilep, Gostivar)',
-      minDistanceKm: 80,
-      maxDistanceKm: 150,
-      flatFee: 25,
+      description: '100-200km - Shtip, Prilep, Kichevo, Strumica area',
+      minDistanceKm: 100,
+      maxDistanceKm: 200,
+      flatFee: 0,
+      perKmRate: 0.35, // 100km one-way = €35, round trip = €70
       order: 4,
     },
     {
       name: 'Distant',
-      description: 'Over 150km from Skopje (Bitola, Ohrid, Strumica)',
-      minDistanceKm: 150,
+      description: 'Over 200km - Bitola, Ohrid, Gevgelija, international',
+      minDistanceKm: 200,
       maxDistanceKm: null,
-      flatFee: 35,
-      perKmRate: 0.10,
+      flatFee: 0,
+      perKmRate: 0.30, // Slight discount for very long trips
       order: 5,
     },
   ]

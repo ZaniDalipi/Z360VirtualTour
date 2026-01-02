@@ -17,7 +17,7 @@ function createTransporter() {
   })
 }
 
-// Base email template
+// Base email template with improved design
 function baseTemplate(content: string, title: string = 'Z360 Virtual Tours') {
   return `
     <!DOCTYPE html>
@@ -26,43 +26,117 @@ function baseTemplate(content: string, title: string = 'Z360 Virtual Tours') {
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>${title}</title>
+      <!--[if mso]>
+      <style type="text/css">
+        table {border-collapse: collapse;}
+        .fallback-font {font-family: Arial, sans-serif !important;}
+      </style>
+      <![endif]-->
     </head>
-    <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0D1B2A;">
-      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #0D1B2A; padding: 40px 20px;">
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #0D1B2A; -webkit-font-smoothing: antialiased;">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0D1B2A; padding: 40px 20px;">
         <tr>
           <td align="center">
-            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #1B2838; border-radius: 16px; overflow: hidden;">
-              <!-- Header -->
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #1B2838; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.3);">
+              <!-- Header with Logo -->
               <tr>
-                <td style="background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); padding: 30px; text-align: center;">
-                  <h1 style="margin: 0; color: #0D1B2A; font-size: 24px; font-weight: 700;">Z360 Virtual Tours</h1>
-                  <p style="margin: 5px 0 0; color: #0D1B2A; font-size: 14px; opacity: 0.8;">Professional 360° Virtual Tour Services</p>
+                <td style="background: linear-gradient(135deg, #0D1B2A 0%, #1B2838 100%); padding: 35px 30px; text-align: center; border-bottom: 3px solid #C9A962;">
+                  <!-- Logo Container -->
+                  <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                    <tr>
+                      <td align="center">
+                        <!-- 360° Icon Circle -->
+                        <div style="display: inline-block; width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); margin-bottom: 15px; line-height: 64px; text-align: center;">
+                          <span style="font-size: 24px; font-weight: 800; color: #0D1B2A; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;">360°</span>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center">
+                        <!-- Z360 Text Logo -->
+                        <h1 style="margin: 0 0 6px 0; font-size: 28px; font-weight: 700; letter-spacing: 1px;">
+                          <span style="color: #C9A962;">Z</span><span style="color: #F5F1E6;">360</span>
+                        </h1>
+                        <p style="margin: 0; color: #C9A962; font-size: 13px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase;">
+                          Virtual Tours
+                        </p>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
 
               <!-- Content -->
               <tr>
-                <td style="padding: 40px; color: #F5F1E6;">
+                <td style="padding: 40px 35px; color: #F5F1E6; font-size: 15px; line-height: 1.7;">
                   ${content}
                 </td>
               </tr>
 
               <!-- Footer -->
               <tr>
-                <td style="background-color: #0D1B2A; padding: 30px; text-align: center;">
-                  <p style="margin: 0 0 10px; color: #888; font-size: 12px;">
-                    Z360 Virtual Tours | Balkans Region
+                <td style="background-color: #0D1B2A; padding: 30px 35px; border-top: 1px solid #2A3B4D;">
+                  <!-- Company Info -->
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td align="center" style="padding-bottom: 20px;">
+                        <p style="margin: 0 0 8px; color: #C9A962; font-size: 14px; font-weight: 600;">
+                          Z360 Virtual Tours
+                        </p>
+                        <p style="margin: 0; color: #6B7B8A; font-size: 12px;">
+                          Professional 360° Virtual Tour Services | Balkans Region
+                        </p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="padding-bottom: 20px;">
+                        <table cellpadding="0" cellspacing="0" border="0">
+                          <tr>
+                            <td style="padding: 0 12px;">
+                              <a href="mailto:z360virtualtours@gmail.com" style="color: #C9A962; text-decoration: none; font-size: 13px;">
+                                ✉️ z360virtualtours@gmail.com
+                              </a>
+                            </td>
+                            <td style="color: #3A4B5C;">|</td>
+                            <td style="padding: 0 12px;">
+                              <a href="tel:+38971967915" style="color: #C9A962; text-decoration: none; font-size: 13px;">
+                                📞 +389 71 967 915
+                              </a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td align="center" style="padding-top: 15px; border-top: 1px solid #2A3B4D;">
+                        <table cellpadding="0" cellspacing="0" border="0">
+                          <tr>
+                            <td style="padding: 0 10px;">
+                              <a href="https://facebook.com/z360virtualtours" style="color: #6B7B8A; text-decoration: none; font-size: 12px;">Facebook</a>
+                            </td>
+                            <td style="padding: 0 10px;">
+                              <a href="https://instagram.com/z360virtualtours" style="color: #6B7B8A; text-decoration: none; font-size: 12px;">Instagram</a>
+                            </td>
+                            <td style="padding: 0 10px;">
+                              <a href="https://linkedin.com/company/z360virtualtours" style="color: #6B7B8A; text-decoration: none; font-size: 12px;">LinkedIn</a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+
+            <!-- Unsubscribe / Legal -->
+            <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%;">
+              <tr>
+                <td align="center" style="padding: 20px;">
+                  <p style="margin: 0; color: #4A5568; font-size: 11px; line-height: 1.6;">
+                    © ${new Date().getFullYear()} Z360 Virtual Tours. All rights reserved.<br>
+                    You're receiving this email because you interacted with our booking system.
                   </p>
-                  <p style="margin: 0; color: #888; font-size: 12px;">
-                    <a href="mailto:z360virtualtours@gmail.com" style="color: #C9A962; text-decoration: none;">z360virtualtours@gmail.com</a>
-                    &nbsp;|&nbsp;
-                    <a href="tel:+38971967915" style="color: #C9A962; text-decoration: none;">+389 71 967 915</a>
-                  </p>
-                  <div style="margin-top: 20px;">
-                    <a href="https://facebook.com/z360virtualtours" style="color: #888; text-decoration: none; margin: 0 10px;">Facebook</a>
-                    <a href="https://instagram.com/z360virtualtours" style="color: #888; text-decoration: none; margin: 0 10px;">Instagram</a>
-                    <a href="https://linkedin.com/company/z360virtualtours" style="color: #888; text-decoration: none; margin: 0 10px;">LinkedIn</a>
-                  </div>
                 </td>
               </tr>
             </table>
@@ -87,52 +161,75 @@ export const emailTemplates = {
   }) => ({
     subject: `Booking Request Received - Reference #${data.bookingId.slice(-8).toUpperCase()}`,
     html: baseTemplate(`
-      <h2 style="color: #C9A962; margin-top: 0;">Thank You for Your Booking Request!</h2>
+      <div style="text-align: center; margin-bottom: 30px;">
+        <div style="display: inline-block; width: 60px; height: 60px; background-color: #22c55e20; border-radius: 50%; line-height: 60px; margin-bottom: 15px;">
+          <span style="font-size: 28px;">✓</span>
+        </div>
+        <h2 style="color: #C9A962; margin: 0 0 8px; font-size: 24px; font-weight: 600;">Thank You for Your Request!</h2>
+        <p style="margin: 0; color: #8B9AAD; font-size: 14px;">We've received your booking and will be in touch soon</p>
+      </div>
 
-      <p style="font-size: 16px; line-height: 1.6;">
-        Hi ${data.clientName},
+      <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px;">
+        Hi <strong style="color: #C9A962;">${data.clientName}</strong>,
       </p>
 
-      <p style="font-size: 16px; line-height: 1.6;">
-        We've received your booking request and will review it shortly. You'll receive a confirmed quote within 24 hours.
+      <p style="font-size: 15px; line-height: 1.7; color: #D4D9E0; margin-bottom: 30px;">
+        Thank you for choosing Z360 Virtual Tours! We've received your booking request and our team will review it shortly. You'll receive a confirmed quote within <strong>24 hours</strong>.
       </p>
 
-      <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin: 25px 0;">
-        <p style="margin: 0 0 15px; color: #C9A962; font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">Reference Number</p>
-        <p style="margin: 0; font-size: 24px; font-weight: 700; color: #C9A962; font-family: monospace;">
+      <!-- Reference Box -->
+      <div style="background: linear-gradient(135deg, #0D1B2A 0%, #162232 100%); border-radius: 14px; padding: 25px; margin: 25px 0; text-align: center; border: 1px solid #2A3B4D;">
+        <p style="margin: 0 0 8px; color: #8B9AAD; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;">Your Reference Number</p>
+        <p style="margin: 0; font-size: 28px; font-weight: 700; color: #C9A962; font-family: 'SF Mono', Monaco, 'Courier New', monospace; letter-spacing: 2px;">
           #${data.bookingId.slice(-8).toUpperCase()}
+        </p>
+        <p style="margin: 10px 0 0; color: #6B7B8A; font-size: 12px;">
+          Save this for your records
         </p>
       </div>
 
-      <table style="width: 100%; border-collapse: collapse; margin: 25px 0;">
-        <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #333; color: #888;">Property</td>
-          <td style="padding: 12px; border-bottom: 1px solid #333; text-align: right;">${data.propertyAddress}</td>
-        </tr>
-        ${data.preferredDate ? `
-        <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #333; color: #888;">Preferred Date</td>
-          <td style="padding: 12px; border-bottom: 1px solid #333; text-align: right;">${new Date(data.preferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td>
-        </tr>
-        ` : ''}
-        <tr>
-          <td style="padding: 12px; border-bottom: 1px solid #333; color: #888;">Estimated Total</td>
-          <td style="padding: 12px; border-bottom: 1px solid #333; text-align: right; font-weight: 700; color: #C9A962;">€${data.totalQuote.toFixed(2)}</td>
-        </tr>
-        <tr>
-          <td style="padding: 12px; color: #888;">Deposit Required</td>
-          <td style="padding: 12px; text-align: right;">€${data.depositAmount.toFixed(2)}</td>
-        </tr>
-      </table>
+      <!-- Booking Details -->
+      <div style="background-color: #0D1B2A; border-radius: 12px; padding: 25px; margin: 25px 0;">
+        <h3 style="color: #C9A962; margin: 0 0 20px; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Booking Details</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 14px 0; border-bottom: 1px solid #2A3B4D; color: #8B9AAD; font-size: 14px;">Property Address</td>
+            <td style="padding: 14px 0; border-bottom: 1px solid #2A3B4D; text-align: right; color: #F5F1E6; font-size: 14px;">${data.propertyAddress}</td>
+          </tr>
+          ${data.preferredDate ? `
+          <tr>
+            <td style="padding: 14px 0; border-bottom: 1px solid #2A3B4D; color: #8B9AAD; font-size: 14px;">Preferred Date</td>
+            <td style="padding: 14px 0; border-bottom: 1px solid #2A3B4D; text-align: right; color: #F5F1E6; font-size: 14px;">${new Date(data.preferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td>
+          </tr>
+          ` : ''}
+          <tr>
+            <td style="padding: 14px 0; border-bottom: 1px solid #2A3B4D; color: #8B9AAD; font-size: 14px;">Estimated Total</td>
+            <td style="padding: 14px 0; border-bottom: 1px solid #2A3B4D; text-align: right; font-weight: 700; color: #C9A962; font-size: 18px;">€${data.totalQuote.toFixed(2)}</td>
+          </tr>
+          <tr>
+            <td style="padding: 14px 0; color: #8B9AAD; font-size: 14px;">Deposit Required</td>
+            <td style="padding: 14px 0; text-align: right; color: #F5F1E6; font-size: 14px;">€${data.depositAmount.toFixed(2)}</td>
+          </tr>
+        </table>
+      </div>
 
-      <p style="font-size: 14px; color: #888; line-height: 1.6;">
-        * Final pricing will be confirmed after we review your request details.
+      <p style="font-size: 13px; color: #6B7B8A; line-height: 1.6; text-align: center; font-style: italic;">
+        * Final pricing will be confirmed after we review your request details
       </p>
 
-      <div style="text-align: center; margin-top: 30px;">
-        <a href="${BASE_URL}/booking/status?id=${data.bookingId}" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 600;">
+      <!-- CTA Button -->
+      <div style="text-align: center; margin: 35px 0;">
+        <a href="${BASE_URL}/booking/status?id=${data.bookingId}" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 16px 40px; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 15px rgba(201, 169, 98, 0.3);">
           Track Your Booking
         </a>
+      </div>
+
+      <!-- What's Next Section -->
+      <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin-top: 25px; border-left: 4px solid #3b82f6;">
+        <h4 style="color: #3b82f6; margin: 0 0 12px; font-size: 14px; font-weight: 600;">What happens next?</h4>
+        <p style="margin: 0; color: #D4D9E0; font-size: 14px; line-height: 1.7;">
+          Our team will review your request and send you a confirmed quote within 24 hours. Once you approve and pay the deposit, we'll schedule your photo shoot.
+        </p>
       </div>
     `),
   }),
@@ -148,37 +245,63 @@ export const emailTemplates = {
   }) => ({
     subject: `Your Quote is Ready - €${data.totalQuote.toFixed(2)} - Z360 Virtual Tours`,
     html: baseTemplate(`
-      <h2 style="color: #C9A962; margin-top: 0;">Your Quote is Ready!</h2>
-
-      <p style="font-size: 16px; line-height: 1.6;">
-        Hi ${data.clientName},
-      </p>
-
-      <p style="font-size: 16px; line-height: 1.6;">
-        We've reviewed your request and prepared your personalized quote. To confirm your booking, simply pay the deposit below.
-      </p>
-
-      <div style="background-color: #0D1B2A; border-radius: 12px; padding: 25px; margin: 25px 0; text-align: center;">
-        <p style="margin: 0 0 10px; color: #888; font-size: 14px;">Total Quote</p>
-        <p style="margin: 0 0 20px; font-size: 36px; font-weight: 700; color: #C9A962;">€${data.totalQuote.toFixed(2)}</p>
-        <p style="margin: 0; color: #888; font-size: 14px;">Deposit to confirm: <strong style="color: #F5F1E6;">€${data.depositAmount.toFixed(2)}</strong></p>
+      <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="color: #C9A962; margin: 0 0 10px; font-size: 26px; font-weight: 600;">Your Quote is Ready!</h2>
+        <p style="margin: 0; color: #8B9AAD; font-size: 14px;">Reference: <span style="font-family: monospace; color: #F5F1E6;">#${data.bookingId.slice(-8).toUpperCase()}</span></p>
       </div>
 
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${data.paymentUrl}" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-          Pay Deposit Now
+      <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px;">
+        Hi <strong style="color: #C9A962;">${data.clientName}</strong>,
+      </p>
+
+      <p style="font-size: 15px; line-height: 1.7; color: #D4D9E0; margin-bottom: 30px;">
+        Thank you for your interest in our virtual tour services! We've carefully reviewed your request and prepared a personalized quote for you.
+      </p>
+
+      <!-- Quote Box -->
+      <div style="background: linear-gradient(135deg, #0D1B2A 0%, #162232 100%); border-radius: 16px; padding: 30px; margin: 25px 0; text-align: center; border: 1px solid #2A3B4D;">
+        <p style="margin: 0 0 8px; color: #8B9AAD; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px;">Total Quote</p>
+        <p style="margin: 0 0 25px; font-size: 42px; font-weight: 700; color: #C9A962; line-height: 1;">€${data.totalQuote.toFixed(2)}</p>
+
+        <div style="background-color: #1B2838; border-radius: 10px; padding: 15px; display: inline-block;">
+          <p style="margin: 0; color: #8B9AAD; font-size: 13px;">
+            Deposit to confirm booking
+          </p>
+          <p style="margin: 5px 0 0; color: #F5F1E6; font-size: 22px; font-weight: 600;">
+            €${data.depositAmount.toFixed(2)}
+          </p>
+        </div>
+      </div>
+
+      <!-- CTA Button -->
+      <div style="text-align: center; margin: 35px 0;">
+        <a href="${data.paymentUrl}" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 18px 50px; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 15px rgba(201, 169, 98, 0.3);">
+          Pay Deposit & Confirm Booking
         </a>
       </div>
 
-      <p style="font-size: 14px; color: #888; text-align: center;">
-        This quote is valid for ${data.validDays} days.
-      </p>
+      <!-- What's Next Section -->
+      <div style="background-color: #0D1B2A; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #C9A962;">
+        <h3 style="color: #C9A962; margin: 0 0 15px; font-size: 16px; font-weight: 600;">What happens next?</h3>
+        <ol style="color: #D4D9E0; line-height: 2; padding-left: 20px; margin: 0; font-size: 14px;">
+          <li>Pay your deposit to secure your booking</li>
+          <li>We'll contact you to schedule the photo shoot</li>
+          <li>Our team will capture stunning 360° imagery of your property</li>
+          <li>Receive your professional virtual tour within 3-5 business days</li>
+        </ol>
+      </div>
 
-      <div style="background-color: #0D1B2A; border-radius: 8px; padding: 15px; margin-top: 25px;">
-        <p style="margin: 0; font-size: 13px; color: #888;">
-          <strong style="color: #F5F1E6;">Reference:</strong> #${data.bookingId.slice(-8).toUpperCase()}
+      <!-- Validity Notice -->
+      <div style="text-align: center; padding: 15px; background-color: #f59e0b15; border-radius: 8px; margin-top: 25px;">
+        <p style="margin: 0; font-size: 14px; color: #f59e0b;">
+          ⏰ This quote is valid for <strong>${data.validDays} days</strong>
         </p>
       </div>
+
+      <!-- Questions Section -->
+      <p style="font-size: 14px; color: #8B9AAD; line-height: 1.6; margin-top: 30px; text-align: center;">
+        Have questions about your quote? Feel free to reply to this email or contact us directly.
+      </p>
     `),
   }),
 
@@ -251,37 +374,61 @@ export const emailTemplates = {
     status: string
     statusLabel: string
     message: string
-  }) => ({
-    subject: `Booking Update: ${data.statusLabel} - Z360 Virtual Tours`,
-    html: baseTemplate(`
-      <h2 style="color: #C9A962; margin-top: 0;">Booking Status Update</h2>
+  }) => {
+    // Status-specific colors and icons
+    const statusStyles: Record<string, { color: string; icon: string; bgColor: string }> = {
+      confirmed: { color: '#22c55e', icon: '✓', bgColor: '#22c55e20' },
+      scheduled: { color: '#3b82f6', icon: '📅', bgColor: '#3b82f620' },
+      in_progress: { color: '#f59e0b', icon: '🔄', bgColor: '#f59e0b20' },
+      editing: { color: '#8b5cf6', icon: '✨', bgColor: '#8b5cf620' },
+      delivered: { color: '#22c55e', icon: '🎉', bgColor: '#22c55e20' },
+      completed: { color: '#22c55e', icon: '🎊', bgColor: '#22c55e20' },
+      cancelled: { color: '#ef4444', icon: '✕', bgColor: '#ef444420' },
+      default: { color: '#C9A962', icon: 'ℹ', bgColor: '#C9A96220' },
+    }
+    const style = statusStyles[data.status] || statusStyles.default
 
-      <p style="font-size: 16px; line-height: 1.6;">
-        Hi ${data.clientName},
-      </p>
+    return {
+      subject: `Booking Update: ${data.statusLabel} - Z360 Virtual Tours`,
+      html: baseTemplate(`
+        <div style="text-align: center; margin-bottom: 25px;">
+          <h2 style="color: #C9A962; margin: 0 0 8px; font-size: 24px; font-weight: 600;">Booking Status Update</h2>
+          <p style="margin: 0; color: #8B9AAD; font-size: 14px;">Reference: <span style="font-family: monospace; color: #F5F1E6;">#${data.bookingId.slice(-8).toUpperCase()}</span></p>
+        </div>
 
-      <p style="font-size: 16px; line-height: 1.6;">
-        ${data.message}
-      </p>
-
-      <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin: 25px 0; text-align: center;">
-        <p style="margin: 0 0 10px; color: #888; font-size: 12px; text-transform: uppercase;">Current Status</p>
-        <p style="margin: 0; font-size: 20px; font-weight: 700; color: #C9A962;">${data.statusLabel}</p>
-      </div>
-
-      <div style="text-align: center; margin-top: 30px;">
-        <a href="${BASE_URL}/booking/status?id=${data.bookingId}" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 14px 30px; border-radius: 8px; font-weight: 600;">
-          View Full Details
-        </a>
-      </div>
-
-      <div style="background-color: #0D1B2A; border-radius: 8px; padding: 15px; margin-top: 25px;">
-        <p style="margin: 0; font-size: 13px; color: #888;">
-          <strong style="color: #F5F1E6;">Reference:</strong> #${data.bookingId.slice(-8).toUpperCase()}
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 25px;">
+          Hi <strong style="color: #C9A962;">${data.clientName}</strong>,
         </p>
-      </div>
-    `),
-  }),
+
+        <!-- Status Badge -->
+        <div style="background: linear-gradient(135deg, #0D1B2A 0%, #162232 100%); border-radius: 16px; padding: 30px; margin: 25px 0; text-align: center; border: 1px solid #2A3B4D;">
+          <div style="display: inline-block; width: 56px; height: 56px; background-color: ${style.bgColor}; border-radius: 50%; line-height: 56px; margin-bottom: 15px;">
+            <span style="font-size: 26px;">${style.icon}</span>
+          </div>
+          <p style="margin: 0 0 8px; color: #8B9AAD; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;">Current Status</p>
+          <p style="margin: 0; font-size: 24px; font-weight: 700; color: ${style.color};">${data.statusLabel}</p>
+        </div>
+
+        <!-- Message -->
+        <div style="background-color: #0D1B2A; border-radius: 12px; padding: 25px; margin: 25px 0; border-left: 4px solid ${style.color};">
+          <p style="margin: 0; font-size: 15px; line-height: 1.8; color: #D4D9E0;">
+            ${data.message}
+          </p>
+        </div>
+
+        <!-- CTA Button -->
+        <div style="text-align: center; margin: 35px 0;">
+          <a href="${BASE_URL}/booking/status?id=${data.bookingId}" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 16px 40px; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 15px rgba(201, 169, 98, 0.3);">
+            View Full Details
+          </a>
+        </div>
+
+        <p style="font-size: 14px; color: #8B9AAD; line-height: 1.6; margin-top: 30px; text-align: center;">
+          Questions about your booking? Reply to this email or contact us directly.
+        </p>
+      `),
+    }
+  },
 
   // Tour delivered
   tourDelivered: (data: {
