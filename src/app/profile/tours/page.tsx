@@ -180,18 +180,38 @@ function MyToursContent() {
         {/* Bookings List */}
         {filteredBookings.length === 0 ? (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center py-16"
           >
-            <p className="text-cream-muted mb-4">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gold/10 flex items-center justify-center">
+              <Calendar className="w-10 h-10 text-gold/50" />
+            </div>
+            <h3 className="text-lg font-semibold text-cream mb-2">
               {filter === 'all'
-                ? "You haven't booked any tours yet"
-                : `No ${filter} tours found`}
+                ? "No Tours Yet"
+                : `No ${filter.charAt(0).toUpperCase() + filter.slice(1)} Tours`}
+            </h3>
+            <p className="text-cream-muted mb-6 max-w-sm mx-auto">
+              {filter === 'all'
+                ? "Ready to showcase your property with a stunning 360° virtual tour? Book your first tour today!"
+                : `You don't have any ${filter} tours at the moment.`}
             </p>
-            <Link href="/contact">
-              <Button>Book a Tour</Button>
-            </Link>
+            {filter === 'all' ? (
+              <Link href="/contact">
+                <Button>
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Book Your First Tour
+                </Button>
+              </Link>
+            ) : (
+              <button
+                onClick={() => setFilter('all')}
+                className="text-gold hover:text-gold/80 transition-colors text-sm"
+              >
+                View all tours →
+              </button>
+            )}
           </motion.div>
         ) : (
           <div className="space-y-4">
