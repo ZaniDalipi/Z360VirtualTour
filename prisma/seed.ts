@@ -319,51 +319,52 @@ async function main() {
   }
   console.log('✅ Urgency tiers created')
 
-  // Create travel zones - Per-km pricing (~€0.35/km one-way, doubled for round trip = €0.70/km total)
-  // Examples: 50km one-way (100km round trip) = €35, 100km one-way (200km round trip) = €70
+  // Create travel zones - Affordable per-km pricing
+  // €0.15/km one-way × 2 (return) = €0.30/km total round trip
+  // Examples: 100km = €30, 200km (Tirana) = €60
   const travelZones = [
     {
       name: 'Local',
       description: 'Within Skopje city area - included free',
       minDistanceKm: 0,
-      maxDistanceKm: 10,
+      maxDistanceKm: 15,
       isIncluded: true,
       order: 1,
     },
     {
       name: 'Near Skopje',
-      description: '10-30km - nearby suburbs and villages',
-      minDistanceKm: 10,
-      maxDistanceKm: 30,
+      description: '15-50km - nearby towns',
+      minDistanceKm: 15,
+      maxDistanceKm: 50,
       flatFee: 0,
-      perKmRate: 0.35, // €0.35/km one-way, becomes €0.70/km round trip
+      perKmRate: 0.15, // 50km = €7.50 one-way, €15 round trip
       order: 2,
     },
     {
       name: 'Regional',
-      description: '30-100km - Tetovo, Kumanovo, Veles, Gostivar area',
-      minDistanceKm: 30,
+      description: '50-100km - Tetovo, Kumanovo, Veles, Gostivar',
+      minDistanceKm: 50,
       maxDistanceKm: 100,
       flatFee: 0,
-      perKmRate: 0.35, // 50km one-way = €17.50, round trip = €35
+      perKmRate: 0.15, // 100km = €15 one-way, €30 round trip
       order: 3,
     },
     {
       name: 'Extended',
-      description: '100-200km - Shtip, Prilep, Kichevo, Strumica area',
+      description: '100-200km - Shtip, Prilep, Bitola, Ohrid, Strumica',
       minDistanceKm: 100,
       maxDistanceKm: 200,
       flatFee: 0,
-      perKmRate: 0.35, // 100km one-way = €35, round trip = €70
+      perKmRate: 0.15, // 200km = €30 one-way, €60 round trip
       order: 4,
     },
     {
-      name: 'Distant',
-      description: 'Over 200km - Bitola, Ohrid, Gevgelija, international',
+      name: 'Remote',
+      description: 'Over 200km - Tirana, Sofia, Thessaloniki, international',
       minDistanceKm: 200,
       maxDistanceKm: null,
       flatFee: 0,
-      perKmRate: 0.30, // Slight discount for very long trips
+      perKmRate: 0.12, // Discount for very long trips: 300km = €36 one-way, €72 round trip
       order: 5,
     },
   ]

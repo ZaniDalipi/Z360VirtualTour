@@ -202,17 +202,20 @@ export async function calculateQuote(params: {
   let sameCityDiscount = 0
   let sameCityDiscountPercent = 0
   let matchedScheduledCity: string | null = null
+  let isSameCityMatch = false
 
   // Get same-city discount settings from database or use defaults
   const sameCityDiscountPercentSetting = settings?.sameCityDiscountPercent ?? DEFAULT_SAME_CITY_DISCOUNT_PERCENT
   const sameCityMaxDistanceKm = settings?.sameCityMaxDistanceKm ?? DEFAULT_SAME_CITY_MAX_DISTANCE_KM
 
-  // Check for same-city discount (when booking where photographer is already scheduled)
+  // Check for same-city match (when booking where photographer is already scheduled)
   if (params.userCity && params.scheduledCities && params.scheduledCities.length > 0) {
     for (const scheduledCity of params.scheduledCities) {
       const distance = getDistanceBetweenCities(params.userCity, scheduledCity)
       if (distance !== null && distance <= sameCityMaxDistanceKm) {
-        // User's city is within range of a scheduled city - apply discount
+        // User's city is within range of a scheduled city
+        // Apply service discount AND make travel FREE
+        isSameCityMatch = true
         sameCityDiscountPercent = sameCityDiscountPercentSetting
         sameCityDiscount = params.pricingPlanPrice * (sameCityDiscountPercentSetting / 100)
         matchedScheduledCity = scheduledCity
@@ -265,8 +268,8 @@ export async function calculateQuote(params: {
       if (!zone.isIncluded) {
         travelFee = zone.flatFee || 0
         if (zone.perKmRate) {
-          const chargeableKm = Math.max(0, params.distanceKm - zone.minDistanceKm)
-          travelFee += chargeableKm * zone.perKmRate
+          // Calculate from distance 0, not zone minimum
+          travelFee += params.distanceKm * zone.perKmRate
         }
         // Double for return trip if configured
         if (settings?.includeReturnTrip) {
@@ -274,6 +277,12 @@ export async function calculateQuote(params: {
         }
       }
     }
+  }
+
+  // IMPORTANT: If same-city match, travel is FREE!
+  if (isSameCityMatch) {
+    travelFee = 0
+    travelZoneName = 'Same City (Free)'
   }
 
   // Calculate totals - apply both bundle discount and same-city discount
