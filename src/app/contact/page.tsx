@@ -85,10 +85,13 @@ interface Bundle {
   id: string
   name: string
   city: string
+  startDate: string
+  endDate: string
   scheduledDate: string
   spotsRemaining: number
   perPersonTravelFee: number | null
   discountPercent: number
+  registrationDeadline: string | null
 }
 
 interface QuoteResult {
@@ -295,6 +298,32 @@ function ContactPageContent() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target
+
+    // Validate date against selected bundle
+    if (name === 'preferredDate' && value && formData.bundleId) {
+      const selectedBundle = availableBundles.find(b => b.id === formData.bundleId)
+      if (selectedBundle) {
+        const selectedDate = new Date(value)
+        const bundleStart = new Date(selectedBundle.startDate)
+        const bundleEnd = new Date(selectedBundle.endDate)
+        // Reset time to compare dates only
+        selectedDate.setHours(0, 0, 0, 0)
+        bundleStart.setHours(0, 0, 0, 0)
+        bundleEnd.setHours(0, 0, 0, 0)
+
+        if (selectedDate < bundleStart || selectedDate > bundleEnd) {
+          const formatD = (d: Date) => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+          alert(`Date must be between ${formatD(bundleStart)} and ${formatD(bundleEnd)} for "${selectedBundle.name}" bundle. Bundle has been deselected.`)
+          setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+            bundleId: '', // Deselect bundle
+          }))
+          return
+        }
+      }
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
@@ -940,7 +969,30 @@ function ContactPageContent() {
                       <button
                         key={bundle.id}
                         type="button"
-                        onClick={() => setFormData({ ...formData, bundleId: formData.bundleId === bundle.id ? '' : bundle.id })}
+                        onClick={() => {
+                          // If selecting bundle, validate date if already entered
+                          if (formData.bundleId !== bundle.id && formData.preferredDate) {
+                            const selectedDate = new Date(formData.preferredDate)
+                            const bundleStart = new Date(bundle.startDate)
+                            const bundleEnd = new Date(bundle.endDate)
+                            // Reset time to compare dates only
+                            selectedDate.setHours(0, 0, 0, 0)
+                            bundleStart.setHours(0, 0, 0, 0)
+                            bundleEnd.setHours(0, 0, 0, 0)
+
+                            if (selectedDate < bundleStart || selectedDate > bundleEnd) {
+                              alert(`Your selected date must be between ${(() => {
+                                const d = bundleStart
+                                return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+                              })()} and ${(() => {
+                                const d = bundleEnd
+                                return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+                              })()} to join this bundle.`)
+                              return
+                            }
+                          }
+                          setFormData({ ...formData, bundleId: formData.bundleId === bundle.id ? '' : bundle.id })
+                        }}
                         className={`w-full p-3 rounded-lg text-left transition-all ${
                           formData.bundleId === bundle.id
                             ? 'bg-gold/20 border border-gold'
@@ -956,16 +1008,31 @@ function ContactPageContent() {
                             {bundle.discountPercent}% off
                           </span>
                         </div>
-                        <div className="flex justify-between items-center mt-2">
-                          <span className="text-xs text-cream-muted">
-                            {(() => {
-                              const d = new Date(bundle.scheduledDate)
-                              return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
-                            })()}
-                          </span>
-                          <span className="text-xs text-cream-muted">
-                            {bundle.spotsRemaining} spots left
-                          </span>
+                        <div className="mt-2 space-y-1">
+                          <div className="flex justify-between items-center">
+                            <span className="text-xs text-cream-muted">
+                              📅 {(() => {
+                                const start = new Date(bundle.startDate)
+                                const end = new Date(bundle.endDate)
+                                const formatD = (d: Date) => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+                                if (start.toDateString() === end.toDateString()) {
+                                  return formatD(start)
+                                }
+                                return `${formatD(start)} - ${formatD(end)}`
+                              })()}
+                            </span>
+                            <span className="text-xs text-cream-muted">
+                              {bundle.spotsRemaining} spots left
+                            </span>
+                          </div>
+                          {bundle.registrationDeadline && (
+                            <p className="text-xs text-orange-400">
+                              ⏰ Register by: {(() => {
+                                const d = new Date(bundle.registrationDeadline)
+                                return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+                              })()}
+                            </p>
+                          )}
                         </div>
                       </button>
                     ))}

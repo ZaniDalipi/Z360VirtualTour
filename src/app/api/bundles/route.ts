@@ -10,19 +10,44 @@ export async function GET(request: NextRequest) {
     const city = searchParams.get('city')
 
     const now = new Date()
+    // Set to start of today for date comparison
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-    // Build where clause
+    // Build where clause - only show bundles that:
+    // 1. Are active and open
+    // 2. Registration deadline hasn't passed (or no deadline)
+    // 3. End date hasn't passed (use scheduledDate if no endDate)
     const where: {
       isActive: boolean
       status: string
       city?: { contains: string; mode: 'insensitive' }
-      OR?: Array<{ registrationDeadline: null } | { registrationDeadline: { gt: Date } }>
+      AND?: Array<{
+        OR: Array<{ registrationDeadline: null } | { registrationDeadline: { gte: Date } } | { endDate: null } | { endDate: { gte: Date } } | { scheduledDate: { gte: Date } }>
+      }>
     } = {
       isActive: true,
       status: 'open',
-      OR: [
-        { registrationDeadline: null },
-        { registrationDeadline: { gt: now } },
+      AND: [
+        // Registration deadline check
+        {
+          OR: [
+            { registrationDeadline: null },
+            { registrationDeadline: { gte: today } },
+          ],
+        },
+        // End date check (bundle period hasn't ended)
+        {
+          OR: [
+            { endDate: { gte: today } },
+            // If no endDate, use scheduledDate
+            {
+              AND: [
+                { endDate: null },
+                { scheduledDate: { gte: today } },
+              ],
+            } as { AND: Array<{ endDate: null } | { scheduledDate: { gte: Date } }> },
+          ],
+        },
       ],
     }
 
