@@ -13,42 +13,11 @@ export async function GET(request: NextRequest) {
     // Set to start of today for date comparison
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
 
-    // Build where clause - only show bundles that:
-    // 1. Are active and open
-    // 2. Registration deadline hasn't passed (or no deadline)
-    // 3. End date hasn't passed (use scheduledDate if no endDate)
-    const where: {
-      isActive: boolean
-      status: string
-      city?: { contains: string; mode: 'insensitive' }
-      AND?: Array<{
-        OR: Array<{ registrationDeadline: null } | { registrationDeadline: { gte: Date } } | { endDate: null } | { endDate: { gte: Date } } | { scheduledDate: { gte: Date } }>
-      }>
-    } = {
+    // Build base where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const where: any = {
       isActive: true,
       status: 'open',
-      AND: [
-        // Registration deadline check
-        {
-          OR: [
-            { registrationDeadline: null },
-            { registrationDeadline: { gte: today } },
-          ],
-        },
-        // End date check (bundle period hasn't ended)
-        {
-          OR: [
-            { endDate: { gte: today } },
-            // If no endDate, use scheduledDate
-            {
-              AND: [
-                { endDate: null },
-                { scheduledDate: { gte: today } },
-              ],
-            } as { AND: Array<{ endDate: null } | { scheduledDate: { gte: Date } }> },
-          ],
-        },
-      ],
     }
 
     // Filter by city if provided
@@ -56,8 +25,8 @@ export async function GET(request: NextRequest) {
       where.city = { contains: city, mode: 'insensitive' }
     }
 
-    // Use select for faster queries
-    const bundles = await prisma.travelBundle.findMany({
+    // Fetch bundles with basic filters
+    const allBundles = await prisma.travelBundle.findMany({
       where,
       orderBy: { scheduledDate: 'asc' },
       select: {
@@ -75,6 +44,20 @@ export async function GET(request: NextRequest) {
         description: true,
         registrationDeadline: true,
       },
+    })
+
+    // Filter out expired bundles in code
+    const bundles = allBundles.filter(b => {
+      // Check registration deadline
+      if (b.registrationDeadline && new Date(b.registrationDeadline) < today) {
+        return false
+      }
+      // Check end date (use scheduledDate if no endDate)
+      const endDate = b.endDate || b.scheduledDate
+      if (new Date(endDate) < today) {
+        return false
+      }
+      return true
     })
 
     interface BundleData {
