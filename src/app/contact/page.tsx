@@ -604,12 +604,12 @@ function ContactPageContent() {
           </div>
           <div class="info-item">
             <label>Preferred Date & Time</label>
-            <p>${formData.preferredDate ? new Date(formData.preferredDate).toLocaleDateString() : 'Flexible'}${formData.preferredTime ? ` at ${formData.preferredTime}` : ''}</p>
+            <p>${formData.preferredDate ? (() => { const d = new Date(formData.preferredDate); return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`; })() : 'Flexible'}${formData.preferredTime ? ` at ${formData.preferredTime}` : ''}</p>
           </div>
           ${formData.alternateDate ? `
           <div class="info-item">
             <label>Alternate Date & Time</label>
-            <p>${new Date(formData.alternateDate).toLocaleDateString()}${formData.alternateTime ? ` at ${formData.alternateTime}` : ''}</p>
+            <p>${(() => { const d = new Date(formData.alternateDate); return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`; })()}${formData.alternateTime ? ` at ${formData.alternateTime}` : ''}</p>
           </div>
           ` : ''}
         </div>
@@ -958,7 +958,10 @@ function ContactPageContent() {
                         </div>
                         <div className="flex justify-between items-center mt-2">
                           <span className="text-xs text-cream-muted">
-                            {new Date(bundle.scheduledDate).toLocaleDateString()}
+                            {(() => {
+                              const d = new Date(bundle.scheduledDate)
+                              return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+                            })()}
                           </span>
                           <span className="text-xs text-cream-muted">
                             {bundle.spotsRemaining} spots left

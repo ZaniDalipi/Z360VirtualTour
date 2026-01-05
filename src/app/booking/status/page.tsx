@@ -332,7 +332,10 @@ function BookingStatusContent() {
                     <div className="flex justify-between py-2">
                       <span className="text-cream-muted">Created</span>
                       <span className="text-cream">
-                        {new Date(booking.createdAt).toLocaleDateString()}
+                        {(() => {
+                          const d = new Date(booking.createdAt)
+                          return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+                        })()}
                       </span>
                     </div>
                   </div>

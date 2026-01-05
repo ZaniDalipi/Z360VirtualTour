@@ -266,7 +266,7 @@ export async function POST(request: NextRequest) {
         if (preferredDate < startDate || preferredDate > endDate) {
           // Date is outside bundle period - remove bundle
           validatedBundleId = null
-          bundleValidationWarning = `Your preferred date is outside the "${bundle.name}" bundle period (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}). Bundle discount has been removed.`
+          bundleValidationWarning = `Your preferred date is outside the "${bundle.name}" bundle period (${String(startDate.getDate()).padStart(2, '0')}.${String(startDate.getMonth() + 1).padStart(2, '0')}.${startDate.getFullYear()} - ${String(endDate.getDate()).padStart(2, '0')}.${String(endDate.getMonth() + 1).padStart(2, '0')}.${endDate.getFullYear()}). Bundle discount has been removed.`
         }
       }
 

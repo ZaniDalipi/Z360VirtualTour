@@ -424,7 +424,10 @@ export default function TestimonialsPage() {
 
                 <div className="flex items-center justify-between pt-4 border-t border-gold/10">
                   <span className="text-xs text-cream-muted">
-                    {new Date(testimonial.createdAt).toLocaleDateString()}
+                    {(() => {
+                      const d = new Date(testimonial.createdAt)
+                      return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+                    })()}
                   </span>
                   <div className="flex items-center gap-2">
                     {!testimonial.isActive && (

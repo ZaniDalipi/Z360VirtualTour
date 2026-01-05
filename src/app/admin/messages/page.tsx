@@ -188,7 +188,10 @@ export default function MessagesPage() {
 
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <span className="text-xs text-cream-muted">
-                          {new Date(message.createdAt).toLocaleDateString()}
+                          {(() => {
+                            const d = new Date(message.createdAt)
+                            return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+                          })()}
                         </span>
                         {expandedId === message.id ? (
                           <ChevronUp className="w-5 h-5 text-cream-muted" />
