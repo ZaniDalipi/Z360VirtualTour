@@ -42,13 +42,13 @@ export default function BundlesPage() {
     }
   }
 
-  // European date format (DD/MM/YYYY)
+  // European date format (DD.MM.YYYY)
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
+    const date = new Date(dateStr)
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    return `${day}.${month}.${year}`
   }
 
   // Short European date (6 Jan)
@@ -71,7 +71,7 @@ export default function BundlesPage() {
 
     // Same month & year
     if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
-      return `${start.getDate()} - ${end.getDate()}/${String(start.getMonth() + 1).padStart(2, '0')}/${start.getFullYear()}`
+      return `${start.getDate()} - ${end.getDate()}.${String(start.getMonth() + 1).padStart(2, '0')}.${start.getFullYear()}`
     }
 
     // Different months

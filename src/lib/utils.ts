@@ -17,8 +17,8 @@ export function formatArea(sqft: number): string {
 }
 
 /**
- * Format date in European format (DD/MM/YYYY or with weekday/month name)
- * Uses 'en-GB' locale for European date ordering
+ * Format date in European format (DD.MM.YYYY or with weekday/month name)
+ * Uses dots as separator for European style
  */
 export function formatDateEU(dateStr: string | Date, options?: {
   includeWeekday?: boolean
@@ -46,10 +46,9 @@ export function formatDateEU(dateStr: string | Date, options?: {
     })
   }
 
-  // Default: "06/01/2025"
-  return date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  })
+  // Default: "06.01.2025" (European with dots)
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}.${month}.${year}`
 }

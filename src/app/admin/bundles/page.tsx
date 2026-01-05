@@ -155,12 +155,12 @@ export default function BundlesAdminPage() {
   }
 
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      weekday: 'short',
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
+    const date = new Date(dateStr)
+    const weekday = date.toLocaleDateString('en-GB', { weekday: 'short' })
+    const day = String(date.getDate()).padStart(2, '0')
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const year = date.getFullYear()
+    return `${weekday}, ${day}.${month}.${year}`
   }
 
   if (isLoading) {
