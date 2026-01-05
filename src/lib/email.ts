@@ -260,35 +260,39 @@ export const emailTemplates = {
 
       <!-- Quote Box -->
       <div style="background: linear-gradient(135deg, #0D1B2A 0%, #162232 100%); border-radius: 16px; padding: 30px; margin: 25px 0; text-align: center; border: 1px solid #2A3B4D;">
-        <p style="margin: 0 0 8px; color: #8B9AAD; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px;">Total Quote</p>
-        <p style="margin: 0 0 25px; font-size: 42px; font-weight: 700; color: #C9A962; line-height: 1;">€${data.totalQuote.toFixed(2)}</p>
+        <p style="margin: 0 0 8px; color: #8B9AAD; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px;">Estimated Total</p>
+        <p style="margin: 0 0 15px; font-size: 42px; font-weight: 700; color: #C9A962; line-height: 1;">€${data.totalQuote.toFixed(2)}</p>
 
-        <div style="background-color: #1B2838; border-radius: 10px; padding: 15px; display: inline-block;">
-          <p style="margin: 0; color: #8B9AAD; font-size: 13px;">
-            Deposit to confirm booking
-          </p>
-          <p style="margin: 5px 0 0; color: #F5F1E6; font-size: 22px; font-weight: 600;">
-            €${data.depositAmount.toFixed(2)}
-          </p>
-        </div>
+        <p style="margin: 0; color: #8B9AAD; font-size: 13px;">
+          Deposit to confirm: <strong style="color: #F5F1E6;">€${data.depositAmount.toFixed(2)}</strong>
+        </p>
       </div>
 
-      <!-- CTA Button -->
-      <div style="text-align: center; margin: 35px 0;">
-        <a href="${data.paymentUrl}" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 18px 50px; border-radius: 10px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 15px rgba(201, 169, 98, 0.3);">
-          Pay Deposit & Confirm Booking
-        </a>
+      <!-- Negotiation Notice -->
+      <div style="background-color: #3b82f620; border-radius: 12px; padding: 20px; margin: 25px 0; border-left: 4px solid #3b82f6;">
+        <h3 style="color: #3b82f6; margin: 0 0 10px; font-size: 15px; font-weight: 600;">Want to discuss the price?</h3>
+        <p style="margin: 0; color: #D4D9E0; font-size: 14px; line-height: 1.7;">
+          We're happy to discuss the pricing based on your specific needs. Reply to this email or give us a call to talk about your project.
+        </p>
       </div>
 
       <!-- What's Next Section -->
       <div style="background-color: #0D1B2A; border-radius: 12px; padding: 25px; margin: 30px 0; border-left: 4px solid #C9A962;">
         <h3 style="color: #C9A962; margin: 0 0 15px; font-size: 16px; font-weight: 600;">What happens next?</h3>
         <ol style="color: #D4D9E0; line-height: 2; padding-left: 20px; margin: 0; font-size: 14px;">
-          <li>Pay your deposit to secure your booking</li>
-          <li>We'll contact you to schedule the photo shoot</li>
-          <li>Our team will capture stunning 360° imagery of your property</li>
+          <li>Review the quote and let us know if you have questions</li>
+          <li>Once we agree on the price, pay the deposit to confirm</li>
+          <li>We'll schedule your photo shoot at a convenient time</li>
           <li>Receive your professional virtual tour within 3-5 business days</li>
         </ol>
+      </div>
+
+      <!-- Contact CTA -->
+      <div style="text-align: center; margin: 35px 0;">
+        <p style="margin: 0 0 15px; color: #8B9AAD; font-size: 14px;">Ready to proceed or have questions?</p>
+        <a href="mailto:z360virtualtours@gmail.com?subject=Quote%20%23${data.bookingId.slice(-8).toUpperCase()}%20-%20Question" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 16px 40px; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 15px rgba(201, 169, 98, 0.3);">
+          Contact Us to Proceed
+        </a>
       </div>
 
       <!-- Validity Notice -->
@@ -298,10 +302,86 @@ export const emailTemplates = {
         </p>
       </div>
 
-      <!-- Questions Section -->
-      <p style="font-size: 14px; color: #8B9AAD; line-height: 1.6; margin-top: 30px; text-align: center;">
-        Have questions about your quote? Feel free to reply to this email or contact us directly.
+      <!-- Payment Info -->
+      <div style="margin-top: 30px; padding: 20px; background-color: #0D1B2A; border-radius: 12px;">
+        <h4 style="color: #C9A962; margin: 0 0 12px; font-size: 14px; font-weight: 600;">Payment Options</h4>
+        <p style="margin: 0; color: #8B9AAD; font-size: 13px; line-height: 1.7;">
+          We accept bank transfer and cash payments. Payment details will be provided once you confirm your booking.
+        </p>
+      </div>
+    `),
+  }),
+
+  // Updated price after negotiation
+  priceUpdated: (data: {
+    clientName: string
+    bookingId: string
+    originalQuote: number
+    newPrice: number
+    depositAmount: number
+    message?: string
+  }) => ({
+    subject: `Updated Quote - €${data.newPrice.toFixed(2)} - Z360 Virtual Tours`,
+    html: baseTemplate(`
+      <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="color: #C9A962; margin: 0 0 10px; font-size: 26px; font-weight: 600;">Updated Quote</h2>
+        <p style="margin: 0; color: #8B9AAD; font-size: 14px;">Reference: <span style="font-family: monospace; color: #F5F1E6;">#${data.bookingId.slice(-8).toUpperCase()}</span></p>
+      </div>
+
+      <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px;">
+        Hi <strong style="color: #C9A962;">${data.clientName}</strong>,
       </p>
+
+      <p style="font-size: 15px; line-height: 1.7; color: #D4D9E0; margin-bottom: 30px;">
+        Thank you for discussing the project with us. As agreed, here is your updated quote:
+      </p>
+
+      <!-- Price Comparison Box -->
+      <div style="background: linear-gradient(135deg, #0D1B2A 0%, #162232 100%); border-radius: 16px; padding: 30px; margin: 25px 0; text-align: center; border: 1px solid #2A3B4D;">
+        ${data.originalQuote !== data.newPrice ? `
+        <p style="margin: 0 0 5px; color: #6B7B8A; font-size: 13px; text-decoration: line-through;">
+          Original: €${data.originalQuote.toFixed(2)}
+        </p>
+        ` : ''}
+        <p style="margin: 0 0 8px; color: #8B9AAD; font-size: 13px; text-transform: uppercase; letter-spacing: 1.5px;">Agreed Price</p>
+        <p style="margin: 0 0 15px; font-size: 42px; font-weight: 700; color: #22c55e; line-height: 1;">€${data.newPrice.toFixed(2)}</p>
+
+        <p style="margin: 0; color: #8B9AAD; font-size: 13px;">
+          Deposit to confirm: <strong style="color: #F5F1E6;">€${data.depositAmount.toFixed(2)}</strong>
+        </p>
+      </div>
+
+      ${data.message ? `
+      <!-- Custom Message -->
+      <div style="background-color: #0D1B2A; border-radius: 12px; padding: 20px; margin: 25px 0; border-left: 4px solid #C9A962;">
+        <p style="margin: 0; color: #D4D9E0; font-size: 14px; line-height: 1.7; font-style: italic;">
+          "${data.message}"
+        </p>
+      </div>
+      ` : ''}
+
+      <!-- Next Steps -->
+      <div style="background-color: #22c55e15; border-radius: 12px; padding: 20px; margin: 25px 0; border-left: 4px solid #22c55e;">
+        <h3 style="color: #22c55e; margin: 0 0 10px; font-size: 15px; font-weight: 600;">Ready to proceed?</h3>
+        <p style="margin: 0; color: #D4D9E0; font-size: 14px; line-height: 1.7;">
+          To confirm your booking, please pay the deposit of <strong>€${data.depositAmount.toFixed(2)}</strong>. Reply to this email and we'll send you the payment details.
+        </p>
+      </div>
+
+      <!-- Contact CTA -->
+      <div style="text-align: center; margin: 35px 0;">
+        <a href="mailto:z360virtualtours@gmail.com?subject=Quote%20%23${data.bookingId.slice(-8).toUpperCase()}%20-%20Ready%20to%20Proceed" style="display: inline-block; background: linear-gradient(135deg, #C9A962 0%, #A88B4A 100%); color: #0D1B2A; text-decoration: none; padding: 16px 40px; border-radius: 10px; font-weight: 700; font-size: 15px; box-shadow: 0 4px 15px rgba(201, 169, 98, 0.3);">
+          Confirm & Get Payment Details
+        </a>
+      </div>
+
+      <!-- Payment Info -->
+      <div style="margin-top: 30px; padding: 20px; background-color: #0D1B2A; border-radius: 12px;">
+        <h4 style="color: #C9A962; margin: 0 0 12px; font-size: 14px; font-weight: 600;">Payment Options</h4>
+        <p style="margin: 0; color: #8B9AAD; font-size: 13px; line-height: 1.7;">
+          We accept bank transfer and cash payments. Payment details will be provided once you confirm.
+        </p>
+      </div>
     `),
   }),
 

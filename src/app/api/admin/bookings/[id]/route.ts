@@ -162,6 +162,28 @@ export async function PUT(
       data: updateData,
     })
 
+    // Send updated price email if requested (for negotiations)
+    if (data.sendPriceUpdateEmail && booking.totalQuote) {
+      try {
+        const { sendEmail, emailTemplates } = await import('@/lib/email')
+        const depositPercent = 30 // Default deposit percentage
+        const depositAmount = booking.depositAmount || (booking.totalQuote * depositPercent / 100)
+
+        const template = emailTemplates.priceUpdated({
+          clientName: booking.clientName,
+          bookingId: booking.id,
+          originalQuote: existingBooking.totalQuote || booking.totalQuote,
+          newPrice: booking.totalQuote,
+          depositAmount,
+          message: data.priceUpdateMessage || undefined,
+        })
+        await sendEmail(booking.clientEmail, template)
+        console.log(`Price update email sent to ${booking.clientEmail}`)
+      } catch (err) {
+        console.error('Failed to send price update email:', err)
+      }
+    }
+
     // Send status update email if status changed
     if (data.status && data.status !== existingBooking.status) {
       try {
