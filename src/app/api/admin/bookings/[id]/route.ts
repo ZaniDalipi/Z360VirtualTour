@@ -209,7 +209,7 @@ export async function PUT(
         } else if (data.status === 'confirmed' || data.status === 'scheduled') {
           // Booking confirmed with date - send special confirmation
           const confirmedDate = booking.confirmedDate
-            ? new Date(booking.confirmedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+            ? new Date(booking.confirmedDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
             : 'To be scheduled'
           const confirmedTime = booking.confirmedTime || ''
 
@@ -276,8 +276,8 @@ export async function PUT(
     if (data.confirmedDate && !existingBooking.confirmedDate) {
       try {
         const { sendEmail, emailTemplates } = await import('@/lib/email')
-        const confirmedDate = new Date(data.confirmedDate).toLocaleDateString('en-US', {
-          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        const confirmedDate = new Date(data.confirmedDate).toLocaleDateString('en-GB', {
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         })
         const confirmedTime = data.confirmedTime || booking.confirmedTime || ''
 

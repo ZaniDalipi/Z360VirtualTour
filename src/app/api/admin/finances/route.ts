@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
       })
 
       monthlyIncome.push({
-        month: monthStart.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+        month: monthStart.toLocaleDateString('en-GB', { month: 'short', year: '2-digit' }),
         income: monthBookings.reduce((sum: number, b: { totalQuote: number | null }) => sum + (b.totalQuote || 0), 0),
         expenses: monthExpenses.reduce((sum: number, e: { amount: number }) => sum + e.amount, 0),
       })

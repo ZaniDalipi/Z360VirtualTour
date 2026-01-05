@@ -319,11 +319,11 @@ function BookingStatusContent() {
                       <div className="flex justify-between py-2 border-b border-gold/10">
                         <span className="text-cream-muted">Scheduled Date</span>
                         <span className="text-cream">
-                          {new Date(booking.confirmedDate).toLocaleDateString('en-US', {
+                          {new Date(booking.confirmedDate).toLocaleDateString('en-GB', {
                             weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
                             day: 'numeric',
+                            month: 'long',
+                            year: 'numeric',
                           })}
                           {booking.confirmedTime && ` at ${booking.confirmedTime}`}
                         </span>

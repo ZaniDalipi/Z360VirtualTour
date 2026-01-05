@@ -15,3 +15,41 @@ export function formatPrice(price: number): string {
 export function formatArea(sqft: number): string {
   return `${sqft.toLocaleString()} sqft`
 }
+
+/**
+ * Format date in European format (DD/MM/YYYY or with weekday/month name)
+ * Uses 'en-GB' locale for European date ordering
+ */
+export function formatDateEU(dateStr: string | Date, options?: {
+  includeWeekday?: boolean
+  includeTime?: boolean
+  shortMonth?: boolean
+}): string {
+  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr
+
+  if (options?.includeWeekday) {
+    // "Monday, 6 January 2025"
+    return date.toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    })
+  }
+
+  if (options?.shortMonth) {
+    // "6 Jan 2025"
+    return date.toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })
+  }
+
+  // Default: "06/01/2025"
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  })
+}

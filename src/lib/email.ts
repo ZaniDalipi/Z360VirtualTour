@@ -199,7 +199,7 @@ export const emailTemplates = {
           ${data.preferredDate ? `
           <tr>
             <td style="padding: 14px 0; border-bottom: 1px solid #2A3B4D; color: #8B9AAD; font-size: 14px;">Preferred Date</td>
-            <td style="padding: 14px 0; border-bottom: 1px solid #2A3B4D; text-align: right; color: #F5F1E6; font-size: 14px;">${new Date(data.preferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td>
+            <td style="padding: 14px 0; border-bottom: 1px solid #2A3B4D; text-align: right; color: #F5F1E6; font-size: 14px;">${new Date(data.preferredDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</td>
           </tr>
           ` : ''}
           <tr>
@@ -614,7 +614,7 @@ export const emailTemplates = {
             ${data.newPreferredDate ? `
             <tr>
               <td style="padding: 10px 0; color: #888; border-bottom: 1px solid #333;">New Preferred Date</td>
-              <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid #333;">${new Date(data.newPreferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}${data.newPreferredTime ? ` at ${data.newPreferredTime}` : ''}</td>
+              <td style="padding: 10px 0; text-align: right; border-bottom: 1px solid #333;">${new Date(data.newPreferredDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${data.newPreferredTime ? ` at ${data.newPreferredTime}` : ''}</td>
             </tr>
             ` : ''}
             ${data.message ? `
@@ -741,7 +741,7 @@ export const emailTemplates = {
           ${data.newPreferredDate ? `
           <div style="margin-bottom: 15px;">
             <p style="margin: 0 0 5px; color: #888; font-size: 12px; text-transform: uppercase;">Requested New Date</p>
-            <p style="margin: 0; font-size: 18px; color: #f59e0b;">${new Date(data.newPreferredDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}${data.newPreferredTime ? ` at ${data.newPreferredTime}` : ''}</p>
+            <p style="margin: 0; font-size: 18px; color: #f59e0b;">${new Date(data.newPreferredDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}${data.newPreferredTime ? ` at ${data.newPreferredTime}` : ''}</p>
           </div>
           ` : ''}
           ${data.message ? `

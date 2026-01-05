@@ -40,6 +40,8 @@ export async function GET(request: NextRequest) {
         name: true,
         city: true,
         region: true,
+        startDate: true,
+        endDate: true,
         scheduledDate: true,
         maxParticipants: true,
         currentCount: true,
@@ -55,6 +57,8 @@ export async function GET(request: NextRequest) {
       name: string
       city: string
       region: string | null
+      startDate: Date | null
+      endDate: Date | null
       scheduledDate: Date
       maxParticipants: number
       currentCount: number
@@ -69,6 +73,8 @@ export async function GET(request: NextRequest) {
       name: b.name,
       city: b.city,
       region: b.region,
+      startDate: b.startDate || b.scheduledDate,
+      endDate: b.endDate || b.scheduledDate,
       scheduledDate: b.scheduledDate,
       spotsRemaining: b.maxParticipants - b.currentCount,
       perPersonTravelFee: b.perPersonTravelFee,

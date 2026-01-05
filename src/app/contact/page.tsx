@@ -354,10 +354,10 @@ function ContactPageContent() {
     const selectedPlanName = pricingPlans.find(p => p.id === formData.pricingPlanId)?.name || 'Custom'
     const selectedTierName = urgencyTiers.find(t => t.id === formData.urgencyTierId)?.displayName || 'Standard'
     const bookingId = bookingResponse?.bookingId || 'N/A'
-    const currentDate = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
+    const currentDate = new Date().toLocaleDateString('en-GB', {
       day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     })
 
     const htmlContent = `
@@ -808,7 +808,7 @@ function ContactPageContent() {
                         <p className="text-cream-muted text-sm">
                           I'll be in <span className="text-green-300 font-medium">{scheduledCities.join(', ')}</span> on{' '}
                           <span className="text-green-300 font-medium">
-                            {scheduledDate ? new Date(scheduledDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'this date'}
+                            {scheduledDate ? new Date(scheduledDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'this date'}
                           </span>.
                           If your property is nearby, you'll automatically get {sameCityDiscountPercent}% off!
                         </p>
@@ -847,7 +847,7 @@ function ContactPageContent() {
                         <p className="text-cream font-medium mb-1">{selectedBundle.name}</p>
                         <p className="text-cream-muted text-sm">
                           <span className="text-purple-300">{selectedBundle.city}</span> • {' '}
-                          {new Date(selectedBundle.scheduledDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                          {new Date(selectedBundle.scheduledDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </p>
                         <div className="mt-2 flex items-center justify-between text-xs">
                           <span className="text-cream-muted">

@@ -174,11 +174,11 @@ export default function SchedulePage() {
   }
 
   const formatSelectedDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('en-GB', {
       weekday: 'long',
-      year: 'numeric',
-      month: 'long',
       day: 'numeric',
+      month: 'long',
+      year: 'numeric',
     })
   }
 

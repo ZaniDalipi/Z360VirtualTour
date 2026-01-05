@@ -132,10 +132,10 @@ export default function TourDetailPage() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
+    return new Date(dateString).toLocaleDateString('en-GB', {
       day: 'numeric',
+      month: 'short',
+      year: 'numeric',
     })
   }
 

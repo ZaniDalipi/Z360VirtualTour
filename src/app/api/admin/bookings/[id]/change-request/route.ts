@@ -93,11 +93,11 @@ export async function POST(
       adminMessage: adminResponse || undefined,
       propertyAddress: booking.propertyAddress,
       newConfirmedDate: action === 'approve' && booking.changeRequestType === 'date_change' && newConfirmedDate
-        ? new Date(newConfirmedDate).toLocaleDateString('en-US', {
+        ? new Date(newConfirmedDate).toLocaleDateString('en-GB', {
             weekday: 'long',
-            year: 'numeric',
-            month: 'long',
             day: 'numeric',
+            month: 'long',
+            year: 'numeric',
           })
         : undefined,
       newConfirmedTime: action === 'approve' && booking.changeRequestType === 'date_change' && newConfirmedTime

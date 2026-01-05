@@ -11,6 +11,8 @@ interface Bundle {
   name: string
   city: string
   region: string | null
+  startDate: string
+  endDate: string
   scheduledDate: string
   spotsRemaining: number
   perPersonTravelFee: number | null
@@ -40,13 +42,40 @@ export default function BundlesPage() {
     }
   }
 
+  // European date format (DD/MM/YYYY)
   const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      weekday: 'long',
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
       year: 'numeric',
-      month: 'long',
-      day: 'numeric',
     })
+  }
+
+  // Short European date (6 Jan)
+  const formatDateShort = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+    })
+  }
+
+  // Format date range
+  const formatDateRange = (startDate: string, endDate: string) => {
+    const start = new Date(startDate)
+    const end = new Date(endDate)
+
+    // Same day
+    if (start.toDateString() === end.toDateString()) {
+      return formatDate(startDate)
+    }
+
+    // Same month & year
+    if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+      return `${start.getDate()} - ${end.getDate()}/${String(start.getMonth() + 1).padStart(2, '0')}/${start.getFullYear()}`
+    }
+
+    // Different months
+    return `${formatDate(startDate)} - ${formatDate(endDate)}`
   }
 
   const getDaysUntil = (dateStr: string) => {
@@ -200,7 +229,7 @@ export default function BundlesPage() {
                         <div className="flex flex-wrap gap-4 text-sm">
                           <div className="flex items-center gap-1.5 text-cream-muted">
                             <Calendar className="w-4 h-4" />
-                            <span>{formatDate(bundle.scheduledDate)}</span>
+                            <span>{formatDateRange(bundle.startDate, bundle.endDate)}</span>
                           </div>
                           <div className={`flex items-center gap-1.5 ${
                             bundle.spotsRemaining <= 2 ? 'text-orange-400' : 'text-cream-muted'
@@ -251,6 +280,21 @@ export default function BundlesPage() {
                           </Button>
                         </Link>
                       </div>
+                    </div>
+
+                    {/* Near-Date Contact Option */}
+                    <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                      <p className="text-sm text-cream-muted mb-2">
+                        <span className="text-blue-400 font-medium">Need a different date?</span>
+                        {' '}If you need a shoot within ±2 days of this bundle&apos;s dates, contact us directly and we may be able to accommodate you.
+                      </p>
+                      <a
+                        href={`mailto:z360virtualtours@gmail.com?subject=Bundle%20Date%20Request%20-%20${encodeURIComponent(bundle.name)}&body=Hi%2C%0A%0AI%27m%20interested%20in%20the%20${encodeURIComponent(bundle.name)}%20bundle%20(${formatDateRange(bundle.startDate, bundle.endDate)})%20but%20need%20a%20slightly%20different%20date.%0A%0AMy%20preferred%20date%3A%20%5BPlease%20specify%5D%0ACity%3A%20${encodeURIComponent(bundle.city)}%0A%0AThank%20you!`}
+                        className="inline-flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                      >
+                        Contact for ±2 day flexibility
+                        <ChevronRight className="w-3 h-3" />
+                      </a>
                     </div>
 
                     {/* Progress Bar */}
