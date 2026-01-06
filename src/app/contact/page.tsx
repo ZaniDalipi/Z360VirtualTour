@@ -8,7 +8,7 @@ import {
   FileText, Share2, ExternalLink, Percent, Sparkles, CreditCard
 } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
-import { Button, Card, Input } from '@/components/ui'
+import { Button, Card, Input, Modal } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const socialLinks = [
@@ -132,6 +132,12 @@ function ContactPageContent() {
   const [isCalculating, setIsCalculating] = useState(false)
   const [bookingResponse, setBookingResponse] = useState<BookingResponse | null>(null)
   const [sameCityDiscountPercent, setSameCityDiscountPercent] = useState(15)
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean
+    title: string
+    message: string
+    type: 'info' | 'warning' | 'error' | 'success'
+  }>({ isOpen: false, title: '', message: '', type: 'warning' })
   const confirmationRef = useRef<HTMLDivElement>(null)
 
   // Get URL params for schedule booking (date and cities where photographer will be)
@@ -313,7 +319,12 @@ function ContactPageContent() {
 
         if (selectedDate < bundleStart || selectedDate > bundleEnd) {
           const formatD = (d: Date) => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
-          alert(`Date must be between ${formatD(bundleStart)} and ${formatD(bundleEnd)} for "${selectedBundle.name}" bundle. Bundle has been deselected.`)
+          setModalState({
+            isOpen: true,
+            title: 'Date Outside Bundle Period',
+            message: `Your selected date must be between ${formatD(bundleStart)} and ${formatD(bundleEnd)} to join the "${selectedBundle.name}" bundle. The bundle has been deselected.`,
+            type: 'warning',
+          })
           setFormData((prev) => ({
             ...prev,
             [name]: value,
@@ -368,11 +379,21 @@ function ContactPageContent() {
         setIsSubmitted(true)
       } else {
         const data = await res.json()
-        alert(data.error || 'Failed to submit booking. Please try again.')
+        setModalState({
+          isOpen: true,
+          title: 'Submission Failed',
+          message: data.error || 'Failed to submit booking. Please try again.',
+          type: 'error',
+        })
       }
     } catch (error) {
       console.error('Failed to submit form:', error)
-      alert('Failed to submit booking. Please try again.')
+      setModalState({
+        isOpen: true,
+        title: 'Submission Failed',
+        message: 'Failed to submit booking. Please check your connection and try again.',
+        type: 'error',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -769,11 +790,21 @@ function ContactPageContent() {
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert('Failed to create payment session. Please try again.')
+        setModalState({
+          isOpen: true,
+          title: 'Payment Error',
+          message: 'Failed to create payment session. Please try again.',
+          type: 'error',
+        })
       }
     } catch (error) {
       console.error('Payment error:', error)
-      alert('Failed to initiate payment. Please try again.')
+      setModalState({
+        isOpen: true,
+        title: 'Payment Error',
+        message: 'Failed to initiate payment. Please check your connection and try again.',
+        type: 'error',
+      })
     } finally {
       setIsPaymentLoading(false)
     }
@@ -981,13 +1012,13 @@ function ContactPageContent() {
                             bundleEnd.setHours(0, 0, 0, 0)
 
                             if (selectedDate < bundleStart || selectedDate > bundleEnd) {
-                              alert(`Your selected date must be between ${(() => {
-                                const d = bundleStart
-                                return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
-                              })()} and ${(() => {
-                                const d = bundleEnd
-                                return `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
-                              })()} to join this bundle.`)
+                              const formatD = (d: Date) => `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth() + 1).padStart(2, '0')}.${d.getFullYear()}`
+                              setModalState({
+                                isOpen: true,
+                                title: 'Date Outside Bundle Period',
+                                message: `Your selected date (${formatD(selectedDate)}) must be between ${formatD(bundleStart)} and ${formatD(bundleEnd)} to join the "${bundle.name}" bundle. Please select a date within this range first.`,
+                                type: 'warning',
+                              })
                               return
                             }
                           }
@@ -1547,6 +1578,15 @@ function ContactPageContent() {
       </section>
 
       <Footer />
+
+      {/* Modal for alerts */}
+      <Modal
+        isOpen={modalState.isOpen}
+        onClose={() => setModalState(prev => ({ ...prev, isOpen: false }))}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+      />
     </div>
   )
 }
