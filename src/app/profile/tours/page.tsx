@@ -134,7 +134,7 @@ function MyToursContent() {
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
-                  className="absolute right-0 mt-2 w-48 bg-navy-light border border-gold/20 rounded-lg shadow-lg overflow-hidden z-50"
+                  className="absolute right-0 mt-2 w-48 max-w-[calc(100vw-2rem)] bg-navy-light border border-gold/20 rounded-lg shadow-lg overflow-hidden z-50"
                 >
                   {filterOptions.map(option => (
                     <button

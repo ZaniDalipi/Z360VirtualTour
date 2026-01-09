@@ -167,7 +167,7 @@ export default function BundlesAdminPage() {
     return (
       <div className="space-y-6">
         <div className="h-8 w-48 bg-gold/10 rounded animate-pulse" />
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
           {[1, 2].map((i) => (
             <div key={i} className="h-48 bg-gold/10 rounded-xl animate-pulse" />
           ))}
@@ -179,14 +179,14 @@ export default function BundlesAdminPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-h2 font-bold text-cream">Travel Bundles</h1>
-          <p className="text-body text-cream-muted">
+          <h1 className="text-xl sm:text-h2 font-bold text-cream">Travel Bundles</h1>
+          <p className="text-sm sm:text-body text-cream-muted">
             Group bookings for efficient travel - clients share costs
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
+        <Button onClick={() => setShowForm(true)} className="w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           Create Bundle
         </Button>
@@ -209,21 +209,21 @@ export default function BundlesAdminPage() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
-              <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-h3 font-semibold text-cream">
+              <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-h3 font-semibold text-cream">
                     {editingId ? 'Edit Bundle' : 'Create Bundle'}
                   </h2>
                   <button
                     onClick={resetForm}
-                    className="p-2 rounded-lg text-cream-muted hover:text-cream hover:bg-gold/10"
+                    className="p-3 -mr-1 rounded-lg text-cream-muted hover:text-cream hover:bg-gold/10 touch-manipulation"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-cream mb-2">
                         Bundle Name *
@@ -269,7 +269,7 @@ export default function BundlesAdminPage() {
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-cream mb-2">
                         Start Date *
@@ -305,7 +305,7 @@ export default function BundlesAdminPage() {
                     />
                   </div>
 
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-cream mb-2">
                         Max Participants
@@ -343,7 +343,7 @@ export default function BundlesAdminPage() {
                     </div>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-cream mb-2">
                         Bundle Discount (%)
@@ -422,7 +422,7 @@ export default function BundlesAdminPage() {
           </Button>
         </Card>
       ) : (
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
           {bundles.map((bundle) => (
             <motion.div
               key={bundle.id}
@@ -446,7 +446,7 @@ export default function BundlesAdminPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-cream-muted" />
                     <span className="text-sm text-cream">

@@ -116,10 +116,10 @@ export default function BundlesPage() {
       </div>
 
       {/* How It Works */}
-      <div className="max-w-4xl mx-auto px-4 -mt-8 mb-12">
-        <Card className="p-6 bg-gold/5 border-gold/20">
-          <h2 className="text-lg font-semibold text-gold mb-4">How Bundles Work</h2>
-          <div className="grid md:grid-cols-3 gap-6">
+      <div className="max-w-4xl mx-auto px-4 -mt-8 mb-8 sm:mb-12">
+        <Card className="p-4 sm:p-6 bg-gold/5 border-gold/20">
+          <h2 className="text-base sm:text-lg font-semibold text-gold mb-3 sm:mb-4">How Bundles Work</h2>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             <div className="flex gap-3">
               <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center flex-shrink-0">
                 <span className="text-gold font-bold">1</span>
@@ -322,8 +322,8 @@ export default function BundlesPage() {
         )}
 
         {/* Info Section */}
-        <div className="mt-12 grid md:grid-cols-2 gap-6">
-          <Card className="p-6">
+        <div className="mt-8 sm:mt-12 grid sm:grid-cols-2 gap-4 sm:gap-6">
+          <Card className="p-4 sm:p-6">
             <h3 className="font-semibold text-cream mb-3">Why Join a Bundle?</h3>
             <ul className="space-y-2 text-sm text-cream-muted">
               <li className="flex items-start gap-2">
@@ -345,8 +345,8 @@ export default function BundlesPage() {
             </ul>
           </Card>
 
-          <Card className="p-6">
-            <h3 className="font-semibold text-cream mb-3">Don't See Your Area?</h3>
+          <Card className="p-4 sm:p-6">
+            <h3 className="font-semibold text-cream mb-3">Don&apos;t See Your Area?</h3>
             <p className="text-sm text-cream-muted mb-4">
               If there's no bundle for your city or preferred date, contact us!
               We can create a new bundle for your area when there's enough interest.

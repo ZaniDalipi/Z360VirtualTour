@@ -842,7 +842,7 @@ function ContactPageContent() {
       {/* Booking Form & Info */}
       <section className="py-8 pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-5 gap-12">
+          <div className="grid lg:grid-cols-5 gap-6 lg:gap-12">
             {/* Contact Info & Quote Preview */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -1214,7 +1214,7 @@ function ContactPageContent() {
                       <p className="text-sm text-cream-muted text-center mb-6">
                         See our latest virtual tours, behind-the-scenes content, and exclusive offers
                       </p>
-                      <div className="grid grid-cols-4 gap-3">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
                         {socialLinks.map((social) => {
                           const Icon = social.icon
                           return (
@@ -1223,10 +1223,10 @@ function ContactPageContent() {
                               href={social.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className={`flex flex-col items-center gap-2 p-4 rounded-xl bg-navy border border-gold/10 ${social.color} transition-all hover:border-gold/30 hover:scale-105`}
+                              className={`flex flex-col items-center gap-1.5 sm:gap-2 p-3 sm:p-4 rounded-xl bg-navy border border-gold/10 ${social.color} transition-all hover:border-gold/30 active:scale-95 sm:hover:scale-105 touch-manipulation`}
                             >
-                              <Icon className="w-6 h-6" />
-                              <span className="text-xs text-cream-muted hidden sm:block">{social.name}</span>
+                              <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                              <span className="text-xs text-cream-muted">{social.name}</span>
                             </a>
                           )
                         })}
