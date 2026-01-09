@@ -16,9 +16,9 @@ interface UserData {
 const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/tours', label: 'Portfolio' },
-  { href: '/schedule', label: 'Availability' },
-  { href: '/testimonials', label: 'Testimonials' },
   { href: '/pricing', label: 'Pricing' },
+  { href: '/schedule', label: 'Availability' },
+  { href: '/about', label: 'About' },
 ]
 
 export function PublicHeader() {

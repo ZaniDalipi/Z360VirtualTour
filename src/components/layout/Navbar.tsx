@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Grid3X3, Mail, User } from 'lucide-react'
+import { Home, Grid3X3, Mail, User, DollarSign } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export function Navbar() {
@@ -16,6 +16,7 @@ export function Navbar() {
   const navItems = [
     { href: '/', icon: Home, label: 'Home' },
     { href: '/tours', icon: Grid3X3, label: 'Tours' },
+    { href: '/pricing', icon: DollarSign, label: 'Pricing' },
     { href: '/contact', icon: Mail, label: 'Book' },
     { href: '/profile', icon: User, label: 'Profile' },
   ]
@@ -59,6 +60,7 @@ export function TabBar() {
   const tabs = [
     { href: '/', icon: Home, label: 'Home' },
     { href: '/tours', icon: Grid3X3, label: 'Tours' },
+    { href: '/pricing', icon: DollarSign, label: 'Pricing' },
     { href: '/contact', icon: Mail, label: 'Book' },
     { href: '/profile', icon: User, label: 'Profile' },
   ]

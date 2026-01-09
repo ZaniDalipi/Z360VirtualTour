@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { X, Eye, Home, FolderOpen, MessageSquare, DollarSign, Mail, ChevronRight, CalendarDays, User, LogIn } from 'lucide-react'
+import { X, Eye, Home, FolderOpen, MessageSquare, DollarSign, ChevronRight, CalendarDays, User, LogIn, Info, Star, Code } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -22,9 +22,11 @@ interface UserData {
 const navLinks: NavLink[] = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/tours', label: 'Portfolio', icon: FolderOpen },
-  { href: '/schedule', label: 'Availability', icon: CalendarDays },
-  { href: '/testimonials', label: 'Testimonials', icon: MessageSquare },
   { href: '/pricing', label: 'Pricing', icon: DollarSign },
+  { href: '/schedule', label: 'Availability', icon: CalendarDays },
+  { href: '/testimonials', label: 'Reviews', icon: Star },
+  { href: '/about', label: 'About Us', icon: Info },
+  { href: '/integration', label: 'For Developers', icon: Code },
 ]
 
 interface MobileDrawerProps {
