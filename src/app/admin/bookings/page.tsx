@@ -43,6 +43,7 @@ interface Booking {
   paidAmount: number | null
   paidAt: string | null
   balanceAmount: number | null
+  paymentMethod: string | null
   status: string
   isRead: boolean
   createdAt: string
@@ -282,6 +283,66 @@ export default function BookingsAdminPage() {
       if (expandedId === id) setExpandedId(null)
     } catch (error) {
       console.error('Failed to delete booking:', error)
+    }
+  }
+
+  const handleRecordPayment = async (booking: Booking, paymentType: 'deposit' | 'balance' | 'full') => {
+    if (!confirm(`Record ${paymentType} payment for ${booking.clientName}? This will send a confirmation email.`)) {
+      return
+    }
+
+    try {
+      const totalQuote = booking.totalQuote || 0
+      const depositAmount = booking.depositAmount || 0
+      const currentPaid = booking.paidAmount || 0
+
+      let paidAmount: number
+      let newDepositPaid = booking.depositPaid
+      let newPaymentStatus: string
+      let newBalanceAmount: number
+
+      if (paymentType === 'deposit') {
+        paidAmount = depositAmount
+        newDepositPaid = true
+        newPaymentStatus = depositAmount >= totalQuote ? 'paid' : 'partial'
+        newBalanceAmount = totalQuote - depositAmount
+      } else if (paymentType === 'balance') {
+        paidAmount = currentPaid + (booking.balanceAmount || 0)
+        newDepositPaid = true
+        newPaymentStatus = 'paid'
+        newBalanceAmount = 0
+      } else {
+        // Full payment
+        paidAmount = totalQuote
+        newDepositPaid = true
+        newPaymentStatus = 'paid'
+        newBalanceAmount = 0
+      }
+
+      const res = await fetch(`/api/admin/bookings/${booking.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          depositPaid: newDepositPaid,
+          paidAmount,
+          paidAt: new Date().toISOString(),
+          paymentStatus: newPaymentStatus,
+          paymentMethod: 'bank_transfer_or_cash',
+          balanceAmount: newBalanceAmount,
+          recordPayment: true,
+          paymentType,
+        }),
+      })
+
+      if (res.ok) {
+        fetchBookings()
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Failed to record payment')
+      }
+    } catch (error) {
+      console.error('Failed to record payment:', error)
+      alert('Failed to record payment')
     }
   }
 
@@ -1037,9 +1098,88 @@ export default function BookingsAdminPage() {
                                     </span>
                                   </div>
                                 )}
+                                {booking.paidAmount !== null && booking.paidAmount > 0 && (
+                                  <div className="flex justify-between text-xs pt-2 border-t border-gold/10">
+                                    <span className="text-cream-muted">Amount Paid</span>
+                                    <span className="text-green-400 font-medium">{formatCurrency(booking.paidAmount)}</span>
+                                  </div>
+                                )}
+                                {booking.balanceAmount !== null && booking.balanceAmount > 0 && (
+                                  <div className="flex justify-between text-xs">
+                                    <span className="text-cream-muted">Balance Due</span>
+                                    <span className="text-amber-400">{formatCurrency(booking.balanceAmount)}</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </div>
+
+                          {/* Payment Management */}
+                          {booking.totalQuote && booking.totalQuote > 0 && (
+                            <div className="p-4 rounded-xl bg-navy border border-gold/20">
+                              <h4 className="text-sm font-medium text-gold mb-3 flex items-center gap-2">
+                                <CreditCard className="w-4 h-4" />
+                                Payment Management
+                              </h4>
+                              <div className="space-y-3">
+                                {/* Payment Status */}
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="text-sm text-cream-muted">Status:</span>
+                                  <span className={`text-xs px-2 py-1 rounded ${
+                                    booking.paymentStatus === 'paid' ? 'bg-green-500/20 text-green-400' :
+                                    booking.paymentStatus === 'partial' ? 'bg-amber-500/20 text-amber-400' :
+                                    'bg-gray-500/20 text-gray-400'
+                                  }`}>
+                                    {booking.paymentStatus === 'paid' ? 'Fully Paid' :
+                                     booking.paymentStatus === 'partial' ? 'Partial Payment' :
+                                     'Pending'}
+                                  </span>
+                                  {booking.paidAt && (
+                                    <span className="text-xs text-cream-dim">
+                                      Last payment: {formatDateTime(booking.paidAt)}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Record Payment Button */}
+                                {booking.paymentStatus !== 'paid' && (
+                                  <div className="flex flex-wrap gap-2">
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleRecordPayment(booking, 'deposit')}
+                                      disabled={booking.depositPaid}
+                                      className={booking.depositPaid ? 'opacity-50 cursor-not-allowed' : ''}
+                                    >
+                                      <Check className="w-4 h-4 mr-1" />
+                                      {booking.depositPaid ? 'Deposit Received' : `Record Deposit (${formatCurrency(booking.depositAmount)})`}
+                                    </Button>
+                                    {booking.depositPaid && booking.balanceAmount && booking.balanceAmount > 0 && (
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleRecordPayment(booking, 'balance')}
+                                      >
+                                        <Check className="w-4 h-4 mr-1" />
+                                        Record Balance ({formatCurrency(booking.balanceAmount)})
+                                      </Button>
+                                    )}
+                                    <Button
+                                      size="sm"
+                                      variant="secondary"
+                                      onClick={() => handleRecordPayment(booking, 'full')}
+                                    >
+                                      <Check className="w-4 h-4 mr-1" />
+                                      Record Full Payment
+                                    </Button>
+                                  </div>
+                                )}
+
+                                {/* Payment Info */}
+                                <p className="text-xs text-cream-dim">
+                                  Payment methods: Bank Transfer / Cash
+                                </p>
+                              </div>
+                            </div>
+                          )}
 
                           {/* Project Description / Message */}
                           {booking.projectDescription && (

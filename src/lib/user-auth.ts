@@ -1,9 +1,19 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'z360-secret-key-change-in-production'
-)
+// In production, JWT_SECRET must be set - throw error if not configured
+function getJWTSecret(): Uint8Array {
+  const secret = process.env.JWT_SECRET
+
+  if (!secret && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET environment variable must be set in production')
+  }
+
+  // Allow default only in development
+  return new TextEncoder().encode(secret || 'z360-dev-secret-key-not-for-production')
+}
+
+const JWT_SECRET = getJWTSecret()
 
 export interface UserPayload {
   id: string

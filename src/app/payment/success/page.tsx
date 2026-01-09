@@ -3,48 +3,46 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle, ArrowRight, Download, Mail } from 'lucide-react'
+import { CheckCircle, ArrowRight, Mail } from 'lucide-react'
 
-interface PaymentDetails {
-  bookingId: string
+interface BookingDetails {
+  id: string
   clientName: string
-  clientEmail: string
-  serviceName: string
-  totalQuote: number
-  paidAmount: number
-  balanceAmount: number
-  paymentType: string
-  status: string
+  totalQuote: number | null
+  depositAmount: number | null
+  paidAmount: number | null
+  balanceAmount: number | null
   depositPaid: boolean
+  paymentStatus: string
 }
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams()
   const bookingId = searchParams.get('booking_id')
-  const [paymentDetails, setPaymentDetails] = useState<PaymentDetails | null>(null)
+  const [booking, setBooking] = useState<BookingDetails | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function verifyPayment() {
+    async function fetchBooking() {
       if (!bookingId) {
         setLoading(false)
         return
       }
 
       try {
-        const response = await fetch(`/api/payments/verify?booking_id=${bookingId}`)
+        const response = await fetch(`/api/booking/${bookingId}`)
         if (response.ok) {
           const data = await response.json()
-          setPaymentDetails(data)
+          setBooking(data)
         }
       } catch (error) {
-        console.error('Failed to verify payment:', error)
+        console.error('Failed to fetch booking:', error)
       } finally {
         setLoading(false)
       }
     }
 
-    verifyPayment()
+    fetchBooking()
   }, [bookingId])
 
   if (loading) {
@@ -57,60 +55,58 @@ function PaymentSuccessContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white">
-      <div className="max-w-2xl mx-auto px-4 py-20">
+      <div className="max-w-2xl mx-auto px-4 py-12 sm:py-20">
         <div className="text-center">
           {/* Success Icon */}
-          <div className="mb-8 inline-flex items-center justify-center w-24 h-24 rounded-full bg-green-500/20">
-            <CheckCircle className="w-16 h-16 text-green-500" />
+          <div className="mb-8 inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-500/20">
+            <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 text-green-500" />
           </div>
 
-          <h1 className="text-4xl font-bold mb-4">Payment Successful!</h1>
-          <p className="text-xl text-gray-400 mb-8">
-            Thank you for your payment. Your booking has been confirmed.
+          <h1 className="text-3xl sm:text-4xl font-bold mb-4">Thank You!</h1>
+          <p className="text-lg sm:text-xl text-gray-400 mb-8">
+            Your payment information has been received.
           </p>
 
-          {paymentDetails && (
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 mb-8 text-left">
-              <h2 className="text-xl font-semibold mb-6 text-center">Payment Details</h2>
+          {booking && (
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 sm:p-8 mb-8 text-left">
+              <h2 className="text-xl font-semibold mb-6 text-center">Booking Details</h2>
 
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-3 border-b border-gray-700">
                   <span className="text-gray-400">Booking Reference</span>
                   <span className="font-mono font-semibold">
-                    #{paymentDetails.bookingId.slice(-8).toUpperCase()}
+                    #{booking.id.slice(-8).toUpperCase()}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center py-3 border-b border-gray-700">
                   <span className="text-gray-400">Name</span>
-                  <span>{paymentDetails.clientName}</span>
+                  <span>{booking.clientName}</span>
                 </div>
 
-                <div className="flex justify-between items-center py-3 border-b border-gray-700">
-                  <span className="text-gray-400">Service</span>
-                  <span>{paymentDetails.serviceName}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-3 border-b border-gray-700">
-                  <span className="text-gray-400">Amount Paid</span>
-                  <span className="text-2xl font-bold text-green-500">
-                    €{paymentDetails.paidAmount.toFixed(2)}
-                  </span>
-                </div>
-
-                {paymentDetails.balanceAmount > 0 && (
+                {booking.totalQuote && (
                   <div className="flex justify-between items-center py-3 border-b border-gray-700">
-                    <span className="text-gray-400">Remaining Balance</span>
-                    <span className="text-amber-400">
-                      €{paymentDetails.balanceAmount.toFixed(2)}
+                    <span className="text-gray-400">Total Quote</span>
+                    <span className="text-lg font-semibold">
+                      €{booking.totalQuote.toFixed(2)}
                     </span>
                   </div>
                 )}
 
                 <div className="flex justify-between items-center py-3">
                   <span className="text-gray-400">Status</span>
-                  <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm">
-                    {paymentDetails.status === 'paid' ? 'Fully Paid' : 'Deposit Received'}
+                  <span className={`px-3 py-1 rounded-full text-sm ${
+                    booking.paymentStatus === 'paid'
+                      ? 'bg-green-500/20 text-green-400'
+                      : booking.depositPaid
+                        ? 'bg-amber-500/20 text-amber-400'
+                        : 'bg-gray-500/20 text-gray-400'
+                  }`}>
+                    {booking.paymentStatus === 'paid'
+                      ? 'Fully Paid'
+                      : booking.depositPaid
+                        ? 'Deposit Received'
+                        : 'Pending Confirmation'}
                   </span>
                 </div>
               </div>
@@ -122,15 +118,15 @@ function PaymentSuccessContent() {
             <h3 className="font-semibold mb-4">What happens next?</h3>
             <ul className="text-left text-gray-400 space-y-3">
               <li className="flex items-start gap-3">
-                <Mail className="w-5 h-5 text-pink-500 mt-0.5" />
-                <span>You will receive a confirmation email shortly</span>
+                <Mail className="w-5 h-5 text-pink-500 mt-0.5 flex-shrink-0" />
+                <span>You will receive a confirmation email once your payment is verified</span>
               </li>
               <li className="flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-pink-500 mt-0.5" />
+                <CheckCircle className="w-5 h-5 text-pink-500 mt-0.5 flex-shrink-0" />
                 <span>Our team will contact you to confirm the shooting date</span>
               </li>
               <li className="flex items-start gap-3">
-                <ArrowRight className="w-5 h-5 text-pink-500 mt-0.5" />
+                <ArrowRight className="w-5 h-5 text-pink-500 mt-0.5 flex-shrink-0" />
                 <span>We&apos;ll send you preparation guidelines before the shoot</span>
               </li>
             </ul>
@@ -155,20 +151,6 @@ function PaymentSuccessContent() {
               Return to Home
             </Link>
           </div>
-
-          {/* Receipt */}
-          {bookingId && (
-            <div className="mt-8 pt-8 border-t border-gray-700">
-              <a
-                href={`/api/admin/bookings/${bookingId}/receipt`}
-                target="_blank"
-                className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-              >
-                <Download className="w-4 h-4" />
-                Download Receipt
-              </a>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Filter out expired bundles in code
-    const bundles = allBundles.filter(b => {
+    const bundles = allBundles.filter((b: typeof allBundles[number]) => {
       // Check registration deadline
       if (b.registrationDeadline && new Date(b.registrationDeadline) < today) {
         return false

@@ -157,6 +157,14 @@ export async function PUT(
     if (data.workEndedAt !== undefined) updateData.workEndedAt = data.workEndedAt ? new Date(data.workEndedAt) : null
     if (data.workDurationMinutes !== undefined) updateData.workDurationMinutes = data.workDurationMinutes
 
+    // Payment fields
+    if (data.paymentStatus !== undefined) updateData.paymentStatus = data.paymentStatus
+    if (data.paidAmount !== undefined) updateData.paidAmount = parseFloat(data.paidAmount)
+    if (data.paidAt !== undefined) updateData.paidAt = data.paidAt ? new Date(data.paidAt) : null
+    if (data.paymentMethod !== undefined) updateData.paymentMethod = data.paymentMethod
+    if (data.balanceAmount !== undefined) updateData.balanceAmount = parseFloat(data.balanceAmount)
+    if (data.balancePaidAt !== undefined) updateData.balancePaidAt = data.balancePaidAt ? new Date(data.balancePaidAt) : null
+
     const booking = await prisma.booking.update({
       where: { id },
       data: updateData,
@@ -269,6 +277,28 @@ export async function PUT(
         }
       } catch (err) {
         console.error('Failed to send status update email:', err)
+      }
+    }
+
+    // Send payment received email if payment was recorded
+    if (data.recordPayment && data.paidAmount) {
+      try {
+        const { sendEmail, emailTemplates } = await import('@/lib/email')
+        const paymentType = data.paymentType || (booking.depositPaid ? 'balance' : 'deposit')
+        const remainingBalance = (booking.totalQuote || 0) - (booking.paidAmount || 0)
+
+        const template = emailTemplates.paymentReceived({
+          clientName: booking.clientName,
+          bookingId: booking.id,
+          amount: parseFloat(data.paidAmount),
+          paymentType: paymentType as 'deposit' | 'balance' | 'full',
+          totalQuote: booking.totalQuote || 0,
+          remainingBalance: remainingBalance > 0 ? remainingBalance : 0,
+        })
+        await sendEmail(booking.clientEmail, template)
+        console.log(`Payment received email sent to ${booking.clientEmail}`)
+      } catch (err) {
+        console.error('Failed to send payment received email:', err)
       }
     }
 

@@ -103,13 +103,13 @@ export async function GET() {
     // Calculate stats
     const stats = {
       total: userBookings.length,
-      pending: userBookings.filter(b =>
+      pending: userBookings.filter((b: { status: string }) =>
         ['quote_requested', 'quote_sent', 'pending_confirmation'].includes(b.status)
       ).length,
-      confirmed: userBookings.filter(b =>
+      confirmed: userBookings.filter((b: { status: string }) =>
         ['confirmed', 'scheduled', 'in_progress'].includes(b.status)
       ).length,
-      completed: userBookings.filter(b => b.status === 'completed').length,
+      completed: userBookings.filter((b: { status: string }) => b.status === 'completed').length,
     }
 
     return NextResponse.json({

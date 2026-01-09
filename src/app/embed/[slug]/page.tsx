@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { Home, Grid3X3, Calendar, CreditCard, Menu, X, ExternalLink, Play } from 'lucide-react'
+import { sanitizeEmbedHTML } from '@/lib/utils'
 
 interface Tour {
   id: string
@@ -145,10 +146,12 @@ export default function EmbedTourPage() {
   // Render tour content with navigation overlay
   const renderTourContent = () => {
     if (tour.tourEmbed) {
+      // Sanitize the embed HTML to prevent XSS attacks
+      const sanitizedEmbed = sanitizeEmbedHTML(tour.tourEmbed)
       return (
         <div
           style={{ width: '100%', height: '100%', overflow: 'hidden' }}
-          dangerouslySetInnerHTML={{ __html: tour.tourEmbed }}
+          dangerouslySetInnerHTML={{ __html: sanitizedEmbed }}
         />
       )
     }

@@ -28,6 +28,7 @@ import {
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card, ImageGallery3D } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
+import { sanitizeEmbedHTML } from '@/lib/utils'
 
 interface Tour {
   id: string
@@ -378,7 +379,7 @@ export default function TourDetailPage() {
               <Card className="overflow-hidden">
                 <div
                   className="aspect-video w-full"
-                  dangerouslySetInnerHTML={{ __html: tour.tourEmbed }}
+                  dangerouslySetInnerHTML={{ __html: sanitizeEmbedHTML(tour.tourEmbed) }}
                 />
               </Card>
             </motion.div>
