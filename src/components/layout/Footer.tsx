@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter, Eye } from 'lucide-react'
 
 const footerLinks = {
@@ -121,8 +122,29 @@ export function Footer() {
           </div>
         </div>
 
+        {/* Partnership Banner */}
+        <div className="mt-8 sm:mt-10 pt-6 sm:pt-8 border-t border-gold/10">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <span className="text-xs sm:text-sm text-cream-muted">In partnership with</span>
+            <a
+              href="https://balkanestateai.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors group"
+            >
+              <Image
+                src="/images/balkanestate-logo.svg"
+                alt="BalkanEstate"
+                width={120}
+                height={40}
+                className="h-8 w-auto"
+              />
+            </a>
+          </div>
+        </div>
+
         {/* Bottom Bar */}
-        <div className="mt-8 sm:mt-10 md:mt-12 pt-6 sm:pt-8 border-t border-gold/10 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+        <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gold/10 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
           <p className="text-xs sm:text-caption text-cream-muted text-center sm:text-left">
             © {new Date().getFullYear()} Z360 Virtual Tours. All rights reserved.
           </p>
