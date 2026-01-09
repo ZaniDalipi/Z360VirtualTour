@@ -11,6 +11,7 @@ import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
 import { FeaturedCarousel } from '@/components/home'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 // Icon mapping for categories
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -60,6 +61,12 @@ export default function HomePage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [stats, setStats] = useState<Stats>({ totalTours: 0, totalCategories: 0, totalViews: 0 })
   const [isLoading, setIsLoading] = useState(true)
+
+  const tHero = useTranslations('hero')
+  const tIndustries = useTranslations('industries')
+  const tFeatured = useTranslations('featured')
+  const tTestimonials = useTranslations('testimonials')
+  const tCta = useTranslations('cta')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -129,29 +136,28 @@ export default function HomePage() {
             >
               <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-4 py-2 mb-6">
                 <Eye className="w-4 h-4 text-gold" />
-                <span className="text-caption text-gold">Professional 360° Virtual Tours</span>
+                <span className="text-caption text-gold">{tHero('badge')}</span>
               </div>
 
               <h1 className="text-display-xl md:text-[64px] font-bold text-cream leading-tight mb-6">
-                Bring Your Space
-                <span className="text-gold"> to Life</span>
+                {tHero('title')}
+                <span className="text-gold"> {tHero('titleHighlight')}</span>
               </h1>
 
               <p className="text-body-lg text-cream-soft mb-8 max-w-xl">
-                Immersive 360° virtual tours for real estate, businesses, hospitality, and more.
-                Captivate your audience and showcase every detail of your space.
+                {tHero('description')}
               </p>
 
               <div className="flex flex-wrap gap-4">
                 <Link href="/tours">
                   <Button size="lg" className="flex items-center gap-2">
                     <Play className="w-5 h-5" />
-                    View Portfolio
+                    {tHero('viewPortfolio')}
                   </Button>
                 </Link>
                 <Link href="/contact">
                   <Button variant="secondary" size="lg">
-                    Get a Free Quote
+                    {tHero('getFreeQuote')}
                   </Button>
                 </Link>
               </div>
@@ -162,19 +168,19 @@ export default function HomePage() {
                   {stats.totalTours > 0 && (
                     <div>
                       <p className="text-h2 font-bold text-gold">{stats.totalTours}</p>
-                      <p className="text-caption text-cream-muted">Tours Created</p>
+                      <p className="text-caption text-cream-muted">{tHero('toursCreated')}</p>
                     </div>
                   )}
                   {categories.length > 0 && (
                     <div>
                       <p className="text-h2 font-bold text-gold">{categories.length}</p>
-                      <p className="text-caption text-cream-muted">Categories</p>
+                      <p className="text-caption text-cream-muted">{tHero('categories')}</p>
                     </div>
                   )}
                   {stats.totalViews > 0 && (
                     <div>
                       <p className="text-h2 font-bold text-gold">{stats.totalViews.toLocaleString()}</p>
-                      <p className="text-caption text-cream-muted">Total Views</p>
+                      <p className="text-caption text-cream-muted">{tHero('totalViews')}</p>
                     </div>
                   )}
                 </div>
@@ -205,10 +211,10 @@ export default function HomePage() {
               className="text-center mb-12"
             >
               <h2 className="text-display font-bold text-cream mb-4">
-                Industries We Serve
+                {tIndustries('title')}
               </h2>
               <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-                From real estate to hospitality, we create stunning virtual experiences for every industry
+                {tIndustries('description')}
               </p>
             </motion.div>
 
@@ -229,7 +235,7 @@ export default function HomePage() {
                           <Icon className="w-7 h-7 text-gold" />
                         </div>
                         <h3 className="text-h4 font-semibold text-cream mb-1">{category.name}</h3>
-                        <p className="text-caption text-cream-muted">{category.tourCount} tours</p>
+                        <p className="text-caption text-cream-muted">{category.tourCount} {tIndustries('tours')}</p>
                       </Card>
                     </Link>
                   </motion.div>
@@ -252,14 +258,14 @@ export default function HomePage() {
             >
               <div>
                 <h2 className="text-display font-bold text-cream mb-4">
-                  Featured Tours
+                  {tFeatured('title')}
                 </h2>
                 <p className="text-body-lg text-cream-muted max-w-xl">
-                  Explore some of our recent projects and see the quality we deliver
+                  {tFeatured('description')}
                 </p>
               </div>
               <Link href="/tours" className="hidden md:flex items-center gap-2 text-gold hover:text-gold-soft transition-colors">
-                View All <ArrowRight className="w-5 h-5" />
+                {tFeatured('viewAll')} <ArrowRight className="w-5 h-5" />
               </Link>
             </motion.div>
 
@@ -358,7 +364,7 @@ export default function HomePage() {
 
             <div className="text-center mt-8 md:hidden">
               <Link href="/tours">
-                <Button variant="secondary">View All Tours</Button>
+                <Button variant="secondary">{tFeatured('viewAllTours')}</Button>
               </Link>
             </div>
           </div>
@@ -376,10 +382,10 @@ export default function HomePage() {
               className="text-center mb-12"
             >
               <h2 className="text-display font-bold text-cream mb-4">
-                What Our Clients Say
+                {tTestimonials('title')}
               </h2>
               <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-                Don't just take our word for it - hear from businesses we've helped
+                {tTestimonials('description')}
               </p>
             </motion.div>
 
@@ -426,17 +432,17 @@ export default function HomePage() {
           >
             <Card className="p-8 md:p-12 text-center bg-gradient-to-br from-navy-medium to-navy-dark border-gold/20">
               <h2 className="text-display font-bold text-cream mb-4">
-                Ready to Showcase Your Space?
+                {tCta('title')}
               </h2>
               <p className="text-body-lg text-cream-muted mb-8 max-w-xl mx-auto">
-                Let's create an immersive virtual tour that captivates your audience and drives results.
+                {tCta('description')}
               </p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link href="/contact">
-                  <Button size="lg">Get Started Today</Button>
+                  <Button size="lg">{tCta('getStarted')}</Button>
                 </Link>
                 <Link href="/pricing">
-                  <Button variant="secondary" size="lg">View Pricing</Button>
+                  <Button variant="secondary" size="lg">{tCta('viewPricing')}</Button>
                 </Link>
               </div>
             </Card>

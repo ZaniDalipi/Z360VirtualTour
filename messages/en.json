@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "title": "Z360 Virtual Tours | Professional 360° Tour Services",
+    "description": "Professional 360° virtual tour services for real estate, businesses, hospitality, and more. Immersive experiences that showcase your space."
+  },
+  "nav": {
+    "home": "Home",
+    "tours": "Tours",
+    "search": "Search",
+    "map": "Map",
+    "saved": "Saved",
+    "profile": "Profile",
+    "pricing": "Pricing",
+    "contact": "Contact",
+    "about": "About",
+    "testimonials": "Testimonials",
+    "admin": "Admin"
+  },
+  "hero": {
+    "badge": "Professional 360° Virtual Tours",
+    "title": "Bring Your Space",
+    "titleHighlight": "to Life",
+    "description": "Immersive 360° virtual tours for real estate, businesses, hospitality, and more. Captivate your audience and showcase every detail of your space.",
+    "viewPortfolio": "View Portfolio",
+    "getFreeQuote": "Get a Free Quote",
+    "toursCreated": "Tours Created",
+    "categories": "Categories",
+    "totalViews": "Total Views"
+  },
+  "industries": {
+    "title": "Industries We Serve",
+    "description": "From real estate to hospitality, we create stunning virtual experiences for every industry",
+    "tours": "tours"
+  },
+  "featured": {
+    "title": "Featured Tours",
+    "description": "Explore some of our recent projects and see the quality we deliver",
+    "viewAll": "View All",
+    "viewAllTours": "View All Tours"
+  },
+  "testimonials": {
+    "title": "What Our Clients Say",
+    "description": "Don't just take our word for it - hear from businesses we've helped"
+  },
+  "cta": {
+    "title": "Ready to Showcase Your Space?",
+    "description": "Let's create an immersive virtual tour that captivates your audience and drives results.",
+    "getStarted": "Get Started Today",
+    "viewPricing": "View Pricing"
+  },
+  "footer": {
+    "description": "Professional 360° virtual tour services that bring your spaces to life and captivate your audience.",
+    "services": "Services",
+    "company": "Company",
+    "contact": "Contact",
+    "realEstateTours": "Real Estate Tours",
+    "businessTours": "Business Tours",
+    "hospitalityTours": "Hospitality Tours",
+    "customSolutions": "Custom Solutions",
+    "aboutUs": "About Us",
+    "portfolio": "Portfolio",
+    "pricing": "Pricing",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "copyright": "© {year} Z360 Virtual Tours. All rights reserved.",
+    "location": "Balkans"
+  },
+  "pricing": {
+    "title": "Simple, Transparent Pricing",
+    "description": "Choose the package that best fits your needs. All packages include our professional photography services.",
+    "starter": "Starter",
+    "professional": "Professional",
+    "enterprise": "Enterprise",
+    "perTour": "per tour",
+    "getStarted": "Get Started",
+    "contactUs": "Contact Us",
+    "popular": "Most Popular",
+    "features": {
+      "hotspots": "Interactive hotspots",
+      "floorPlan": "Floor plan integration",
+      "branding": "Custom branding",
+      "analytics": "Analytics dashboard",
+      "support": "Priority support",
+      "delivery": "{days}-day delivery"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "How long does it take to create a virtual tour?",
+      "a1": "Typically 3-7 business days depending on the property size and package selected.",
+      "q2": "Can I update my tour after it's created?",
+      "a2": "Yes, we offer update packages to keep your tour current.",
+      "q3": "What areas do you serve?",
+      "a3": "We primarily serve the Balkans region but can accommodate special requests."
+    }
+  },
+  "contact": {
+    "title": "Get a Free Quote",
+    "description": "Tell us about your project and we'll get back to you with a custom quote.",
+    "form": {
+      "name": "Your Name",
+      "namePlaceholder": "John Doe",
+      "email": "Email Address",
+      "emailPlaceholder": "john@example.com",
+      "phone": "Phone Number",
+      "phonePlaceholder": "+389 XX XXX XXX",
+      "company": "Company / Business Name",
+      "companyPlaceholder": "Your Company Name",
+      "propertyAddress": "Property Address",
+      "addressPlaceholder": "123 Main Street",
+      "city": "City",
+      "cityPlaceholder": "Skopje",
+      "servicePackage": "Service Package",
+      "selectPackage": "Select a package",
+      "scheduling": "Preferred Date",
+      "deliverySpeed": "Delivery Speed",
+      "standard": "Standard",
+      "rush": "Rush (+50%)",
+      "message": "Additional Details",
+      "messagePlaceholder": "Tell us more about your project...",
+      "submit": "Request Quote",
+      "submitting": "Sending...",
+      "success": "Booking Request Sent!",
+      "successMessage": "Thank you for your request. We'll get back to you within 24 hours.",
+      "rushWarning": "Rush requests may incur additional fees"
+    }
+  },
+  "tours": {
+    "title": "Our Tours",
+    "description": "Browse our portfolio of professional 360° virtual tours",
+    "searchPlaceholder": "Search tours...",
+    "allCategories": "All Categories",
+    "noResults": "No tours found",
+    "tryDifferent": "Try a different search or category"
+  },
+  "tour": {
+    "startTour": "Start Tour",
+    "viewDetails": "View Details",
+    "share": "Share",
+    "save": "Save",
+    "category": "Category",
+    "location": "Location",
+    "client": "Client"
+  },
+  "about": {
+    "title": "About Z360 Virtual Tours",
+    "description": "We are a professional virtual tour company based in the Balkans, specializing in creating immersive 360° experiences for businesses of all sizes.",
+    "mission": {
+      "title": "Our Mission",
+      "description": "To help businesses showcase their spaces in the most engaging and interactive way possible."
+    },
+    "values": {
+      "title": "Our Values",
+      "quality": "Quality First",
+      "qualityDesc": "We never compromise on the quality of our work.",
+      "innovation": "Innovation",
+      "innovationDesc": "We stay ahead with the latest technology.",
+      "service": "Customer Service",
+      "serviceDesc": "Your satisfaction is our top priority."
+    }
+  },
+  "profile": {
+    "title": "My Profile",
+    "savedTours": "Saved Tours",
+    "recentViews": "Recent Views",
+    "settings": "Settings",
+    "logout": "Log Out"
+  },
+  "saved": {
+    "title": "Saved Tours",
+    "empty": "No saved tours yet",
+    "emptyDesc": "Save tours to view them later"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search for tours, locations...",
+    "results": "Results",
+    "noResults": "No results found"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Try Again",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "admin": {
+    "dashboard": "Dashboard",
+    "tours": "Tours",
+    "bookings": "Bookings",
+    "categories": "Categories",
+    "pricing": "Pricing",
+    "testimonials": "Testimonials",
+    "messages": "Messages",
+    "schedule": "Schedule",
+    "settings": "Settings",
+    "login": "Admin Login",
+    "logout": "Logout",
+    "status": {
+      "quoteRequested": "Quote Requested",
+      "quoteSent": "Quote Sent",
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "scheduled": "Scheduled",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "actions": {
+      "markQuoteSent": "Mark Quote Sent",
+      "confirmBooking": "Confirm Booking",
+      "markScheduled": "Mark Scheduled",
+      "startWork": "Start Work",
+      "markComplete": "Mark Complete"
+    }
+  }
+}

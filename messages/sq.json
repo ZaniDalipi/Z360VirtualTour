@@ -1,0 +1,226 @@
+{
+  "metadata": {
+    "title": "Z360 Virtual Tours | Shërbime Profesionale të Turit 360°",
+    "description": "Shërbime profesionale të turit virtual 360° për pasuri të patundshme, biznese, hoteleri dhe më shumë. Përvoja përfshirëse që shfaqin hapësirën tuaj."
+  },
+  "nav": {
+    "home": "Kryefaqja",
+    "tours": "Turet",
+    "search": "Kërko",
+    "map": "Harta",
+    "saved": "Të Ruajtura",
+    "profile": "Profili",
+    "pricing": "Çmimet",
+    "contact": "Kontakti",
+    "about": "Rreth Nesh",
+    "testimonials": "Dëshmitë",
+    "admin": "Admin"
+  },
+  "hero": {
+    "badge": "Ture Virtuale Profesionale 360°",
+    "title": "Jepni Jetë",
+    "titleHighlight": "Hapësirës Tuaj",
+    "description": "Ture virtuale përfshirëse 360° për pasuri të patundshme, biznese, hoteleri dhe më shumë. Tërhiqni audiencën tuaj dhe shfaqni çdo detaj të hapësirës tuaj.",
+    "viewPortfolio": "Shiko Portfolion",
+    "getFreeQuote": "Merr Ofertë Falas",
+    "toursCreated": "Ture të Krijuara",
+    "categories": "Kategori",
+    "totalViews": "Shikime Totale"
+  },
+  "industries": {
+    "title": "Industritë që Shërbejmë",
+    "description": "Nga pasuritë e patundshme deri te hoteleria, ne krijojmë përvoja virtuale mahnitëse për çdo industri",
+    "tours": "ture"
+  },
+  "featured": {
+    "title": "Turet e Zgjedhura",
+    "description": "Eksploroni disa nga projektet tona të fundit dhe shikoni cilësinë që ofrojmë",
+    "viewAll": "Shiko të Gjitha",
+    "viewAllTours": "Shiko të Gjitha Turet"
+  },
+  "testimonials": {
+    "title": "Çfarë Thonë Klientët Tanë",
+    "description": "Mos na besoni vetëm ne - dëgjoni nga bizneset që kemi ndihmuar"
+  },
+  "cta": {
+    "title": "Gati të Shfaqni Hapësirën Tuaj?",
+    "description": "Le të krijojmë një tur virtual përfshirës që tërheq audiencën tuaj dhe sjell rezultate.",
+    "getStarted": "Fillo Sot",
+    "viewPricing": "Shiko Çmimet"
+  },
+  "footer": {
+    "description": "Shërbime profesionale të turit virtual 360° që i japin jetë hapësirave tuaja dhe tërheqin audiencën tuaj.",
+    "services": "Shërbimet",
+    "company": "Kompania",
+    "contact": "Kontakti",
+    "realEstateTours": "Ture Pasurish",
+    "businessTours": "Ture Biznesi",
+    "hospitalityTours": "Ture Hotelerie",
+    "customSolutions": "Zgjidhje të Personalizuara",
+    "aboutUs": "Rreth Nesh",
+    "portfolio": "Portfolioja",
+    "pricing": "Çmimet",
+    "privacyPolicy": "Politika e Privatësisë",
+    "termsOfService": "Kushtet e Shërbimit",
+    "copyright": "© {year} Z360 Virtual Tours. Të gjitha të drejtat e rezervuara.",
+    "location": "Ballkani"
+  },
+  "pricing": {
+    "title": "Çmime të Thjeshta dhe Transparente",
+    "description": "Zgjidhni paketën që i përshtatet më mirë nevojave tuaja. Të gjitha paketat përfshijnë shërbimet tona profesionale të fotografimit.",
+    "starter": "Fillestare",
+    "professional": "Profesionale",
+    "enterprise": "Enterprise",
+    "perTour": "për tur",
+    "getStarted": "Fillo",
+    "contactUs": "Na Kontaktoni",
+    "popular": "Më Popullorja",
+    "features": {
+      "hotspots": "Pika interaktive",
+      "floorPlan": "Integrimi i planit të katit",
+      "branding": "Branding i personalizuar",
+      "analytics": "Panel analitikash",
+      "support": "Mbështetje prioritare",
+      "delivery": "Dorëzim në {days} ditë"
+    },
+    "faq": {
+      "title": "Pyetje të Shpeshta",
+      "q1": "Sa kohë duhet për të krijuar një tur virtual?",
+      "a1": "Zakonisht 3-7 ditë pune varësisht nga madhësia e pronës dhe paketa e zgjedhur.",
+      "q2": "A mund ta përditësoj turin pasi të krijohet?",
+      "a2": "Po, ne ofrojmë paketa përditësimi për ta mbajtur turin tuaj aktual.",
+      "q3": "Cilat zona i shërbeni?",
+      "a3": "Ne kryesisht shërbejmë rajonin e Ballkanit por mund të akomodojmë kërkesa të veçanta."
+    }
+  },
+  "contact": {
+    "title": "Merr Ofertë Falas",
+    "description": "Na tregoni për projektin tuaj dhe ne do t'ju kthehemi me një ofertë të personalizuar.",
+    "form": {
+      "name": "Emri Juaj",
+      "namePlaceholder": "Filan Fisteku",
+      "email": "Adresa Email",
+      "emailPlaceholder": "filan@example.com",
+      "phone": "Numri i Telefonit",
+      "phonePlaceholder": "+389 XX XXX XXX",
+      "company": "Kompania / Emri i Biznesit",
+      "companyPlaceholder": "Emri i Kompanisë Suaj",
+      "propertyAddress": "Adresa e Pronës",
+      "addressPlaceholder": "Rruga Kryesore 123",
+      "city": "Qyteti",
+      "cityPlaceholder": "Shkup",
+      "servicePackage": "Paketa e Shërbimit",
+      "selectPackage": "Zgjidhni një paketë",
+      "scheduling": "Data e Preferuar",
+      "deliverySpeed": "Shpejtësia e Dorëzimit",
+      "standard": "Standarde",
+      "rush": "Urgjente (+50%)",
+      "message": "Detaje Shtesë",
+      "messagePlaceholder": "Na tregoni më shumë për projektin tuaj...",
+      "submit": "Kërko Ofertë",
+      "submitting": "Duke dërguar...",
+      "success": "Kërkesa për Rezervim u Dërgua!",
+      "successMessage": "Faleminderit për kërkesën tuaj. Do t'ju kontaktojmë brenda 24 orëve.",
+      "rushWarning": "Kërkesat urgjente mund të kenë kosto shtesë"
+    }
+  },
+  "tours": {
+    "title": "Turet Tona",
+    "description": "Shfletoni portfolion tonë të tureve virtuale profesionale 360°",
+    "searchPlaceholder": "Kërko ture...",
+    "allCategories": "Të Gjitha Kategoritë",
+    "noResults": "Nuk u gjetën ture",
+    "tryDifferent": "Provoni një kërkim ose kategori tjetër"
+  },
+  "tour": {
+    "startTour": "Fillo Turin",
+    "viewDetails": "Shiko Detajet",
+    "share": "Shpërndaj",
+    "save": "Ruaj",
+    "category": "Kategoria",
+    "location": "Vendndodhja",
+    "client": "Klienti"
+  },
+  "about": {
+    "title": "Rreth Z360 Virtual Tours",
+    "description": "Ne jemi një kompani profesionale e tureve virtuale me bazë në Ballkan, e specializuar në krijimin e përvojave përfshirëse 360° për biznese të të gjitha madhësive.",
+    "mission": {
+      "title": "Misioni Ynë",
+      "description": "Të ndihmojmë bizneset të shfaqin hapësirat e tyre në mënyrën më tërheqëse dhe interaktive të mundur."
+    },
+    "values": {
+      "title": "Vlerat Tona",
+      "quality": "Cilësia Së Pari",
+      "qualityDesc": "Ne kurrë nuk bëjmë kompromis për cilësinë e punës sonë.",
+      "innovation": "Inovacioni",
+      "innovationDesc": "Ne qëndrojmë përpara me teknologjinë më të fundit.",
+      "service": "Shërbimi ndaj Klientit",
+      "serviceDesc": "Kënaqësia juaj është prioriteti ynë kryesor."
+    }
+  },
+  "profile": {
+    "title": "Profili Im",
+    "savedTours": "Turet e Ruajtura",
+    "recentViews": "Shikimet e Fundit",
+    "settings": "Cilësimet",
+    "logout": "Dilni"
+  },
+  "saved": {
+    "title": "Turet e Ruajtura",
+    "empty": "Nuk keni ture të ruajtura ende",
+    "emptyDesc": "Ruani turet për t'i parë më vonë"
+  },
+  "search": {
+    "title": "Kërko",
+    "placeholder": "Kërko ture, vendndodhje...",
+    "results": "Rezultatet",
+    "noResults": "Nuk u gjetën rezultate"
+  },
+  "common": {
+    "loading": "Duke ngarkuar...",
+    "error": "Diçka shkoi keq",
+    "retry": "Provo Përsëri",
+    "back": "Kthehu",
+    "next": "Tjetër",
+    "submit": "Dërgo",
+    "cancel": "Anulo",
+    "save": "Ruaj",
+    "delete": "Fshi",
+    "edit": "Redakto",
+    "view": "Shiko",
+    "close": "Mbyll",
+    "confirm": "Konfirmo",
+    "yes": "Po",
+    "no": "Jo"
+  },
+  "admin": {
+    "dashboard": "Paneli",
+    "tours": "Turet",
+    "bookings": "Rezervimet",
+    "categories": "Kategoritë",
+    "pricing": "Çmimet",
+    "testimonials": "Dëshmitë",
+    "messages": "Mesazhet",
+    "schedule": "Orari",
+    "settings": "Cilësimet",
+    "login": "Hyrja e Adminit",
+    "logout": "Dilni",
+    "status": {
+      "quoteRequested": "Ofertë e Kërkuar",
+      "quoteSent": "Ofertë e Dërguar",
+      "pending": "Në Pritje",
+      "confirmed": "E Konfirmuar",
+      "scheduled": "E Planifikuar",
+      "inProgress": "Në Progres",
+      "completed": "E Përfunduar",
+      "cancelled": "E Anuluar"
+    },
+    "actions": {
+      "markQuoteSent": "Shëno Ofertën e Dërguar",
+      "confirmBooking": "Konfirmo Rezervimin",
+      "markScheduled": "Shëno të Planifikuar",
+      "startWork": "Fillo Punën",
+      "markComplete": "Shëno të Përfunduar"
+    }
+  }
+}

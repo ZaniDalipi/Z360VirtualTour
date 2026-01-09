@@ -3,17 +3,21 @@
 import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
-
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/tours', label: 'Portfolio' },
-  { href: '/testimonials', label: 'Testimonials' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/contact', label: 'Contact' },
-]
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from '@/components/ui'
 
 export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const t = useTranslations('nav')
+  const tContact = useTranslations('contact')
+
+  const navLinks = [
+    { href: '/', label: t('home') },
+    { href: '/tours', label: t('tours') },
+    { href: '/testimonials', label: t('testimonials') },
+    { href: '/pricing', label: t('pricing') },
+    { href: '/contact', label: t('contact') },
+  ]
 
   return (
     <>
@@ -55,8 +59,9 @@ export function PublicHeader() {
               ))}
             </nav>
 
-            {/* CTA Button - Desktop */}
-            <div className="hidden md:block">
+            {/* Right side - Language Switcher + CTA */}
+            <div className="hidden md:flex items-center gap-4">
+              <LanguageSwitcher />
               <Link href="/contact" style={{ textDecoration: 'none' }}>
                 <button
                   style={{
@@ -69,7 +74,7 @@ export function PublicHeader() {
                     cursor: 'pointer',
                   }}
                 >
-                  Get a Quote
+                  {tContact('title')}
                 </button>
               </Link>
             </div>
@@ -113,6 +118,9 @@ export function PublicHeader() {
                   {link.label}
                 </Link>
               ))}
+              <div style={{ padding: '0.75rem 1rem' }}>
+                <LanguageSwitcher />
+              </div>
               <div style={{ paddingTop: '0.5rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
                 <Link href="/contact" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none' }}>
                   <button
@@ -127,7 +135,7 @@ export function PublicHeader() {
                       cursor: 'pointer',
                     }}
                   >
-                    Get a Quote
+                    {tContact('title')}
                   </button>
                 </Link>
               </div>

@@ -2,27 +2,8 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter, Star, Map } from 'lucide-react'
-
-const footerLinks = {
-  services: [
-    { label: 'Real Estate Tours', href: '/tours?category=real-estate' },
-    { label: 'Business Tours', href: '/tours?category=business' },
-    { label: 'Hospitality Tours', href: '/tours?category=hospitality' },
-    { label: 'Custom Solutions', href: '/contact' },
-  ],
-  company: [
-    { label: 'About Us', href: '/about' },
-    { label: 'Portfolio', href: '/tours' },
-    { label: 'Testimonials', href: '/testimonials' },
-    { label: 'Pricing', href: '/pricing' },
-    { label: 'Contact', href: '/contact' },
-  ],
-  legal: [
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Terms of Service', href: '/terms' },
-  ],
-}
+import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 const socialLinks = [
   { icon: Facebook, href: '#', label: 'Facebook' },
@@ -32,6 +13,29 @@ const socialLinks = [
 ]
 
 export function Footer() {
+  const t = useTranslations('footer')
+  const tNav = useTranslations('nav')
+
+  const footerLinks = {
+    services: [
+      { label: t('realEstateTours'), href: '/tours?category=real-estate' },
+      { label: t('businessTours'), href: '/tours?category=business' },
+      { label: t('hospitalityTours'), href: '/tours?category=hospitality' },
+      { label: t('customSolutions'), href: '/contact' },
+    ],
+    company: [
+      { label: t('aboutUs'), href: '/about' },
+      { label: t('portfolio'), href: '/tours' },
+      { label: tNav('testimonials'), href: '/testimonials' },
+      { label: t('pricing'), href: '/pricing' },
+      { label: t('contact'), href: '/contact' },
+    ],
+    legal: [
+      { label: t('privacyPolicy'), href: '/privacy' },
+      { label: t('termsOfService'), href: '/terms' },
+    ],
+  }
+
   return (
     <footer className="bg-navy-dark border-t border-gold/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
@@ -49,7 +53,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-body text-cream-muted mb-6">
-              Professional 360° virtual tour services that bring your spaces to life and captivate your audience.
+              {t('description')}
             </p>
             <div className="flex gap-3">
               {socialLinks.map((social) => {
@@ -70,7 +74,7 @@ export function Footer() {
 
           {/* Services */}
           <div>
-            <h3 className="text-h4 font-semibold text-cream mb-4">Services</h3>
+            <h3 className="text-h4 font-semibold text-cream mb-4">{t('services')}</h3>
             <ul className="space-y-3">
               {footerLinks.services.map((link) => (
                 <li key={link.href}>
@@ -84,7 +88,7 @@ export function Footer() {
 
           {/* Company */}
           <div>
-            <h3 className="text-h4 font-semibold text-cream mb-4">Company</h3>
+            <h3 className="text-h4 font-semibold text-cream mb-4">{t('company')}</h3>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
@@ -98,7 +102,7 @@ export function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-h4 font-semibold text-cream mb-4">Contact</h3>
+            <h3 className="text-h4 font-semibold text-cream mb-4">{t('contact')}</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-3 text-body text-cream-muted">
                 <Mail className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
@@ -114,7 +118,7 @@ export function Footer() {
               </li>
               <li className="flex items-start gap-3 text-body text-cream-muted">
                 <MapPin className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                <span>Balkans</span>
+                <span>{t('location')}</span>
               </li>
             </ul>
           </div>
@@ -123,7 +127,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="mt-12 pt-8 border-t border-gold/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-caption text-cream-muted">
-            © {new Date().getFullYear()} Z360 Virtual Tours. All rights reserved.
+            {t('copyright', { year: new Date().getFullYear() })}
           </p>
           <div className="flex gap-6">
             {footerLinks.legal.map((link) => (
