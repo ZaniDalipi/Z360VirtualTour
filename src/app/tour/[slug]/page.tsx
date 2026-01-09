@@ -548,11 +548,11 @@ export default function TourDetailPage() {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md px-4"
+              className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 mx-auto max-w-md"
             >
-              <Card className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-h4 font-semibold text-cream">
+              <Card className="p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h3 className="text-lg sm:text-h4 font-semibold text-cream">
                     Share This Tour
                   </h3>
                   <button
@@ -563,7 +563,7 @@ export default function TourDetailPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
                   {shareLinks.map((link) => {
                     const Icon = link.icon
                     return (
@@ -572,10 +572,10 @@ export default function TourDetailPage() {
                         href={link.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border border-gold/20 ${link.color} transition-colors`}
+                        className={`flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-4 rounded-xl border border-gold/20 ${link.color} transition-colors`}
                       >
-                        <Icon className="w-6 h-6" />
-                        <span className="text-sm text-cream-muted">
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="text-xs sm:text-sm text-cream-muted">
                           {link.name}
                         </span>
                       </a>
@@ -593,7 +593,7 @@ export default function TourDetailPage() {
                       type="text"
                       value={shareUrl}
                       readOnly
-                      className="flex-1 px-4 py-2 rounded-xl bg-navy border border-gold/20 text-cream text-sm truncate"
+                      className="flex-1 min-w-0 px-3 sm:px-4 py-2 rounded-xl bg-navy border border-gold/20 text-cream text-xs sm:text-sm truncate"
                     />
                     <Button
                       variant="secondary"
@@ -610,7 +610,7 @@ export default function TourDetailPage() {
                 </div>
 
                 {/* Embed URL for BalkanEstateAI */}
-                <div className="space-y-2 pt-4 border-t border-gold/10">
+                <div className="space-y-2 pt-4 mt-4 border-t border-gold/10">
                   <label className="text-sm text-cream-muted flex items-center gap-2">
                     <ExternalLink className="w-4 h-4" />
                     Embed URL for Property Listings
@@ -623,7 +623,7 @@ export default function TourDetailPage() {
                       type="text"
                       value={`${baseUrl}/embed/${slug}`}
                       readOnly
-                      className="flex-1 px-4 py-2 rounded-xl bg-navy border border-purple-500/30 text-cream text-sm truncate font-mono"
+                      className="flex-1 min-w-0 px-3 sm:px-4 py-2 rounded-xl bg-navy border border-purple-500/30 text-cream text-xs sm:text-sm truncate font-mono"
                     />
                     <Button
                       variant="secondary"
