@@ -206,6 +206,10 @@ model Booking {
   userId              String?       @db.ObjectId
   user                User?         @relation(fields: [userId], references: [id])
 
+  // External API reference (for BalkanEstateAI integration)
+  externalId          String?       // External app's reference ID (e.g., property listing ID)
+  externalSource      String?       // Source app name (e.g., "balkanestate")
+
   // Client Info
   clientName          String
   clientEmail         String
@@ -391,4 +395,59 @@ model FinancialReport {
   expensesByCategory String?       // JSON: {"Travel": 500, "Equipment": 200, ...}
   notes         String?            // Admin notes for the period
   createdAt     DateTime @default(now())
+}
+
+// ==========================================
+// EXTERNAL API INTEGRATION
+// ==========================================
+
+// API Keys for external applications (like BalkanEstateAI)
+model ApiKey {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  name          String              // "BalkanEstateAI Production", "BalkanEstateAI Dev"
+  key           String    @unique   // The actual API key (hashed)
+  keyPrefix     String              // First 8 chars for identification (e.g., "z360_pk_")
+  appName       String              // Application name
+  appUrl        String?             // Application URL for CORS
+  permissions   String    @default("read") // JSON array: ["read", "write", "bookings", "tours"]
+  rateLimit     Int       @default(1000)   // Requests per hour
+  isActive      Boolean   @default(true)
+  lastUsedAt    DateTime?
+  expiresAt     DateTime?           // Optional expiration
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  webhooks      Webhook[]
+  apiLogs       ApiLog[]
+}
+
+// Webhooks for notifying external apps
+model Webhook {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  apiKeyId      String    @db.ObjectId
+  apiKey        ApiKey    @relation(fields: [apiKeyId], references: [id])
+  url           String              // Webhook endpoint URL
+  events        String              // JSON array: ["booking.created", "booking.completed", "tour.ready"]
+  secret        String              // Secret for signing webhook payloads
+  isActive      Boolean   @default(true)
+  failureCount  Int       @default(0)
+  lastTriggered DateTime?
+  lastStatus    Int?                // Last HTTP status code
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// API request logs for monitoring and debugging
+model ApiLog {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  apiKeyId      String?   @db.ObjectId
+  apiKey        ApiKey?   @relation(fields: [apiKeyId], references: [id])
+  method        String              // GET, POST, etc.
+  endpoint      String              // /api/v1/bookings
+  statusCode    Int
+  requestBody   String?             // Truncated request body
+  responseTime  Int                 // Response time in ms
+  ipAddress     String?
+  userAgent     String?
+  error         String?             // Error message if any
+  createdAt     DateTime  @default(now())
 }
