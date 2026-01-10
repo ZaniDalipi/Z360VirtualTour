@@ -26,14 +26,14 @@ export async function GET() {
       }),
     ])
 
-    const totalViews = tours.reduce((sum, tour) => sum + tour.views, 0)
+    const totalViews = tours.reduce((sum: number, tour: { views: number }) => sum + tour.views, 0)
 
     return NextResponse.json({
       totalTours,
       totalViews,
       totalTestimonials,
       unreadMessages,
-      recentTours: tours.map((tour) => ({
+      recentTours: tours.map((tour: { id: string; title: string; views: number; category: { name: string } }) => ({
         id: tour.id,
         title: tour.title,
         views: tour.views,

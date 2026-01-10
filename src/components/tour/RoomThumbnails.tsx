@@ -27,7 +27,7 @@ export function RoomThumbnails({ rooms, currentRoomId, onSelectRoom }: RoomThumb
         >
           <div className="relative h-14">
             <Image
-              src={room.thumbnail}
+              src={room.thumbnail || room.thumbnailUrl || room.panoramaUrl}
               alt={room.name}
               fill
               className="object-cover"
