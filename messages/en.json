@@ -317,6 +317,24 @@
     "description": "Description",
     "relatedTours": "Related Tours"
   },
+  "tourDetail": {
+    "notFound": "Tour Not Found",
+    "notFoundMessage": "The tour you're looking for doesn't exist or has been removed.",
+    "viewAllTours": "View All Tours",
+    "backToTours": "Back to Tours",
+    "views": "views",
+    "viewVirtualTour": "View Virtual Tour",
+    "share": "Share",
+    "interactiveTour": "Interactive Tour",
+    "aboutProject": "About This Project",
+    "projectGallery": "Project Gallery",
+    "wantTourLikeThis": "Want a Tour Like This?",
+    "wantTourDescription": "Let's create an immersive 360° virtual tour for your space. Professional quality, delivered fast.",
+    "getFreeQuote": "Get a Free Quote",
+    "viewMoreProjects": "View More Projects",
+    "shareThisTour": "Share This Tour",
+    "orCopyLink": "Or copy link"
+  },
   "profile": {
     "title": "My Profile",
     "savedTours": "Saved Tours",

@@ -317,6 +317,24 @@
     "description": "Përshkrimi",
     "relatedTours": "Ture të Ngjashme"
   },
+  "tourDetail": {
+    "notFound": "Turi Nuk u Gjet",
+    "notFoundMessage": "Turi që po kërkoni nuk ekziston ose është hequr.",
+    "viewAllTours": "Shiko të Gjitha Turet",
+    "backToTours": "Kthehu te Turet",
+    "views": "shikime",
+    "viewVirtualTour": "Shiko Turin Virtual",
+    "share": "Shpërndaj",
+    "interactiveTour": "Tur Interaktiv",
+    "aboutProject": "Rreth Këtij Projekti",
+    "projectGallery": "Galeria e Projektit",
+    "wantTourLikeThis": "Dëshironi një Tur si Ky?",
+    "wantTourDescription": "Le të krijojmë një tur virtual përfshirës 360° për hapësirën tuaj. Cilësi profesionale, dorëzim i shpejtë.",
+    "getFreeQuote": "Merr Ofertë Falas",
+    "viewMoreProjects": "Shiko Më Shumë Projekte",
+    "shareThisTour": "Shpërndaj Këtë Tur",
+    "orCopyLink": "Ose kopjo linkun"
+  },
   "profile": {
     "title": "Profili Im",
     "savedTours": "Turet e Ruajtura",

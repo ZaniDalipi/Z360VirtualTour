@@ -317,6 +317,24 @@
     "description": "Опис",
     "relatedTours": "Поврзани Тури"
   },
+  "tourDetail": {
+    "notFound": "Турата Не е Пронајдена",
+    "notFoundMessage": "Турата што ја барате не постои или е отстранета.",
+    "viewAllTours": "Види Сите Тури",
+    "backToTours": "Назад кон Тури",
+    "views": "прегледи",
+    "viewVirtualTour": "Види Виртуелна Тура",
+    "share": "Сподели",
+    "interactiveTour": "Интерактивна Тура",
+    "aboutProject": "За Овој Проект",
+    "projectGallery": "Галерија на Проект",
+    "wantTourLikeThis": "Сакате Тура Како Оваа?",
+    "wantTourDescription": "Ајде да создадеме имерзивна 360° виртуелна тура за вашиот простор. Професионален квалитет, брза испорака.",
+    "getFreeQuote": "Добијте Бесплатна Понуда",
+    "viewMoreProjects": "Види Повеќе Проекти",
+    "shareThisTour": "Сподели ја Оваа Тура",
+    "orCopyLink": "Или копирајте линк"
+  },
   "profile": {
     "title": "Мојот Профил",
     "savedTours": "Зачувани Тури",

@@ -21,6 +21,7 @@ import {
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 interface Tour {
   id: string
@@ -46,6 +47,9 @@ interface Tour {
 export default function TourDetailPage() {
   const params = useParams()
   const slug = params.slug as string
+  const t = useTranslations('tourDetail')
+  const tCta = useTranslations('cta')
+  const tCommon = useTranslations('common')
 
   const [tour, setTour] = useState<Tour | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -123,12 +127,12 @@ export default function TourDetailPage() {
       <div className="min-h-screen bg-navy">
         <PublicHeader />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <h1 className="text-h2 font-bold text-cream mb-4">Tour Not Found</h1>
+          <h1 className="text-h2 font-bold text-cream mb-4">{t('notFound')}</h1>
           <p className="text-cream-muted mb-8">
-            The tour you're looking for doesn't exist or has been removed.
+            {t('notFoundMessage')}
           </p>
           <Link href="/tours">
-            <Button>View All Tours</Button>
+            <Button>{t('viewAllTours')}</Button>
           </Link>
         </div>
         <Footer />
@@ -162,7 +166,7 @@ export default function TourDetailPage() {
             className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-navy/60 backdrop-blur-sm border border-gold/20 text-cream hover:bg-navy/80 transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Back to Tours</span>
+            <span className="hidden sm:inline">{t('backToTours')}</span>
           </Link>
         </div>
 
@@ -198,7 +202,7 @@ export default function TourDetailPage() {
                 )}
                 <span className="flex items-center gap-1.5">
                   <Eye className="w-4 h-4" />
-                  {tour.views.toLocaleString()} views
+                  {tour.views.toLocaleString()} {t('views')}
                 </span>
               </div>
 
@@ -208,7 +212,7 @@ export default function TourDetailPage() {
                   <a href={tour.tourUrl} target="_blank" rel="noopener noreferrer">
                     <Button size="lg" className="group">
                       <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
-                      View Virtual Tour
+                      {t('viewVirtualTour')}
                     </Button>
                   </a>
                 )}
@@ -219,7 +223,7 @@ export default function TourDetailPage() {
                   className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
                 >
                   <Share2 className="w-4 h-4 mr-2" />
-                  Share
+                  {t('share')}
                 </Button>
               </div>
             </motion.div>
@@ -240,7 +244,7 @@ export default function TourDetailPage() {
                 <span className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
                   <Play className="w-5 h-5 text-gold" />
                 </span>
-                Interactive Tour
+                {t('interactiveTour')}
               </h2>
               <Card className="overflow-hidden">
                 <div
@@ -264,7 +268,7 @@ export default function TourDetailPage() {
             >
               <Card className="p-8 md:p-12">
                 <h2 className="text-h3 font-bold text-cream mb-6">
-                  About This Project
+                  {t('aboutProject')}
                 </h2>
                 <p className="text-lg text-cream-muted leading-relaxed whitespace-pre-wrap max-w-4xl">
                   {tour.description}
@@ -285,7 +289,7 @@ export default function TourDetailPage() {
               transition={{ delay: 0.4 }}
             >
               <h2 className="text-h3 font-bold text-cream mb-8">
-                Project Gallery
+                {t('projectGallery')}
               </h2>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {tour.images.map((image, index) => (
@@ -327,21 +331,20 @@ export default function TourDetailPage() {
 
               <div className="relative z-10">
                 <h2 className="text-h2 md:text-display font-bold text-cream mb-4">
-                  Want a Tour Like This?
+                  {t('wantTourLikeThis')}
                 </h2>
                 <p className="text-lg text-cream-muted mb-8 max-w-2xl mx-auto">
-                  Let's create an immersive 360° virtual tour for your space.
-                  Professional quality, delivered fast.
+                  {t('wantTourDescription')}
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <Link href="/contact">
                     <Button size="lg">
-                      Get a Free Quote
+                      {t('getFreeQuote')}
                     </Button>
                   </Link>
                   <Link href="/tours">
                     <Button variant="secondary" size="lg">
-                      View More Projects
+                      {t('viewMoreProjects')}
                     </Button>
                   </Link>
                 </div>
@@ -371,7 +374,7 @@ export default function TourDetailPage() {
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-h4 font-semibold text-cream">
-                    Share This Tour
+                    {t('shareThisTour')}
                   </h3>
                   <button
                     onClick={() => setShowShareModal(false)}
@@ -403,7 +406,7 @@ export default function TourDetailPage() {
 
                 <div className="space-y-2">
                   <label className="text-sm text-cream-muted">
-                    Or copy link
+                    {t('orCopyLink')}
                   </label>
                   <div className="flex gap-2">
                     <input

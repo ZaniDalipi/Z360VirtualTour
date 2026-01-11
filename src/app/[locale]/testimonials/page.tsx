@@ -5,6 +5,7 @@ import { Star, Send, CheckCircle, ExternalLink, MapPin, Quote } from 'lucide-rea
 import { Card, Button, Input } from '@/components/ui'
 import { PublicHeader, Footer } from '@/components/layout'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 interface Testimonial {
   id: string
@@ -25,6 +26,7 @@ interface GoogleReview {
 }
 
 export default function TestimonialsPage() {
+  const t = useTranslations('testimonials')
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -112,7 +114,7 @@ export default function TestimonialsPage() {
               animate={{ opacity: 1, y: 0 }}
               className="text-h1 font-bold text-cream mb-4"
             >
-              Client Testimonials
+              {t('pageTitle')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -120,7 +122,7 @@ export default function TestimonialsPage() {
               transition={{ delay: 0.1 }}
               className="text-body text-cream-muted max-w-2xl mx-auto"
             >
-              See what our clients say about their experience with Z360 Virtual Tours
+              {t('pageDescription')}
             </motion.p>
           </div>
 
@@ -140,7 +142,7 @@ export default function TestimonialsPage() {
               }`}
             >
               <Quote className="w-4 h-4 inline mr-2" />
-              Client Reviews
+              {t('clientReviews')}
             </button>
             <button
               onClick={() => setActiveTab('google')}
@@ -151,7 +153,7 @@ export default function TestimonialsPage() {
               }`}
             >
               <Star className="w-4 h-4 inline mr-2" />
-              Google Reviews
+              {t('googleReviews')}
             </button>
             <button
               onClick={() => setActiveTab('street')}
@@ -162,7 +164,7 @@ export default function TestimonialsPage() {
               }`}
             >
               <MapPin className="w-4 h-4 inline mr-2" />
-              Google Street View
+              {t('streetView')}
             </button>
           </motion.div>
 
@@ -171,7 +173,7 @@ export default function TestimonialsPage() {
             <div className="grid lg:grid-cols-2 gap-12">
               {/* Testimonials List */}
               <div className="space-y-6">
-                <h2 className="text-h3 font-semibold text-cream mb-6">What Our Clients Say</h2>
+                <h2 className="text-h3 font-semibold text-cream mb-6">{t('whatClientsSay')}</h2>
 
                 {isLoading ? (
                   <div className="space-y-4">
@@ -182,7 +184,7 @@ export default function TestimonialsPage() {
                 ) : testimonials.length === 0 ? (
                   <Card className="p-8 text-center">
                     <Star className="w-12 h-12 text-cream-muted mx-auto mb-4" />
-                    <p className="text-cream-muted">No testimonials yet. Be the first to share your experience!</p>
+                    <p className="text-cream-muted">{t('noTestimonials')}</p>
                   </Card>
                 ) : (
                   <div className="space-y-4">
@@ -220,7 +222,7 @@ export default function TestimonialsPage() {
 
               {/* Submission Form */}
               <div>
-                <h2 className="text-h3 font-semibold text-cream mb-6">Share Your Experience</h2>
+                <h2 className="text-h3 font-semibold text-cream mb-6">{t('shareExperience')}</h2>
 
                 <AnimatePresence mode="wait">
                   {submitted ? (
@@ -231,13 +233,12 @@ export default function TestimonialsPage() {
                     >
                       <Card className="p-8 text-center">
                         <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-cream mb-2">Thank You!</h3>
+                        <h3 className="text-xl font-semibold text-cream mb-2">{t('thankYou')}</h3>
                         <p className="text-cream-muted mb-6">
-                          Your testimonial has been submitted and is pending approval.
-                          We appreciate your feedback!
+                          {t('submittedMessage')}
                         </p>
                         <Button onClick={() => setSubmitted(false)}>
-                          Submit Another
+                          {t('submitAnother')}
                         </Button>
                       </Card>
                     </motion.div>
@@ -251,7 +252,7 @@ export default function TestimonialsPage() {
                         <form onSubmit={handleSubmit} className="space-y-4">
                           <div>
                             <label className="block text-sm font-medium text-cream mb-2">
-                              Your Name *
+                              {t('yourName')} *
                             </label>
                             <Input
                               value={formData.clientName}
@@ -263,7 +264,7 @@ export default function TestimonialsPage() {
 
                           <div>
                             <label className="block text-sm font-medium text-cream mb-2">
-                              Email
+                              {t('email')}
                             </label>
                             <Input
                               type="email"
@@ -271,12 +272,12 @@ export default function TestimonialsPage() {
                               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                               placeholder="marko@example.com"
                             />
-                            <p className="text-xs text-cream-muted mt-1">Optional - for verification purposes only</p>
+                            <p className="text-xs text-cream-muted mt-1">{t('emailOptional')}</p>
                           </div>
 
                           <div>
                             <label className="block text-sm font-medium text-cream mb-2">
-                              Title / Company
+                              {t('titleCompany')}
                             </label>
                             <Input
                               value={formData.clientTitle}
@@ -287,12 +288,12 @@ export default function TestimonialsPage() {
 
                           <div>
                             <label className="block text-sm font-medium text-cream mb-2">
-                              Your Experience *
+                              {t('yourExperience')} *
                             </label>
                             <textarea
                               value={formData.content}
                               onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                              placeholder="Tell us about your experience with Z360 Virtual Tours..."
+                              placeholder={t('experiencePlaceholder')}
                               rows={4}
                               required
                               className="w-full px-4 py-3 rounded-xl bg-navy border border-gold/20 text-cream
@@ -303,7 +304,7 @@ export default function TestimonialsPage() {
 
                           <div>
                             <label className="block text-sm font-medium text-cream mb-2">
-                              Rating
+                              {t('rating')}
                             </label>
                             <div className="flex items-center gap-2">
                               {[1, 2, 3, 4, 5].map((star) => (
@@ -331,17 +332,17 @@ export default function TestimonialsPage() {
 
                           <Button type="submit" className="w-full" disabled={isSubmitting}>
                             {isSubmitting ? (
-                              'Submitting...'
+                              t('submitting')
                             ) : (
                               <>
                                 <Send className="w-4 h-4 mr-2" />
-                                Submit Testimonial
+                                {t('submitTestimonial')}
                               </>
                             )}
                           </Button>
 
                           <p className="text-xs text-cream-muted text-center">
-                            Your testimonial will be reviewed before being published.
+                            {t('pendingReview')}
                           </p>
                         </form>
                       </Card>
@@ -368,9 +369,9 @@ export default function TestimonialsPage() {
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                   </svg>
                 </div>
-                <h2 className="text-h2 font-bold text-cream mb-4">Google Reviews</h2>
+                <h2 className="text-h2 font-bold text-cream mb-4">{t('googleReviewsTitle')}</h2>
                 <p className="text-cream-muted mb-8">
-                  See what clients are saying about us on Google
+                  {t('googleReviewsDesc')}
                 </p>
               </div>
 
@@ -413,9 +414,9 @@ export default function TestimonialsPage() {
                   <div className="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-4">
                     <Star className="w-8 h-8 text-gold" />
                   </div>
-                  <h3 className="text-xl font-semibold text-cream mb-2">Google Reviews Coming Soon</h3>
+                  <h3 className="text-xl font-semibold text-cream mb-2">{t('googleReviewsComing')}</h3>
                   <p className="text-cream-muted mb-6 max-w-md mx-auto">
-                    We&apos;re integrating our Google Business reviews. In the meantime, you can leave us a review directly on Google!
+                    {t('googleReviewsComingDesc')}
                   </p>
                   <a
                     href={googleBusinessUrl}
@@ -423,7 +424,7 @@ export default function TestimonialsPage() {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 bg-gold text-navy font-semibold px-6 py-3 rounded-xl hover:bg-gold-soft transition-colors"
                   >
-                    Leave a Google Review
+                    {t('leaveGoogleReview')}
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </Card>
@@ -431,9 +432,9 @@ export default function TestimonialsPage() {
 
               {/* Google Review CTA */}
               <Card className="p-8 bg-gradient-to-br from-navy-medium to-navy-dark border-gold/20 text-center">
-                <h3 className="text-xl font-semibold text-cream mb-2">Enjoyed Our Service?</h3>
+                <h3 className="text-xl font-semibold text-cream mb-2">{t('enjoyedService')}</h3>
                 <p className="text-cream-muted mb-6">
-                  Your feedback helps us grow! Leave a review on Google and help others discover Z360 Virtual Tours.
+                  {t('enjoyedServiceDesc')}
                 </p>
                 <a
                   href={googleBusinessUrl}
@@ -441,7 +442,7 @@ export default function TestimonialsPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-gold text-navy font-semibold px-6 py-3 rounded-xl hover:bg-gold-soft transition-colors"
                 >
-                  Write a Review on Google
+                  {t('writeReviewGoogle')}
                   <ExternalLink className="w-4 h-4" />
                 </a>
               </Card>
@@ -459,9 +460,9 @@ export default function TestimonialsPage() {
                 <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gold/10 mb-4">
                   <MapPin className="w-10 h-10 text-gold" />
                 </div>
-                <h2 className="text-h2 font-bold text-cream mb-4">Google Street View</h2>
+                <h2 className="text-h2 font-bold text-cream mb-4">{t('streetViewTitle')}</h2>
                 <p className="text-cream-muted mb-8">
-                  Explore our 360° contributions to Google Street View and Maps
+                  {t('streetViewDesc')}
                 </p>
               </div>
 
@@ -471,10 +472,9 @@ export default function TestimonialsPage() {
                     <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-cream mb-2">Google Maps Contributions</h3>
+                <h3 className="text-xl font-semibold text-cream mb-2">{t('mapsContributions')}</h3>
                 <p className="text-cream-muted mb-6 max-w-lg mx-auto">
-                  We&apos;re a trusted Google Street View contributor, adding 360° imagery to Google Maps.
-                  View our work on Google Maps to see the quality of our virtual tours!
+                  {t('mapsContributionsDesc')}
                 </p>
 
                 <div className="flex flex-wrap justify-center gap-4">
@@ -485,7 +485,7 @@ export default function TestimonialsPage() {
                     className="inline-flex items-center gap-2 bg-gold text-navy font-semibold px-6 py-3 rounded-xl hover:bg-gold-soft transition-colors"
                   >
                     <MapPin className="w-4 h-4" />
-                    View on Google Maps
+                    {t('viewOnMaps')}
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
@@ -497,9 +497,9 @@ export default function TestimonialsPage() {
                   <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-4">
                     <MapPin className="w-6 h-6 text-gold" />
                   </div>
-                  <h4 className="text-lg font-semibold text-cream mb-2">Locations Covered</h4>
+                  <h4 className="text-lg font-semibold text-cream mb-2">{t('locationsCovered')}</h4>
                   <p className="text-cream-muted text-sm">
-                    Multiple businesses and locations across the Balkans on Google Maps
+                    {t('locationsCoveredDesc')}
                   </p>
                 </Card>
 
@@ -507,9 +507,9 @@ export default function TestimonialsPage() {
                   <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-4">
                     <Star className="w-6 h-6 text-gold" />
                   </div>
-                  <h4 className="text-lg font-semibold text-cream mb-2">Trusted Contributor</h4>
+                  <h4 className="text-lg font-semibold text-cream mb-2">{t('trustedContributor')}</h4>
                   <p className="text-cream-muted text-sm">
-                    Official Google Street View trusted photographer
+                    {t('trustedContributorDesc')}
                   </p>
                 </Card>
 
@@ -519,9 +519,9 @@ export default function TestimonialsPage() {
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                     </svg>
                   </div>
-                  <h4 className="text-lg font-semibold text-cream mb-2">High Quality</h4>
+                  <h4 className="text-lg font-semibold text-cream mb-2">{t('highQuality')}</h4>
                   <p className="text-cream-muted text-sm">
-                    Professional 360° imagery meeting Google&apos;s quality standards
+                    {t('highQualityDesc')}
                   </p>
                 </Card>
               </div>

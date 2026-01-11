@@ -5,33 +5,7 @@ import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Calendar, Users, AlertCi
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card, Input } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
-
-const contactInfo = [
-  {
-    icon: MapPin,
-    label: 'Location',
-    value: 'Balkans',
-    subtext: 'Available for on-site visits',
-  },
-  {
-    icon: Phone,
-    label: 'Phone',
-    value: '+389 71 967 915',
-    subtext: 'Mon-Fri 9am-6pm',
-  },
-  {
-    icon: Mail,
-    label: 'Email',
-    value: 'z360virtualtours@gmail.com',
-    subtext: 'We reply within 24 hours',
-  },
-  {
-    icon: Clock,
-    label: 'Response Time',
-    value: 'Within 24 Hours',
-    subtext: 'Usually much faster',
-  },
-]
+import { useTranslations } from 'next-intl'
 
 interface PricingPlan {
   id: string
@@ -73,12 +47,40 @@ interface QuoteResult {
 }
 
 export default function ContactPage() {
+  const t = useTranslations('contact')
   const [step, setStep] = useState(1)
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
   const [urgencyTiers, setUrgencyTiers] = useState<UrgencyTier[]>([])
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [quote, setQuote] = useState<QuoteResult | null>(null)
   const [isCalculating, setIsCalculating] = useState(false)
+
+  const contactInfo = [
+    {
+      icon: MapPin,
+      label: t('info.location'),
+      value: t('info.locationValue'),
+      subtext: t('info.locationSubtext'),
+    },
+    {
+      icon: Phone,
+      label: t('info.phone'),
+      value: '+389 71 967 915',
+      subtext: t('info.phoneSubtext'),
+    },
+    {
+      icon: Mail,
+      label: t('info.email'),
+      value: 'z360virtualtours@gmail.com',
+      subtext: t('info.emailSubtext'),
+    },
+    {
+      icon: Clock,
+      label: t('info.responseTime'),
+      value: t('info.responseTimeValue'),
+      subtext: t('info.responseTimeSubtext'),
+    },
+  ]
 
   const [formData, setFormData] = useState({
     name: '',
@@ -238,11 +240,10 @@ export default function ContactPage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <h1 className="text-display font-bold text-cream mb-6">
-              Book Your <span className="text-gold">Virtual Tour</span>
+              {t('heroTitle')} <span className="text-gold">{t('heroTitleHighlight')}</span>
             </h1>
             <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-              Get an instant quote and schedule your professional 360° virtual tour.
-              Fill in the details below and we'll get back to you within 24 hours.
+              {t('description')}
             </p>
           </motion.div>
         </div>
@@ -261,10 +262,10 @@ export default function ContactPage() {
               {/* Quote Preview */}
               {quote && (
                 <Card className="p-6 border-gold/30">
-                  <h3 className="text-lg font-semibold text-gold mb-4">Quote Estimate</h3>
+                  <h3 className="text-lg font-semibold text-gold mb-4">{t('quote.title')}</h3>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-cream-muted">Base Price ({selectedPlan?.name})</span>
+                      <span className="text-cream-muted">{t('quote.basePrice')} ({selectedPlan?.name})</span>
                       <span className="text-cream">€{quote.basePrice.toFixed(2)}</span>
                     </div>
 
@@ -279,32 +280,32 @@ export default function ContactPage() {
 
                     {quote.travelFee > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-cream-muted">Travel ({quote.travelZoneName})</span>
+                        <span className="text-cream-muted">{t('quote.travel')} ({quote.travelZoneName})</span>
                         <span className="text-cream">+€{quote.travelFee.toFixed(2)}</span>
                       </div>
                     )}
 
                     {quote.bundleDiscount > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-cream-muted">Bundle Discount</span>
+                        <span className="text-cream-muted">{t('quote.bundleDiscount')}</span>
                         <span className="text-green-400">-€{quote.bundleDiscount.toFixed(2)}</span>
                       </div>
                     )}
 
                     <div className="flex justify-between pt-3 border-t border-gold/20">
-                      <span className="text-cream font-medium">Estimated Total</span>
+                      <span className="text-cream font-medium">{t('quote.estimatedTotal')}</span>
                       <span className="text-gold text-xl font-bold">€{quote.total.toFixed(2)}</span>
                     </div>
 
                     {quote.depositAmount && (
                       <div className="flex justify-between text-cream-muted">
-                        <span>Deposit Required</span>
+                        <span>{t('quote.depositRequired')}</span>
                         <span>€{quote.depositAmount.toFixed(2)}</span>
                       </div>
                     )}
                   </div>
                   <p className="text-xs text-cream-muted mt-4">
-                    * Final price confirmed after review
+                    {t('quote.finalPriceNote')}
                   </p>
                 </Card>
               )}
@@ -314,10 +315,10 @@ export default function ContactPage() {
                 <Card className="p-6">
                   <h3 className="text-lg font-semibold text-cream mb-4 flex items-center gap-2">
                     <Users className="w-5 h-5 text-gold" />
-                    Save with Group Bookings
+                    {t('bundles.title')}
                   </h3>
                   <p className="text-sm text-cream-muted mb-4">
-                    Join a scheduled trip and share travel costs with other clients!
+                    {t('bundles.description')}
                   </p>
                   <div className="space-y-3">
                     {availableBundles.slice(0, 3).map((bundle) => (
@@ -337,7 +338,7 @@ export default function ContactPage() {
                             <p className="text-xs text-cream-muted">{bundle.city}</p>
                           </div>
                           <span className="text-green-400 text-xs font-medium">
-                            {bundle.discountPercent}% off
+                            {bundle.discountPercent}% {t('bundles.off')}
                           </span>
                         </div>
                         <div className="flex justify-between items-center mt-2">
@@ -345,7 +346,7 @@ export default function ContactPage() {
                             {new Date(bundle.scheduledDate).toLocaleDateString()}
                           </span>
                           <span className="text-xs text-cream-muted">
-                            {bundle.spotsRemaining} spots left
+                            {bundle.spotsRemaining} {t('bundles.spotsLeft')}
                           </span>
                         </div>
                       </button>
@@ -356,7 +357,7 @@ export default function ContactPage() {
 
               {/* Contact Info */}
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-cream">Contact Information</h3>
+                <h3 className="text-lg font-semibold text-cream">{t('contactInfo')}</h3>
                 {contactInfo.map((info) => {
                   const Icon = info.icon
                   return (
@@ -395,15 +396,14 @@ export default function ContactPage() {
                       <CheckCircle className="w-8 h-8 text-green-500" />
                     </div>
                     <h3 className="text-h3 font-bold text-cream mb-2">
-                      Booking Request Sent!
+                      {t('success.title')}
                     </h3>
                     <p className="text-body text-cream-muted mb-6">
-                      Thank you for your request. We'll review your details and send you a
-                      confirmed quote within 24 hours.
+                      {t('success.message')}
                     </p>
                     {quote && (
                       <p className="text-gold font-semibold mb-6">
-                        Estimated Total: €{quote.total.toFixed(2)}
+                        {t('success.estimatedTotal')}: €{quote.total.toFixed(2)}
                       </p>
                     )}
                     <Button
@@ -429,65 +429,65 @@ export default function ContactPage() {
                         setQuote(null)
                       }}
                     >
-                      Submit Another Request
+                      {t('success.submitAnother')}
                     </Button>
                   </motion.div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Contact Info */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">Your Information</h3>
+                      <h3 className="text-lg font-semibold text-cream mb-4">{t('form.yourInfo')}</h3>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Your Name *
+                            {t('form.name')} *
                           </label>
                           <Input
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            placeholder="Marko Petrovski"
+                            placeholder={t('form.namePlaceholder')}
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Email Address *
+                            {t('form.email')} *
                           </label>
                           <Input
                             type="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            placeholder="marko@example.com"
+                            placeholder={t('form.emailPlaceholder')}
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Phone Number *
+                            {t('form.phone')} *
                           </label>
                           <Input
                             type="tel"
                             name="phone"
                             value={formData.phone}
                             onChange={handleChange}
-                            placeholder="+389 70 123 456"
+                            placeholder={t('form.phonePlaceholder')}
                             required
                           />
                           <p className="text-xs text-cream-muted mt-1">
-                            We'll contact you to confirm your booking
+                            {t('form.phoneNote')}
                           </p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Company / Business Name
+                            {t('form.company')}
                           </label>
                           <Input
                             name="company"
                             value={formData.company}
                             onChange={handleChange}
-                            placeholder="Hotel Skopje"
+                            placeholder={t('form.companyPlaceholder')}
                           />
                         </div>
                       </div>
@@ -495,33 +495,33 @@ export default function ContactPage() {
 
                     {/* Property Location */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">Property Location</h3>
+                      <h3 className="text-lg font-semibold text-cream mb-4">{t('form.propertyLocation')}</h3>
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div className="sm:col-span-2">
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Property Address *
+                            {t('form.propertyAddress')} *
                           </label>
                           <Input
                             name="propertyAddress"
                             value={formData.propertyAddress}
                             onChange={handleChange}
-                            placeholder="Street name and number"
+                            placeholder={t('form.addressPlaceholder')}
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            City *
+                            {t('form.city')} *
                           </label>
                           <Input
                             name="propertyCity"
                             value={formData.propertyCity}
                             onChange={handleChange}
-                            placeholder="Skopje, Ohrid, Bitola..."
+                            placeholder={t('form.cityPlaceholder')}
                             required
                           />
                           <p className="text-xs text-cream-muted mt-1">
-                            Travel fees calculated based on distance
+                            {t('form.cityNote')}
                           </p>
                         </div>
                       </div>
@@ -529,7 +529,7 @@ export default function ContactPage() {
 
                     {/* Service Selection */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">Service Package</h3>
+                      <h3 className="text-lg font-semibold text-cream mb-4">{t('form.servicePackage')}</h3>
                       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         {pricingPlans.map((plan) => (
                           <button
@@ -551,12 +551,12 @@ export default function ContactPage() {
 
                     {/* Scheduling */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">Scheduling</h3>
+                      <h3 className="text-lg font-semibold text-cream mb-4">{t('form.scheduling')}</h3>
 
                       {/* Urgency Selection */}
                       <div className="mb-4">
                         <label className="block text-sm font-medium text-cream mb-2">
-                          Delivery Speed
+                          {t('form.deliverySpeed')}
                         </label>
                         <div className="grid sm:grid-cols-3 gap-3">
                           {urgencyTiers.map((tier) => (
@@ -586,7 +586,7 @@ export default function ContactPage() {
                       <div className="grid sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Preferred Date
+                            {t('form.preferredDate')}
                           </label>
                           <Input
                             type="date"
@@ -597,7 +597,7 @@ export default function ContactPage() {
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Alternate Date
+                            {t('form.alternateDate')}
                           </label>
                           <Input
                             type="date"
@@ -619,7 +619,7 @@ export default function ContactPage() {
                             className="w-4 h-4 rounded border-gold/20 bg-navy text-gold focus:ring-gold/50"
                           />
                           <span className="text-sm text-cream">
-                            I need this done by a specific deadline
+                            {t('form.deadlineCheckbox')}
                           </span>
                         </label>
 
@@ -635,11 +635,11 @@ export default function ContactPage() {
                                 <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
                                 <div className="flex-1">
                                   <p className="text-sm text-cream">
-                                    Rush requests may incur additional fees based on availability.
+                                    {t('form.rushWarning')}
                                   </p>
                                   <div className="mt-2">
                                     <label className="block text-xs text-cream-muted mb-1">
-                                      Must be completed by:
+                                      {t('form.mustCompleteBy')}
                                     </label>
                                     <Input
                                       type="date"
@@ -660,13 +660,13 @@ export default function ContactPage() {
                     {/* Project Details */}
                     <div>
                       <label className="block text-sm font-medium text-cream mb-2">
-                        Tell Us About Your Project
+                        {t('form.projectDetails')}
                       </label>
                       <textarea
                         name="message"
                         value={formData.message}
                         onChange={handleChange}
-                        placeholder="Describe your space, number of rooms, any specific requirements..."
+                        placeholder={t('form.projectPlaceholder')}
                         rows={4}
                         className="w-full px-4 py-3 rounded-xl bg-navy border border-gold/20 text-cream
                                    placeholder:text-cream-muted focus:outline-none focus:ring-2
@@ -683,19 +683,18 @@ export default function ContactPage() {
                       {isSubmitting ? (
                         <>
                           <div className="w-5 h-5 border-2 border-navy border-t-transparent rounded-full animate-spin mr-2" />
-                          Submitting...
+                          {t('form.submitting')}
                         </>
                       ) : (
                         <>
-                          Request Quote
+                          {t('form.submit')}
                           <ChevronRight className="w-5 h-5 ml-2" />
                         </>
                       )}
                     </Button>
 
                     <p className="text-sm text-cream-muted text-center">
-                      You'll receive a confirmed quote within 24 hours.
-                      No payment required until you approve.
+                      {t('form.quoteNote')}
                     </p>
                   </form>
                 )}
