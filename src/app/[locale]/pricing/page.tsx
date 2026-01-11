@@ -60,7 +60,7 @@ export default function PricingPage() {
       <PublicHeader />
 
       {/* Hero */}
-      <section className="relative py-20 md:py-32 overflow-hidden">
+      <section className="relative py-12 sm:py-16 md:py-24 lg:py-32 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial opacity-30" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -68,10 +68,10 @@ export default function PricingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-display font-bold text-cream mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-display font-bold text-cream mb-3 sm:mb-4 md:mb-6">
               {t('heroTitle')} <span className="text-gold">{t('heroTitleHighlight')}</span>
             </h1>
-            <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-2">
               {t('description')}
             </p>
           </motion.div>
@@ -79,23 +79,23 @@ export default function PricingPage() {
       </section>
 
       {/* Pricing Cards */}
-      <section className="py-12 pb-20">
+      <section className="py-8 sm:py-12 pb-16 sm:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-96 bg-gold/10 rounded-xl animate-pulse" />
+                <div key={i} className="h-80 sm:h-96 bg-gold/10 rounded-xl animate-pulse" />
               ))}
             </div>
           ) : pricingPlans.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-cream-muted">{t('description')}</p>
+            <div className="text-center py-8 sm:py-12">
+              <p className="text-cream-muted text-sm sm:text-base">{t('description')}</p>
               <Link href="/contact" className="mt-4 inline-block">
                 <Button>{tCta('contactUs')}</Button>
               </Link>
             </div>
           ) : (
-            <div className="grid md:grid-cols-3 gap-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
               {pricingPlans.map((plan, index) => (
                 <motion.div
                   key={plan.id}
@@ -113,26 +113,26 @@ export default function PricingPage() {
                     </div>
                   )}
                   <Card
-                    className={`p-8 h-full flex flex-col ${
+                    className={`p-4 sm:p-6 md:p-8 h-full flex flex-col ${
                       plan.isPopular ? 'border-gold ring-2 ring-gold/20' : ''
                     }`}
                   >
-                    <div className="mb-6">
-                      <h3 className="text-h3 font-bold text-cream mb-2">{plan.name}</h3>
-                      <p className="text-body text-cream-muted">{plan.description}</p>
+                    <div className="mb-4 sm:mb-6">
+                      <h3 className="text-lg sm:text-xl md:text-h3 font-bold text-cream mb-1 sm:mb-2">{plan.name}</h3>
+                      <p className="text-sm sm:text-body text-cream-muted">{plan.description}</p>
                     </div>
 
-                    <div className="mb-6">
-                      <span className="text-display font-bold text-gold">€{plan.price}</span>
-                      <span className="text-body text-cream-muted ml-2">{t('perTour')}</span>
+                    <div className="mb-4 sm:mb-6">
+                      <span className="text-2xl sm:text-3xl md:text-display font-bold text-gold">€{plan.price}</span>
+                      <span className="text-sm sm:text-body text-cream-muted ml-2">{t('perTour')}</span>
                     </div>
 
                     {plan.features && plan.features.length > 0 && (
-                      <ul className="space-y-3 mb-8 flex-1">
+                      <ul className="space-y-2 sm:space-y-3 mb-6 sm:mb-8 flex-1">
                         {plan.features.map((feature, idx) => (
-                          <li key={idx} className="flex items-start gap-3">
-                            <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                            <span className="text-body text-cream-soft">{feature}</span>
+                          <li key={idx} className="flex items-start gap-2 sm:gap-3">
+                            <Check className="w-4 h-4 sm:w-5 sm:h-5 text-gold flex-shrink-0 mt-0.5" />
+                            <span className="text-sm sm:text-body text-cream-soft">{feature}</span>
                           </li>
                         ))}
                       </ul>
@@ -156,23 +156,23 @@ export default function PricingPage() {
       </section>
 
       {/* FAQs */}
-      <section className="py-20 bg-navy-dark">
+      <section className="py-12 sm:py-16 md:py-20 bg-navy-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-8 md:mb-12"
           >
-            <h2 className="text-display font-bold text-cream mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 md:mb-4">
               {t('faqTitle')}
             </h2>
-            <p className="text-body-lg text-cream-muted">
+            <p className="text-sm sm:text-base md:text-body-lg text-cream-muted px-2">
               {t('faqDescription')}
             </p>
           </motion.div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {faqs.map((faq, index) => (
               <motion.div
                 key={index}
@@ -181,11 +181,11 @@ export default function PricingPage() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.05 }}
               >
-                <Card className="p-6">
-                  <h3 className="text-h4 font-semibold text-cream mb-2">
+                <Card className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg md:text-h4 font-semibold text-cream mb-1 sm:mb-2">
                     {faq.question}
                   </h3>
-                  <p className="text-body text-cream-muted">{faq.answer}</p>
+                  <p className="text-sm sm:text-body text-cream-muted">{faq.answer}</p>
                 </Card>
               </motion.div>
             ))}
@@ -194,21 +194,21 @@ export default function PricingPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-20">
+      <section className="py-12 sm:py-16 md:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-display font-bold text-cream mb-4">
+            <h2 className="text-xl sm:text-2xl md:text-display font-bold text-cream mb-2 md:mb-4">
               {tCta('readyToStart')}
             </h2>
-            <p className="text-body-lg text-cream-muted mb-8 max-w-xl mx-auto">
+            <p className="text-sm sm:text-base md:text-body-lg text-cream-muted mb-6 md:mb-8 max-w-xl mx-auto">
               {tCta('discussProject')}
             </p>
             <Link href="/contact">
-              <Button size="lg">
+              <Button size="lg" className="w-full sm:w-auto">
                 {tCta('contactUs')}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>

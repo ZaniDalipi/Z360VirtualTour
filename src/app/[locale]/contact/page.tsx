@@ -231,7 +231,7 @@ export default function ContactPage() {
       <PublicHeader />
 
       {/* Hero */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
+      <section className="relative py-10 sm:py-14 md:py-20 lg:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial opacity-30" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -239,10 +239,10 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-display font-bold text-cream mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-display font-bold text-cream mb-3 sm:mb-4 md:mb-6">
               {t('heroTitle')} <span className="text-gold">{t('heroTitleHighlight')}</span>
             </h1>
-            <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-2">
               {t('description')}
             </p>
           </motion.div>
@@ -250,9 +250,9 @@ export default function ContactPage() {
       </section>
 
       {/* Booking Form & Info */}
-      <section className="py-8 pb-20">
+      <section className="py-6 sm:py-8 pb-12 sm:pb-16 md:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-5 gap-12">
+          <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
             {/* Contact Info & Quote Preview */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -261,8 +261,8 @@ export default function ContactPage() {
             >
               {/* Quote Preview */}
               {quote && (
-                <Card className="p-6 border-gold/30">
-                  <h3 className="text-lg font-semibold text-gold mb-4">{t('quote.title')}</h3>
+                <Card className="p-4 sm:p-6 border-gold/30">
+                  <h3 className="text-base sm:text-lg font-semibold text-gold mb-3 sm:mb-4">{t('quote.title')}</h3>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-cream-muted">{t('quote.basePrice')} ({selectedPlan?.name})</span>
@@ -312,12 +312,12 @@ export default function ContactPage() {
 
               {/* Available Bundles */}
               {availableBundles.length > 0 && (
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-cream mb-4 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-gold" />
+                <Card className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-cream mb-3 sm:mb-4 flex items-center gap-2">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
                     {t('bundles.title')}
                   </h3>
-                  <p className="text-sm text-cream-muted mb-4">
+                  <p className="text-xs sm:text-sm text-cream-muted mb-3 sm:mb-4">
                     {t('bundles.description')}
                   </p>
                   <div className="space-y-3">
@@ -356,20 +356,20 @@ export default function ContactPage() {
               )}
 
               {/* Contact Info */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-cream">{t('contactInfo')}</h3>
+              <div className="space-y-3 sm:space-y-4">
+                <h3 className="text-base sm:text-lg font-semibold text-cream">{t('contactInfo')}</h3>
                 {contactInfo.map((info) => {
                   const Icon = info.icon
                   return (
-                    <Card key={info.label} className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center flex-shrink-0">
-                          <Icon className="w-5 h-5 text-gold" />
+                    <Card key={info.label} className="p-3 sm:p-4">
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gold/10 flex items-center justify-center flex-shrink-0">
+                          <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
                         </div>
-                        <div>
-                          <p className="text-xs text-cream-muted">{info.label}</p>
-                          <p className="text-sm font-semibold text-cream">{info.value}</p>
-                          <p className="text-xs text-cream-muted">{info.subtext}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] sm:text-xs text-cream-muted">{info.label}</p>
+                          <p className="text-xs sm:text-sm font-semibold text-cream break-words">{info.value}</p>
+                          <p className="text-[10px] sm:text-xs text-cream-muted">{info.subtext}</p>
                         </div>
                       </div>
                     </Card>
@@ -385,7 +385,7 @@ export default function ContactPage() {
               transition={{ delay: 0.1 }}
               className="lg:col-span-3"
             >
-              <Card className="p-8">
+              <Card className="p-4 sm:p-6 md:p-8">
                 {isSubmitted ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -433,11 +433,11 @@ export default function ContactPage() {
                     </Button>
                   </motion.div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                  <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                     {/* Contact Info */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">{t('form.yourInfo')}</h3>
-                      <div className="grid sm:grid-cols-2 gap-4">
+                      <h3 className="text-base sm:text-lg font-semibold text-cream mb-3 sm:mb-4">{t('form.yourInfo')}</h3>
+                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
                             {t('form.name')} *
@@ -495,8 +495,8 @@ export default function ContactPage() {
 
                     {/* Property Location */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">{t('form.propertyLocation')}</h3>
-                      <div className="grid sm:grid-cols-2 gap-4">
+                      <h3 className="text-base sm:text-lg font-semibold text-cream mb-3 sm:mb-4">{t('form.propertyLocation')}</h3>
+                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                         <div className="sm:col-span-2">
                           <label className="block text-sm font-medium text-cream mb-2">
                             {t('form.propertyAddress')} *
@@ -529,21 +529,21 @@ export default function ContactPage() {
 
                     {/* Service Selection */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">{t('form.servicePackage')}</h3>
-                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <h3 className="text-base sm:text-lg font-semibold text-cream mb-3 sm:mb-4">{t('form.servicePackage')}</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                         {pricingPlans.map((plan) => (
                           <button
                             key={plan.id}
                             type="button"
                             onClick={() => setFormData({ ...formData, pricingPlanId: plan.id })}
-                            className={`p-4 rounded-xl text-left transition-all ${
+                            className={`p-3 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all ${
                               formData.pricingPlanId === plan.id
                                 ? 'bg-gold/20 border-2 border-gold'
                                 : 'bg-navy-medium border border-gold/10 hover:border-gold/30'
                             }`}
                           >
-                            <p className="font-semibold text-cream">{plan.name}</p>
-                            <p className="text-gold font-bold">€{plan.price}</p>
+                            <p className="text-sm sm:text-base font-semibold text-cream">{plan.name}</p>
+                            <p className="text-gold text-sm sm:text-base font-bold">€{plan.price}</p>
                           </button>
                         ))}
                       </div>
@@ -551,39 +551,39 @@ export default function ContactPage() {
 
                     {/* Scheduling */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">{t('form.scheduling')}</h3>
+                      <h3 className="text-base sm:text-lg font-semibold text-cream mb-3 sm:mb-4">{t('form.scheduling')}</h3>
 
                       {/* Urgency Selection */}
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-cream mb-2">
+                      <div className="mb-3 sm:mb-4">
+                        <label className="block text-xs sm:text-sm font-medium text-cream mb-2">
                           {t('form.deliverySpeed')}
                         </label>
-                        <div className="grid sm:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                           {urgencyTiers.map((tier) => (
                             <button
                               key={tier.id}
                               type="button"
                               onClick={() => setFormData({ ...formData, urgencyTierId: tier.id })}
-                              className={`p-3 rounded-xl text-left transition-all ${
+                              className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl text-left transition-all ${
                                 formData.urgencyTierId === tier.id
                                   ? 'bg-gold/20 border-2 border-gold'
                                   : 'bg-navy-medium border border-gold/10 hover:border-gold/30'
                               }`}
                             >
                               <div className="flex justify-between items-start">
-                                <p className="font-medium text-cream text-sm">{tier.displayName}</p>
+                                <p className="font-medium text-cream text-xs sm:text-sm">{tier.displayName}</p>
                                 {tier.surchargePercent > 0 && (
-                                  <span className="text-orange-400 text-xs">+{tier.surchargePercent}%</span>
+                                  <span className="text-orange-400 text-[10px] sm:text-xs">+{tier.surchargePercent}%</span>
                                 )}
                               </div>
-                              <p className="text-xs text-cream-muted mt-1">{tier.description}</p>
+                              <p className="text-[10px] sm:text-xs text-cream-muted mt-1">{tier.description}</p>
                             </button>
                           ))}
                         </div>
                       </div>
 
                       {/* Dates */}
-                      <div className="grid sm:grid-cols-2 gap-4">
+                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
                             {t('form.preferredDate')}

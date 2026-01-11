@@ -100,17 +100,17 @@ function ToursContent() {
   return (
     <>
       {/* Hero */}
-      <section className="bg-navy-dark py-16 md:py-24">
+      <section className="bg-navy-dark py-10 sm:py-14 md:py-20 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-display font-bold text-cream mb-4">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-display font-bold text-cream mb-2 sm:mb-4">
               {t('title')}
             </h1>
-            <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-2">
               {t('description')}
             </p>
           </motion.div>
@@ -118,13 +118,13 @@ function ToursContent() {
       </section>
 
       {/* Filters */}
-      <section className="sticky top-16 md:top-20 z-30 bg-navy border-b border-gold/10 py-4">
+      <section className="sticky top-16 z-30 bg-navy border-b border-gold/10 py-3 sm:py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-3 sm:gap-4">
             {/* Search */}
             <div className="flex-1 max-w-md">
               <Input
-                icon={<Search className="w-5 h-5" />}
+                icon={<Search className="w-4 h-4 sm:w-5 sm:h-5" />}
                 placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -132,7 +132,7 @@ function ToursContent() {
             </div>
 
             {/* Categories */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 md:pb-0 -mx-1 px-1">
               {categories.map((category) => (
                 <Chip
                   key={category.id}
@@ -145,7 +145,7 @@ function ToursContent() {
             </div>
 
             {/* View Toggle */}
-            <div className="hidden md:flex border border-cream/15 rounded-md overflow-hidden">
+            <div className="hidden md:flex border border-cream/15 rounded-md overflow-hidden flex-shrink-0">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 ${viewMode === 'grid' ? 'bg-gold text-navy' : 'text-cream-muted hover:bg-cream/5'}`}
@@ -164,15 +164,15 @@ function ToursContent() {
       </section>
 
       {/* Tours Grid */}
-      <section className="py-12">
+      <section className="py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {isLoading ? (
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="rounded-2xl bg-navy-medium border border-gold/10 overflow-hidden">
-                  <Skeleton className="h-64 w-full" />
-                  <div className="p-6">
-                    <Skeleton className="h-6 w-3/4 mb-2" />
+                <div key={i} className="rounded-xl sm:rounded-2xl bg-navy-medium border border-gold/10 overflow-hidden">
+                  <Skeleton className="h-48 sm:h-64 w-full" />
+                  <div className="p-4 sm:p-6">
+                    <Skeleton className="h-5 sm:h-6 w-3/4 mb-2" />
                     <Skeleton className="h-4 w-1/2" />
                   </div>
                 </div>
@@ -180,14 +180,14 @@ function ToursContent() {
             </div>
           ) : (
             <>
-              <p className="text-body text-cream-muted mb-6">
+              <p className="text-sm sm:text-body text-cream-muted mb-4 sm:mb-6">
                 {filteredTours.length === 1
                   ? t('toursFound', { count: filteredTours.length })
                   : t('toursFoundPlural', { count: filteredTours.length })}
               </p>
 
               {filteredTours.length > 0 ? (
-                <div className={`grid gap-8 ${viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                <div className={`grid gap-4 sm:gap-6 md:gap-8 ${viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
                   {filteredTours.map((tour, index) => (
                     <motion.div
                       key={tour.id}
@@ -198,13 +198,13 @@ function ToursContent() {
                       className="group"
                     >
                       <Link href={`/tour/${tour.slug}`}>
-                        <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
+                        <div className={`relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
                                          group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-gold/10
-                                         ${viewMode === 'list' ? 'flex' : ''}`}>
+                                         ${viewMode === 'list' ? 'md:flex' : ''}`}>
 
                           {/* Image Container */}
-                          <div className={`relative overflow-hidden ${viewMode === 'list' ? 'w-72 flex-shrink-0' : 'h-64'}`}>
-                            <div className={viewMode === 'list' ? 'h-full' : 'h-full'}>
+                          <div className={`relative overflow-hidden ${viewMode === 'list' ? 'md:w-64 lg:w-72 md:flex-shrink-0 h-48 sm:h-56 md:h-full' : 'h-48 sm:h-56 md:h-64'}`}>
+                            <div className="h-full">
                               <Image
                                 src={tour.coverImage}
                                 alt={tour.title}
@@ -273,27 +273,27 @@ function ToursContent() {
                           </div>
 
                           {/* Content */}
-                          <div className={`p-6 ${viewMode === 'list' ? 'flex-1 flex flex-col justify-center' : ''}`}>
-                            <div className="flex items-start justify-between gap-2 mb-3">
-                              <h3 className="text-xl font-bold text-cream group-hover:text-gold transition-colors duration-300 line-clamp-2">
+                          <div className={`p-4 sm:p-6 ${viewMode === 'list' ? 'md:flex-1 md:flex md:flex-col md:justify-center' : ''}`}>
+                            <div className="flex items-start justify-between gap-2 mb-2 sm:mb-3">
+                              <h3 className="text-base sm:text-lg md:text-xl font-bold text-cream group-hover:text-gold transition-colors duration-300 line-clamp-2">
                                 {tour.title}
                               </h3>
-                              <ArrowUpRight className="w-5 h-5 text-cream-muted group-hover:text-gold group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 flex-shrink-0" />
+                              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-cream-muted group-hover:text-gold group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 flex-shrink-0" />
                             </div>
 
                             {tour.shortDescription && (
-                              <p className="text-sm text-cream-soft mb-4 line-clamp-2 leading-relaxed">{tour.shortDescription}</p>
+                              <p className="text-xs sm:text-sm text-cream-soft mb-3 sm:mb-4 line-clamp-2 leading-relaxed">{tour.shortDescription}</p>
                             )}
 
-                            <div className="flex items-center justify-between pt-4 border-t border-gold/10">
-                              <div>
-                                <p className="text-sm font-medium text-cream">{tour.clientName}</p>
-                                <p className="text-xs text-cream-muted flex items-center gap-1 mt-0.5">
-                                  <MapPin className="w-3 h-3" /> {tour.location}
+                            <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gold/10">
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs sm:text-sm font-medium text-cream truncate">{tour.clientName}</p>
+                                <p className="text-[10px] sm:text-xs text-cream-muted flex items-center gap-1 mt-0.5">
+                                  <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" /> <span className="truncate">{tour.location}</span>
                                 </p>
                               </div>
-                              <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center group-hover:bg-gold group-hover:scale-110 transition-all duration-300">
-                                <Play className="w-4 h-4 text-gold group-hover:text-navy transition-colors" fill="currentColor" />
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gold/10 flex items-center justify-center group-hover:bg-gold group-hover:scale-110 transition-all duration-300 flex-shrink-0 ml-2">
+                                <Play className="w-3 h-3 sm:w-4 sm:h-4 text-gold group-hover:text-navy transition-colors" fill="currentColor" />
                               </div>
                             </div>
                           </div>
@@ -329,16 +329,16 @@ function ToursContent() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-navy-dark">
+      <section className="py-10 sm:py-14 md:py-16 bg-navy-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-h1 font-bold text-cream mb-4">
+          <h2 className="text-xl sm:text-2xl md:text-h1 font-bold text-cream mb-2 sm:mb-4">
             {t('wantFeatured')}
           </h2>
-          <p className="text-body-lg text-cream-muted mb-8">
+          <p className="text-sm sm:text-base md:text-body-lg text-cream-muted mb-6 sm:mb-8">
             {t('wantFeaturedDesc')}
           </p>
           <Link href="/contact">
-            <Button size="lg">{t('getFreeQuote')}</Button>
+            <Button size="lg" className="w-full sm:w-auto">{t('getFreeQuote')}</Button>
           </Link>
         </div>
       </section>

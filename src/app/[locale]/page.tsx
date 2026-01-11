@@ -128,8 +128,8 @@ export default function HomePage() {
           }}
         />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-32">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
@@ -140,7 +140,7 @@ export default function HomePage() {
                 <span className="text-caption text-gold">{tHero('badge')}</span>
               </div>
 
-              <h1 className="text-display-xl md:text-[64px] font-bold text-cream leading-tight mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[64px] font-bold text-cream leading-tight mb-4 sm:mb-6">
                 {tHero('title')}
                 <span className="text-gold"> {tHero('titleHighlight')}</span>
               </h1>
@@ -193,7 +193,7 @@ export default function HomePage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden lg:block"
+              className="relative hidden md:block"
             >
               <FeaturedCarousel tours={tours} />
             </motion.div>
@@ -209,12 +209,12 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-12"
+              className="text-center mb-8 md:mb-12"
             >
-              <h2 className="text-display font-bold text-cream mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 md:mb-4">
                 {tIndustries('title')}
               </h2>
-              <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+              <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-4">
                 {tIndustries('description')}
               </p>
             </motion.div>
@@ -255,17 +255,17 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="flex items-end justify-between mb-12"
+              className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 md:mb-12"
             >
               <div>
-                <h2 className="text-display font-bold text-cream mb-4">
+                <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 md:mb-4">
                   {tFeatured('title')}
                 </h2>
-                <p className="text-body-lg text-cream-muted max-w-xl">
+                <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-xl">
                   {tFeatured('description')}
                 </p>
               </div>
-              <Link href="/tours" className="hidden md:flex items-center gap-2 text-gold hover:text-gold-soft transition-colors">
+              <Link href="/tours" className="hidden sm:flex items-center gap-2 text-gold hover:text-gold-soft transition-colors whitespace-nowrap">
                 {tFeatured('viewAll')} <ArrowRight className="w-5 h-5" />
               </Link>
             </motion.div>
@@ -363,7 +363,7 @@ export default function HomePage() {
               ))}
             </div>
 
-            <div className="text-center mt-8 md:hidden">
+            <div className="text-center mt-8 sm:hidden">
               <Link href="/tours">
                 <Button variant="secondary">{tFeatured('viewAllTours')}</Button>
               </Link>
@@ -380,17 +380,17 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-12"
+              className="text-center mb-8 md:mb-12"
             >
-              <h2 className="text-display font-bold text-cream mb-4">
+              <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 md:mb-4">
                 {tTestimonials('title')}
               </h2>
-              <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+              <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-4">
                 {tTestimonials('description')}
               </p>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {testimonials.map((testimonial, index) => (
                 <motion.div
                   key={testimonial.id}
@@ -430,22 +430,22 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-12"
+            className="text-center mb-8 md:mb-12"
           >
-            <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-4 py-2 mb-6">
+            <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
               <Handshake className="w-4 h-4 text-gold" />
-              <span className="text-caption text-gold">{tPartners('badge')}</span>
+              <span className="text-xs sm:text-caption text-gold">{tPartners('badge')}</span>
             </div>
-            <h2 className="text-display font-bold text-cream mb-4">
+            <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 md:mb-4">
               {tPartners('title')}
             </h2>
-            <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+            <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-4">
               {tPartners('description')}
             </p>
           </motion.div>
 
           {/* Partner Logos Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
             {[
               { name: 'Google Street View', description: tPartners('googleDesc') },
               { name: 'Matterport', description: tPartners('matterportDesc') },
@@ -460,12 +460,12 @@ export default function HomePage() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
               >
-                <Card className="p-6 text-center hover:border-gold/30 transition-all group">
-                  <div className="w-16 h-16 rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-gold/20 transition-colors">
-                    <span className="text-2xl font-bold text-gold">{partner.name.charAt(0)}</span>
+                <Card className="p-3 sm:p-4 md:p-6 text-center hover:border-gold/30 transition-all group">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-2 sm:mb-3 md:mb-4 group-hover:bg-gold/20 transition-colors">
+                    <span className="text-lg sm:text-xl md:text-2xl font-bold text-gold">{partner.name.charAt(0)}</span>
                   </div>
-                  <h3 className="text-sm font-semibold text-cream mb-1">{partner.name}</h3>
-                  <p className="text-xs text-cream-muted">{partner.description}</p>
+                  <h3 className="text-xs sm:text-sm font-semibold text-cream mb-0.5 sm:mb-1 line-clamp-2">{partner.name}</h3>
+                  <p className="text-[10px] sm:text-xs text-cream-muted hidden sm:block">{partner.description}</p>
                 </Card>
               </motion.div>
             ))}
@@ -494,19 +494,19 @@ export default function HomePage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <Card className="p-8 md:p-12 text-center bg-gradient-to-br from-navy-medium to-navy-dark border-gold/20">
-              <h2 className="text-display font-bold text-cream mb-4">
+            <Card className="p-6 sm:p-8 md:p-12 text-center bg-gradient-to-br from-navy-medium to-navy-dark border-gold/20">
+              <h2 className="text-xl sm:text-2xl md:text-display font-bold text-cream mb-2 md:mb-4">
                 {tCta('title')}
               </h2>
-              <p className="text-body-lg text-cream-muted mb-8 max-w-xl mx-auto">
+              <p className="text-sm sm:text-base md:text-body-lg text-cream-muted mb-6 md:mb-8 max-w-xl mx-auto">
                 {tCta('description')}
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
+              <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4">
                 <Link href="/contact">
-                  <Button size="lg">{tCta('getStarted')}</Button>
+                  <Button size="lg" className="w-full sm:w-auto">{tCta('getStarted')}</Button>
                 </Link>
                 <Link href="/pricing">
-                  <Button variant="secondary" size="lg">{tCta('viewPricing')}</Button>
+                  <Button variant="secondary" size="lg" className="w-full sm:w-auto">{tCta('viewPricing')}</Button>
                 </Link>
               </div>
             </Card>
