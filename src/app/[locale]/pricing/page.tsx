@@ -5,87 +5,73 @@ import { Check, ArrowRight, Sparkles } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
 import { motion } from 'framer-motion'
-
-const pricingPlans = [
-  {
-    name: 'Starter',
-    description: 'Perfect for small spaces and single rooms',
-    price: '$299',
-    priceLabel: 'per tour',
-    features: [
-      'Up to 5 panorama scenes',
-      'Basic hotspot navigation',
-      'Mobile-friendly tour',
-      'Social sharing links',
-      '30-day delivery',
-      'Email support',
-    ],
-    isPopular: false,
-  },
-  {
-    name: 'Professional',
-    description: 'Ideal for homes, offices, and retail spaces',
-    price: '$599',
-    priceLabel: 'per tour',
-    features: [
-      'Up to 15 panorama scenes',
-      'Interactive hotspots & info cards',
-      'Custom branding & colors',
-      'Lead capture forms',
-      'Google Street View publishing',
-      'Analytics dashboard',
-      '14-day delivery',
-      'Priority support',
-    ],
-    isPopular: true,
-  },
-  {
-    name: 'Enterprise',
-    description: 'For large properties and ongoing needs',
-    price: 'Custom',
-    priceLabel: 'contact us',
-    features: [
-      'Unlimited panorama scenes',
-      'Advanced interactive features',
-      'Full white-label solution',
-      'API access & integrations',
-      'Dedicated account manager',
-      'Custom development',
-      'Rush delivery available',
-      '24/7 premium support',
-    ],
-    isPopular: false,
-  },
-]
-
-const faqs = [
-  {
-    question: 'How long does it take to create a virtual tour?',
-    answer: 'Standard delivery is 14-30 days depending on your package. Rush delivery is available for Enterprise clients. The timeline includes on-site capture, processing, and quality review.',
-  },
-  {
-    question: 'What equipment do you use?',
-    answer: 'We use professional-grade 360° cameras and equipment to capture high-resolution imagery. Our team brings all necessary equipment to your location.',
-  },
-  {
-    question: 'Can I update my tour after delivery?',
-    answer: 'Yes! We offer tour updates and modifications at an hourly rate. Enterprise clients receive included update hours as part of their package.',
-  },
-  {
-    question: 'Do you travel for on-site captures?',
-    answer: 'We serve clients locally and can travel for projects. Travel fees may apply for locations outside our standard service area.',
-  },
-  {
-    question: 'How do I embed the tour on my website?',
-    answer: 'We provide simple embed codes that work with any website. Just copy and paste the code, and your tour will be live. We also offer integration support.',
-  },
-  {
-    question: 'What industries do you serve?',
-    answer: 'We work with real estate agents, hotels, restaurants, retail stores, event venues, museums, educational institutions, and more. Any space can benefit from a virtual tour!',
-  },
-]
+import { useTranslations } from 'next-intl'
 
 export default function PricingPage() {
+  const t = useTranslations('pricing')
+  const tCta = useTranslations('cta')
+
+  const pricingPlans = [
+    {
+      name: t('starter'),
+      description: t('starterDesc'),
+      price: '$299',
+      priceLabel: t('perTour'),
+      features: [
+        t('features.scenes5'),
+        t('features.basicNav'),
+        t('features.mobileFriendly'),
+        t('features.socialSharing'),
+        t('features.delivery30'),
+        t('features.emailSupport'),
+      ],
+      isPopular: false,
+    },
+    {
+      name: t('professional'),
+      description: t('professionalDesc'),
+      price: '$599',
+      priceLabel: t('perTour'),
+      features: [
+        t('features.scenes15'),
+        t('features.interactiveHotspots'),
+        t('features.customBranding'),
+        t('features.leadCapture'),
+        t('features.streetView'),
+        t('features.analytics'),
+        t('features.delivery14'),
+        t('features.prioritySupport'),
+      ],
+      isPopular: true,
+    },
+    {
+      name: t('enterprise'),
+      description: t('enterpriseDesc'),
+      price: 'Custom',
+      priceLabel: t('contactUs'),
+      features: [
+        t('features.scenesUnlimited'),
+        t('features.advancedFeatures'),
+        t('features.whiteLabel'),
+        t('features.apiAccess'),
+        t('features.accountManager'),
+        t('features.customDev'),
+        t('features.rushDelivery'),
+        t('features.premiumSupport'),
+      ],
+      isPopular: false,
+    },
+  ]
+
+  const faqs = [
+    { question: t('faqs.q1'), answer: t('faqs.a1') },
+    { question: t('faqs.q2'), answer: t('faqs.a2') },
+    { question: t('faqs.q3'), answer: t('faqs.a3') },
+    { question: t('faqs.q4'), answer: t('faqs.a4') },
+    { question: t('faqs.q5'), answer: t('faqs.a5') },
+    { question: t('faqs.q6'), answer: t('faqs.a6') },
+  ]
+
   return (
     <div className="min-h-screen bg-navy">
       <PublicHeader />
@@ -100,11 +86,10 @@ export default function PricingPage() {
             animate={{ opacity: 1, y: 0 }}
           >
             <h1 className="text-display font-bold text-cream mb-6">
-              Simple, Transparent <span className="text-gold">Pricing</span>
+              {t('heroTitle')} <span className="text-gold">{t('heroTitleHighlight')}</span>
             </h1>
             <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-              Choose the package that fits your needs. All plans include professional
-              capture, processing, hosting, and ongoing support.
+              {t('description')}
             </p>
           </motion.div>
         </div>
@@ -116,7 +101,7 @@ export default function PricingPage() {
           <div className="grid md:grid-cols-3 gap-8">
             {pricingPlans.map((plan, index) => (
               <motion.div
-                key={plan.name}
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
@@ -126,7 +111,7 @@ export default function PricingPage() {
                   <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
                     <div className="flex items-center gap-1 bg-gold text-navy px-4 py-1 rounded-full text-sm font-semibold">
                       <Sparkles className="w-4 h-4" />
-                      Most Popular
+                      {t('mostPopular')}
                     </div>
                   </div>
                 )}
@@ -146,8 +131,8 @@ export default function PricingPage() {
                   </div>
 
                   <ul className="space-y-3 mb-8 flex-1">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-3">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
                         <Check className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                         <span className="text-body text-cream-soft">{feature}</span>
                       </li>
@@ -159,7 +144,7 @@ export default function PricingPage() {
                       variant={plan.isPopular ? 'primary' : 'secondary'}
                       className="w-full"
                     >
-                      Get Started
+                      {t('getStarted')}
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </Link>
@@ -180,17 +165,17 @@ export default function PricingPage() {
             className="text-center mb-12"
           >
             <h2 className="text-display font-bold text-cream mb-4">
-              Frequently Asked Questions
+              {t('faqTitle')}
             </h2>
             <p className="text-body-lg text-cream-muted">
-              Everything you need to know about our virtual tour services
+              {t('faqDescription')}
             </p>
           </motion.div>
 
           <div className="space-y-4">
             {faqs.map((faq, index) => (
               <motion.div
-                key={faq.question}
+                key={index}
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -217,14 +202,14 @@ export default function PricingPage() {
             viewport={{ once: true }}
           >
             <h2 className="text-display font-bold text-cream mb-4">
-              Ready to Get Started?
+              {tCta('readyToStart')}
             </h2>
             <p className="text-body-lg text-cream-muted mb-8 max-w-xl mx-auto">
-              Let's discuss your project and find the perfect solution for your needs.
+              {tCta('discussProject')}
             </p>
             <Link href="/contact">
               <Button size="lg">
-                Contact Us Today
+                {tCta('contactUs')}
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>

@@ -6,67 +6,71 @@ import { Eye, Target, Award, Users, CheckCircle } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
 import { motion } from 'framer-motion'
-
-const values = [
-  {
-    icon: Eye,
-    title: 'Immersive Quality',
-    description: 'We deliver stunning, high-resolution 360° tours that capture every detail of your space.',
-  },
-  {
-    icon: Target,
-    title: 'Results-Driven',
-    description: 'Our tours are designed to engage viewers and convert them into customers.',
-  },
-  {
-    icon: Award,
-    title: 'Professional Service',
-    description: 'From capture to delivery, we maintain the highest standards of professionalism.',
-  },
-  {
-    icon: Users,
-    title: 'Client-Focused',
-    description: 'Your success is our priority. We work closely with you to exceed expectations.',
-  },
-]
-
-const process = [
-  {
-    step: '01',
-    title: 'Consultation',
-    description: 'We discuss your needs, understand your space, and plan the perfect tour strategy.',
-  },
-  {
-    step: '02',
-    title: 'Capture',
-    description: 'Our team arrives with professional equipment to capture stunning 360° imagery.',
-  },
-  {
-    step: '03',
-    title: 'Production',
-    description: 'We process and enhance your images, adding hotspots, navigation, and branding.',
-  },
-  {
-    step: '04',
-    title: 'Delivery',
-    description: 'Your tour goes live with hosting, analytics, and ongoing support included.',
-  },
-]
-
-const features = [
-  'High-resolution 360° photography',
-  'Interactive hotspots and navigation',
-  'Mobile-friendly responsive tours',
-  'Custom branding and styling',
-  'Social media sharing integration',
-  'Google Street View publishing',
-  'Lead capture forms',
-  'Analytics and insights',
-  'Fast turnaround times',
-  'Dedicated support',
-]
+import { useTranslations } from 'next-intl'
 
 export default function AboutPage() {
+  const t = useTranslations('about')
+  const tCta = useTranslations('cta')
+
+  const values = [
+    {
+      icon: Eye,
+      title: t('values.quality'),
+      description: t('values.qualityDesc'),
+    },
+    {
+      icon: Target,
+      title: t('values.results'),
+      description: t('values.resultsDesc'),
+    },
+    {
+      icon: Award,
+      title: t('values.professional'),
+      description: t('values.professionalDesc'),
+    },
+    {
+      icon: Users,
+      title: t('values.clientFocused'),
+      description: t('values.clientFocusedDesc'),
+    },
+  ]
+
+  const process = [
+    {
+      step: t('process.step1'),
+      title: t('process.consultation'),
+      description: t('process.consultationDesc'),
+    },
+    {
+      step: t('process.step2'),
+      title: t('process.capture'),
+      description: t('process.captureDesc'),
+    },
+    {
+      step: t('process.step3'),
+      title: t('process.production'),
+      description: t('process.productionDesc'),
+    },
+    {
+      step: t('process.step4'),
+      title: t('process.delivery'),
+      description: t('process.deliveryDesc'),
+    },
+  ]
+
+  const features = [
+    t('features.highRes'),
+    t('features.hotspots'),
+    t('features.mobile'),
+    t('features.branding'),
+    t('features.social'),
+    t('features.streetView'),
+    t('features.leadCapture'),
+    t('features.analytics'),
+    t('features.fastDelivery'),
+    t('features.support'),
+  ]
+
   return (
     <div className="min-h-screen bg-navy">
       <PublicHeader />
@@ -82,21 +86,16 @@ export default function AboutPage() {
               animate={{ opacity: 1, y: 0 }}
             >
               <h1 className="text-display font-bold text-cream mb-6">
-                Bringing Spaces <span className="text-gold">to Life</span>
+                {t('heroTitle')} <span className="text-gold">{t('heroTitleHighlight')}</span>
               </h1>
               <p className="text-body-lg text-cream-soft mb-8 leading-relaxed">
-                Z360 Virtual Tours is a professional 360° virtual tour service helping businesses
-                showcase their spaces in stunning, immersive detail. From real estate to hospitality,
-                we create engaging virtual experiences that captivate your audience and drive results.
+                {t('heroDescription')}
               </p>
               <p className="text-body text-cream-muted mb-8 leading-relaxed">
-                Founded with a passion for visual storytelling, we combine cutting-edge technology
-                with creative expertise to deliver virtual tours that make a lasting impression.
-                Our mission is simple: help businesses connect with their audience through immersive
-                experiences that showcase the true essence of their spaces.
+                {t('heroDescription2')}
               </p>
               <Link href="/contact">
-                <Button size="lg">Work With Us</Button>
+                <Button size="lg">{t('workWithUs')}</Button>
               </Link>
             </motion.div>
 
@@ -131,10 +130,10 @@ export default function AboutPage() {
             className="text-center mb-12"
           >
             <h2 className="text-display font-bold text-cream mb-4">
-              Our Values
+              {t('valuesTitle')}
             </h2>
             <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-              What drives us to deliver exceptional virtual tour experiences
+              {t('valuesDescription')}
             </p>
           </motion.div>
 
@@ -143,7 +142,7 @@ export default function AboutPage() {
               const Icon = value.icon
               return (
                 <motion.div
-                  key={value.title}
+                  key={index}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
@@ -173,17 +172,17 @@ export default function AboutPage() {
             className="text-center mb-12"
           >
             <h2 className="text-display font-bold text-cream mb-4">
-              Our Process
+              {t('processTitle')}
             </h2>
             <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-              A seamless experience from start to finish
+              {t('processDescription')}
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {process.map((step, index) => (
               <motion.div
-                key={step.step}
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -216,16 +215,16 @@ export default function AboutPage() {
               viewport={{ once: true }}
             >
               <h2 className="text-display font-bold text-cream mb-6">
-                What's Included
+                {t('featuresTitle')}
               </h2>
               <p className="text-body-lg text-cream-muted mb-8">
-                Every tour comes packed with features to help you succeed
+                {t('featuresDescription')}
               </p>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 {features.map((feature, index) => (
                   <motion.div
-                    key={feature}
+                    key={index}
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -267,17 +266,17 @@ export default function AboutPage() {
             viewport={{ once: true }}
           >
             <h2 className="text-display font-bold text-cream mb-4">
-              Ready to Get Started?
+              {tCta('readyToStart')}
             </h2>
             <p className="text-body-lg text-cream-muted mb-8 max-w-xl mx-auto">
-              Let's discuss how we can help showcase your space with an immersive virtual tour.
+              {tCta('discussProject')}
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link href="/contact">
-                <Button size="lg">Contact Us</Button>
+                <Button size="lg">{tCta('contactUs')}</Button>
               </Link>
               <Link href="/pricing">
-                <Button variant="secondary" size="lg">View Pricing</Button>
+                <Button variant="secondary" size="lg">{tCta('viewPricing')}</Button>
               </Link>
             </div>
           </motion.div>

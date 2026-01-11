@@ -8,6 +8,7 @@ import { Search, Play, MapPin, Grid, List, Eye, Star, ArrowUpRight } from 'lucid
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Input, Chip, Skeleton } from '@/components/ui'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 interface Tour {
   id: string
@@ -31,6 +32,8 @@ function ToursContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const categoryFromUrl = searchParams.get('category')
+  const t = useTranslations('tours')
+  const tCommon = useTranslations('common')
 
   const [tours, setTours] = useState<Tour[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -72,7 +75,7 @@ function ToursContent() {
           const catsData = await catsRes.json()
           // Add "All Tours" option
           setCategories([
-            { id: 'all', name: 'All Tours', slug: 'all' },
+            { id: 'all', name: t('allTours'), slug: 'all' },
             ...catsData,
           ])
         }
@@ -84,7 +87,7 @@ function ToursContent() {
     }
 
     fetchData()
-  }, [])
+  }, [t])
 
   const filteredTours = tours.filter((tour) => {
     const matchesCategory = activeCategory === 'all' || tour.category.slug === activeCategory
@@ -105,10 +108,10 @@ function ToursContent() {
             className="text-center"
           >
             <h1 className="text-display font-bold text-cream mb-4">
-              Our Portfolio
+              {t('title')}
             </h1>
             <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-              Explore our collection of immersive 360° virtual tours across various industries
+              {t('description')}
             </p>
           </motion.div>
         </div>
@@ -122,7 +125,7 @@ function ToursContent() {
             <div className="flex-1 max-w-md">
               <Input
                 icon={<Search className="w-5 h-5" />}
-                placeholder="Search tours..."
+                placeholder={t('searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -178,7 +181,9 @@ function ToursContent() {
           ) : (
             <>
               <p className="text-body text-cream-muted mb-6">
-                {filteredTours.length} tour{filteredTours.length !== 1 ? 's' : ''} found
+                {filteredTours.length === 1
+                  ? t('toursFound', { count: filteredTours.length })
+                  : t('toursFoundPlural', { count: filteredTours.length })}
               </p>
 
               {filteredTours.length > 0 ? (
@@ -247,7 +252,7 @@ function ToursContent() {
                                   className="flex items-center gap-1 bg-navy/80 backdrop-blur-sm text-gold text-xs font-bold px-3 py-1.5 rounded-lg border border-gold/40 shadow-lg"
                                 >
                                   <Star className="w-3 h-3 fill-gold" />
-                                  Featured
+                                  {t('featured')}
                                 </motion.span>
                               )}
                             </div>
@@ -257,7 +262,7 @@ function ToursContent() {
                               <div className="flex items-center gap-3 text-cream/90 text-sm">
                                 <span className="flex items-center gap-1 bg-navy/60 backdrop-blur-sm px-2 py-1 rounded-md">
                                   <Eye className="w-3 h-3" />
-                                  360° Tour
+                                  {t('tour360')}
                                 </span>
                                 <span className="flex items-center gap-1 bg-navy/60 backdrop-blur-sm px-2 py-1 rounded-md">
                                   <MapPin className="w-3 h-3" />
@@ -305,15 +310,15 @@ function ToursContent() {
                 </div>
               ) : (
                 <div className="text-center py-16">
-                  <p className="text-h3 text-cream-muted mb-4">No tours found</p>
+                  <p className="text-h3 text-cream-muted mb-4">{t('noTours')}</p>
                   <p className="text-body text-cream-dim mb-6">
                     {searchQuery || activeCategory !== 'all'
-                      ? 'Try adjusting your search or filters'
-                      : 'Tours will appear here once added'}
+                      ? t('noToursMessage')
+                      : t('noToursEmpty')}
                   </p>
                   {(searchQuery || activeCategory !== 'all') && (
                     <Button onClick={() => { handleCategoryChange('all'); setSearchQuery(''); }}>
-                      Clear Filters
+                      {t('clearFilters')}
                     </Button>
                   )}
                 </div>
@@ -327,13 +332,13 @@ function ToursContent() {
       <section className="py-16 bg-navy-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-h1 font-bold text-cream mb-4">
-            Want Your Space Featured?
+            {t('wantFeatured')}
           </h2>
           <p className="text-body-lg text-cream-muted mb-8">
-            Let's create an immersive virtual tour for your business
+            {t('wantFeaturedDesc')}
           </p>
           <Link href="/contact">
-            <Button size="lg">Get a Free Quote</Button>
+            <Button size="lg">{t('getFreeQuote')}</Button>
           </Link>
         </div>
       </section>
@@ -342,9 +347,10 @@ function ToursContent() {
 }
 
 function ToursLoading() {
+  const tCommon = useTranslations('common')
   return (
     <div className="py-32 flex items-center justify-center">
-      <div className="text-cream">Loading tours...</div>
+      <div className="text-cream">{tCommon('loading')}</div>
     </div>
   )
 }
