@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -106,7 +106,7 @@ interface Category {
   slug: string
 }
 
-export default function ToursPage() {
+function ToursContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const categoryFromUrl = searchParams.get('category')
@@ -178,9 +178,7 @@ export default function ToursPage() {
   })
 
   return (
-    <div className="min-h-screen bg-navy">
-      <PublicHeader />
-
+    <>
       {/* Hero */}
       <section className="bg-navy-dark py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -402,7 +400,25 @@ export default function ToursPage() {
           </Link>
         </div>
       </section>
+    </>
+  )
+}
 
+function ToursLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-cream">Loading tours...</div>
+    </div>
+  )
+}
+
+export default function ToursPage() {
+  return (
+    <div className="min-h-screen bg-navy">
+      <PublicHeader />
+      <Suspense fallback={<ToursLoading />}>
+        <ToursContent />
+      </Suspense>
       <Footer />
     </div>
   )
