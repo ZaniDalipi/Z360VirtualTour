@@ -1,7 +1,7 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname } from '@/i18n/routing';
 import { useState, useRef, useEffect } from 'react';
 import { Globe, ChevronDown } from 'lucide-react';
 import { locales, localeNames, localeFlags, type Locale } from '@/i18n/config';
@@ -25,24 +25,7 @@ export function LanguageSwitcher() {
   }, []);
 
   const handleLocaleChange = (newLocale: Locale) => {
-    // Remove the current locale prefix from pathname
-    let newPathname = pathname;
-
-    // Check if pathname starts with a locale
-    const segments = pathname.split('/').filter(Boolean);
-    if (segments.length > 0 && locales.includes(segments[0] as Locale)) {
-      // Remove the locale prefix
-      segments.shift();
-      newPathname = '/' + segments.join('/');
-    }
-
-    // For default locale (en), don't add prefix
-    if (newLocale === 'en') {
-      router.push(newPathname || '/');
-    } else {
-      router.push(`/${newLocale}${newPathname}`);
-    }
-
+    router.replace(pathname, { locale: newLocale });
     setIsOpen(false);
   };
 
