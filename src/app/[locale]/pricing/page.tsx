@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { Check, ArrowRight, Sparkles } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'

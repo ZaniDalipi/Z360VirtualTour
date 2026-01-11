@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
