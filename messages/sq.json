@@ -82,6 +82,18 @@
     "highQuality": "Cilësi e Lartë",
     "highQualityDesc": "Imazhe profesionale 360° që plotësojnë standardet e Google"
   },
+  "partners": {
+    "badge": "Partneritete të Besuara",
+    "title": "Partnerët Tanë Teknologjik",
+    "description": "Punojmë me platformat dhe teknologjitë kryesore të tureve virtuale për të ofruar përvojën më të mirë për biznesin tuaj",
+    "googleDesc": "Kontribues i besueshëm",
+    "matterportDesc": "Platformë kapjeje 3D",
+    "kuulaDesc": "Hosting i tureve 360°",
+    "cloudpanoDesc": "Softuer tureje virtuale",
+    "threesixtyDesc": "Mjete krijimi tureje",
+    "becomePartner": "Jeni të interesuar të partnoni me ne?",
+    "contactUs": "Na Kontaktoni"
+  },
   "cta": {
     "title": "Gati të Shfaqni Hapësirën Tuaj?",
     "description": "Le të krijojmë një tur virtual përfshirës që tërheq audiencën tuaj dhe sjell rezultate.",

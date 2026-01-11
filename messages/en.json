@@ -82,6 +82,18 @@
     "highQuality": "High Quality",
     "highQualityDesc": "Professional 360° imagery meeting Google's quality standards"
   },
+  "partners": {
+    "badge": "Trusted Partnerships",
+    "title": "Our Technology Partners",
+    "description": "We work with leading virtual tour platforms and technologies to deliver the best experience for your business",
+    "googleDesc": "Trusted contributor",
+    "matterportDesc": "3D capture platform",
+    "kuulaDesc": "360° tour hosting",
+    "cloudpanoDesc": "Virtual tour software",
+    "threesixtyDesc": "Tour creation tools",
+    "becomePartner": "Interested in partnering with us?",
+    "contactUs": "Contact Us"
+  },
   "cta": {
     "title": "Ready to Showcase Your Space?",
     "description": "Let's create an immersive virtual tour that captivates your audience and drives results.",

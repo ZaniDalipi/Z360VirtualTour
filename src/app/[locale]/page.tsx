@@ -5,7 +5,7 @@ import { Link } from '@/i18n/routing'
 import Image from 'next/image'
 import {
   Eye, Star, Home, Building2, Hotel, Car, GraduationCap, Heart,
-  Play, ArrowRight, Quote
+  Play, ArrowRight, Quote, Handshake
 } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
@@ -66,6 +66,7 @@ export default function HomePage() {
   const tIndustries = useTranslations('industries')
   const tFeatured = useTranslations('featured')
   const tTestimonials = useTranslations('testimonials')
+  const tPartners = useTranslations('partners')
   const tCta = useTranslations('cta')
 
   useEffect(() => {
@@ -422,8 +423,71 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* CTA Section */}
+      {/* Partners Section */}
       <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-4 py-2 mb-6">
+              <Handshake className="w-4 h-4 text-gold" />
+              <span className="text-caption text-gold">{tPartners('badge')}</span>
+            </div>
+            <h2 className="text-display font-bold text-cream mb-4">
+              {tPartners('title')}
+            </h2>
+            <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+              {tPartners('description')}
+            </p>
+          </motion.div>
+
+          {/* Partner Logos Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {[
+              { name: 'Google Street View', description: tPartners('googleDesc') },
+              { name: 'Matterport', description: tPartners('matterportDesc') },
+              { name: 'Kuula', description: tPartners('kuulaDesc') },
+              { name: 'Cloudpano', description: tPartners('cloudpanoDesc') },
+              { name: 'ThreeSixty Tours', description: tPartners('threesixtyDesc') },
+            ].map((partner, index) => (
+              <motion.div
+                key={partner.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="p-6 text-center hover:border-gold/30 transition-all group">
+                  <div className="w-16 h-16 rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-gold/20 transition-colors">
+                    <span className="text-2xl font-bold text-gold">{partner.name.charAt(0)}</span>
+                  </div>
+                  <h3 className="text-sm font-semibold text-cream mb-1">{partner.name}</h3>
+                  <p className="text-xs text-cream-muted">{partner.description}</p>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Partnership CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <p className="text-cream-muted mb-4">{tPartners('becomePartner')}</p>
+            <Link href="/contact">
+              <Button variant="secondary">{tPartners('contactUs')}</Button>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-navy-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
