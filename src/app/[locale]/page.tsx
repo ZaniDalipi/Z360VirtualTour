@@ -5,7 +5,7 @@ import { Link } from '@/i18n/routing'
 import Image from 'next/image'
 import {
   Eye, Star, Home, Building2, Hotel, Car, GraduationCap, Heart,
-  Play, ArrowRight, Quote, Handshake
+  Play, ArrowRight, Quote, Users
 } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
@@ -433,7 +433,7 @@ export default function HomePage() {
             className="text-center mb-8 md:mb-12"
           >
             <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
-              <Handshake className="w-4 h-4 text-gold" />
+              <Users className="w-4 h-4 text-gold" />
               <span className="text-xs sm:text-caption text-gold">{tPartners('badge')}</span>
             </div>
             <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 md:mb-4">
