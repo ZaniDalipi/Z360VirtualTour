@@ -36,54 +36,30 @@ export async function GET() {
   }
 
   try {
-    // Try cache first
-    const cached = cache.get<StatsData>(CacheKeys.STATS)
-    if (cached) {
-      return NextResponse.json(cached)
-    }
-
-    // Use optimized queries with select to reduce data transfer, with retry logic
-    const [totalTours, totalTestimonials, unreadMessages, tours, viewsAggregate] = await Promise.all([
-      withFallback<number>(
-        () => withRetry(() => prisma.tour.count(), { maxRetries: 2 }),
-        0
-      ),
-      withFallback<number>(
-        () => withRetry(() => prisma.testimonial.count(), { maxRetries: 2 }),
-        0
-      ),
-      withFallback<number>(
-        () => withRetry(() => prisma.contactSubmission.count({ where: { isRead: false } }), { maxRetries: 2 }),
-        0
-      ),
-      withFallback<Array<{ id: string; title: string; views: number; category: { name: string } }>>(
-        () => withRetry(
-          () => prisma.tour.findMany({
-            take: 5,
-            orderBy: { createdAt: 'desc' },
-            select: {
-              id: true,
-              title: true,
-              views: true,
-              category: { select: { name: true } },
-            },
-          }),
-          { maxRetries: 2 }
-        ),
-        []
-      ),
-      withFallback<{ _sum: { views: number | null } }>(
-        () => withRetry(() => prisma.tour.aggregate({ _sum: { views: true } }), { maxRetries: 2 }),
-        { _sum: { views: 0 } }
-      ),
+    const [
+      totalTours,
+      totalTestimonials,
+      unreadMessages,
+      tours,
+    ] = await Promise.all([
+      prisma.tour.count(),
+      prisma.testimonial.count(),
+      prisma.contactSubmission.count({ where: { isRead: false } }),
+      prisma.tour.findMany({
+        take: 5,
+        orderBy: { createdAt: 'desc' },
+        include: { category: true },
+      }),
     ])
 
-    const stats: StatsData = {
+    const totalViews = tours.reduce((sum: number, tour: { views: number }) => sum + tour.views, 0)
+
+    return NextResponse.json({
       totalTours,
       totalViews: viewsAggregate._sum.views || 0,
       totalTestimonials,
       unreadMessages,
-      recentTours: tours.map((tour) => ({
+      recentTours: tours.map((tour: { id: string; title: string; views: number; category: { name: string } }) => ({
         id: tour.id,
         title: tour.title,
         views: tour.views,

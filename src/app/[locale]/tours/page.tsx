@@ -1,0 +1,368 @@
+'use client'
+
+import { useState, useEffect, Suspense } from 'react'
+import { Link, useRouter } from '@/i18n/routing'
+import Image from 'next/image'
+import { useSearchParams } from 'next/navigation'
+import { Search, Play, MapPin, Grid, List, Eye, Star, ArrowUpRight } from 'lucide-react'
+import { PublicHeader, Footer } from '@/components/layout'
+import { Button, Input, Chip, Skeleton } from '@/components/ui'
+import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
+
+interface Tour {
+  id: string
+  title: string
+  slug: string
+  shortDescription?: string | null
+  clientName: string | null
+  location: string | null
+  coverImage: string
+  category: { name: string; slug: string }
+  featured: boolean
+}
+
+interface Category {
+  id: string
+  name: string
+  slug: string
+}
+
+function ToursContent() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const categoryFromUrl = searchParams.get('category')
+  const t = useTranslations('tours')
+  const tCommon = useTranslations('common')
+
+  const [tours, setTours] = useState<Tour[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [activeCategory, setActiveCategory] = useState(categoryFromUrl || 'all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Update active category when URL changes
+  useEffect(() => {
+    if (categoryFromUrl) {
+      setActiveCategory(categoryFromUrl)
+    }
+  }, [categoryFromUrl])
+
+  // Update URL when category changes
+  const handleCategoryChange = (slug: string) => {
+    setActiveCategory(slug)
+    if (slug === 'all') {
+      router.push('/tours', { scroll: false })
+    } else {
+      router.push(`/tours?category=${slug}`, { scroll: false })
+    }
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch tours
+        const toursRes = await fetch('/api/tours')
+        if (toursRes.ok) {
+          const toursData = await toursRes.json()
+          setTours(toursData)
+        }
+
+        // Fetch categories
+        const catsRes = await fetch('/api/categories')
+        if (catsRes.ok) {
+          const catsData = await catsRes.json()
+          // Add "All Tours" option
+          setCategories([
+            { id: 'all', name: t('allTours'), slug: 'all' },
+            ...catsData,
+          ])
+        }
+      } catch (error) {
+        console.error('Failed to fetch data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [t])
+
+  const filteredTours = tours.filter((tour) => {
+    const matchesCategory = activeCategory === 'all' || tour.category.slug === activeCategory
+    const matchesSearch = tour.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (tour.clientName?.toLowerCase() || '').includes(searchQuery.toLowerCase()) ||
+                         (tour.location?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+    return matchesCategory && matchesSearch
+  })
+
+  return (
+    <>
+      {/* Hero */}
+      <section className="bg-navy-dark py-10 sm:py-14 md:py-20 lg:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-display font-bold text-cream mb-2 sm:mb-4">
+              {t('title')}
+            </h1>
+            <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-2">
+              {t('description')}
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Filters */}
+      <section className="sticky top-16 z-30 bg-navy border-b border-gold/10 py-3 sm:py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center gap-3 sm:gap-4">
+            {/* Search */}
+            <div className="flex-1 max-w-md">
+              <Input
+                icon={<Search className="w-4 h-4 sm:w-5 sm:h-5" />}
+                placeholder={t('searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {/* Categories */}
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 md:pb-0 -mx-1 px-1">
+              {categories.map((category) => (
+                <Chip
+                  key={category.id}
+                  active={activeCategory === category.slug}
+                  onClick={() => handleCategoryChange(category.slug)}
+                >
+                  {category.name}
+                </Chip>
+              ))}
+            </div>
+
+            {/* View Toggle */}
+            <div className="hidden md:flex border border-cream/15 rounded-md overflow-hidden flex-shrink-0">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 ${viewMode === 'grid' ? 'bg-gold text-navy' : 'text-cream-muted hover:bg-cream/5'}`}
+              >
+                <Grid className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 ${viewMode === 'list' ? 'bg-gold text-navy' : 'text-cream-muted hover:bg-cream/5'}`}
+              >
+                <List className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tours Grid */}
+      <section className="py-8 sm:py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {isLoading ? (
+            <div className="grid gap-4 sm:gap-6 md:gap-8 sm:grid-cols-2 lg:grid-cols-3">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="rounded-xl sm:rounded-2xl bg-navy-medium border border-gold/10 overflow-hidden">
+                  <Skeleton className="h-48 sm:h-64 w-full" />
+                  <div className="p-4 sm:p-6">
+                    <Skeleton className="h-5 sm:h-6 w-3/4 mb-2" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <>
+              <p className="text-sm sm:text-body text-cream-muted mb-4 sm:mb-6">
+                {filteredTours.length === 1
+                  ? t('toursFound', { count: filteredTours.length })
+                  : t('toursFoundPlural', { count: filteredTours.length })}
+              </p>
+
+              {filteredTours.length > 0 ? (
+                <div className={`grid gap-4 sm:gap-6 md:gap-8 ${viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                  {filteredTours.map((tour, index) => (
+                    <motion.div
+                      key={tour.id}
+                      initial={{ opacity: 0, y: 30 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.08, duration: 0.5 }}
+                      whileHover={{ y: -8 }}
+                      className="group"
+                    >
+                      <Link href={`/tour/${tour.slug}`}>
+                        <div className={`relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
+                                         group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-gold/10
+                                         ${viewMode === 'list' ? 'md:flex' : ''}`}>
+
+                          {/* Image Container */}
+                          <div className={`relative overflow-hidden ${viewMode === 'list' ? 'md:w-64 lg:w-72 md:flex-shrink-0 h-48 sm:h-56 md:h-full' : 'h-48 sm:h-56 md:h-64'}`}>
+                            <div className="h-full">
+                              <Image
+                                src={tour.coverImage}
+                                alt={tour.title}
+                                fill
+                                className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110"
+                              />
+                            </div>
+
+                            {/* Gradient Overlays */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/50 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-gold/0 to-gold/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+                            {/* Animated Play Button */}
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <motion.div
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                whileHover={{ scale: 1.1 }}
+                                className="opacity-0 group-hover:opacity-100 transition-all duration-300"
+                              >
+                                <div className="relative">
+                                  <div className="absolute -inset-2 rounded-full bg-gold/30 animate-ping" />
+                                  <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-gold to-gold-soft flex items-center justify-center shadow-xl shadow-gold/30 backdrop-blur-sm">
+                                    <Play className="w-8 h-8 text-navy ml-1" fill="currentColor" />
+                                  </div>
+                                </div>
+                              </motion.div>
+                            </div>
+
+                            {/* Top Badges Row */}
+                            <div className="absolute top-4 left-4 right-4 flex items-start justify-between">
+                              <motion.span
+                                initial={{ x: -20, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                transition={{ delay: index * 0.08 + 0.2 }}
+                                className="bg-gold/90 backdrop-blur-sm text-navy text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg"
+                              >
+                                {tour.category.name}
+                              </motion.span>
+
+                              {tour.featured && (
+                                <motion.span
+                                  initial={{ x: 20, opacity: 0 }}
+                                  animate={{ x: 0, opacity: 1 }}
+                                  transition={{ delay: index * 0.08 + 0.3 }}
+                                  className="flex items-center gap-1 bg-navy/80 backdrop-blur-sm text-gold text-xs font-bold px-3 py-1.5 rounded-lg border border-gold/40 shadow-lg"
+                                >
+                                  <Star className="w-3 h-3 fill-gold" />
+                                  {t('featured')}
+                                </motion.span>
+                              )}
+                            </div>
+
+                            {/* Bottom Image Overlay Info */}
+                            <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-500">
+                              <div className="flex items-center gap-3 text-cream/90 text-sm">
+                                <span className="flex items-center gap-1 bg-navy/60 backdrop-blur-sm px-2 py-1 rounded-md">
+                                  <Eye className="w-3 h-3" />
+                                  {t('tour360')}
+                                </span>
+                                <span className="flex items-center gap-1 bg-navy/60 backdrop-blur-sm px-2 py-1 rounded-md">
+                                  <MapPin className="w-3 h-3" />
+                                  {tour.location}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Content */}
+                          <div className={`p-4 sm:p-6 ${viewMode === 'list' ? 'md:flex-1 md:flex md:flex-col md:justify-center' : ''}`}>
+                            <div className="flex items-start justify-between gap-2 mb-2 sm:mb-3">
+                              <h3 className="text-base sm:text-lg md:text-xl font-bold text-cream group-hover:text-gold transition-colors duration-300 line-clamp-2">
+                                {tour.title}
+                              </h3>
+                              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-cream-muted group-hover:text-gold group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 flex-shrink-0" />
+                            </div>
+
+                            {tour.shortDescription && (
+                              <p className="text-xs sm:text-sm text-cream-soft mb-3 sm:mb-4 line-clamp-2 leading-relaxed">{tour.shortDescription}</p>
+                            )}
+
+                            <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-gold/10">
+                              <div className="min-w-0 flex-1">
+                                <p className="text-xs sm:text-sm font-medium text-cream truncate">{tour.clientName}</p>
+                                <p className="text-[10px] sm:text-xs text-cream-muted flex items-center gap-1 mt-0.5">
+                                  <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" /> <span className="truncate">{tour.location}</span>
+                                </p>
+                              </div>
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gold/10 flex items-center justify-center group-hover:bg-gold group-hover:scale-110 transition-all duration-300 flex-shrink-0 ml-2">
+                                <Play className="w-3 h-3 sm:w-4 sm:h-4 text-gold group-hover:text-navy transition-colors" fill="currentColor" />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Hover Glow Effect */}
+                          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                            <div className="absolute inset-x-0 -bottom-px h-px bg-gradient-to-r from-transparent via-gold to-transparent" />
+                            <div className="absolute inset-y-0 -right-px w-px bg-gradient-to-b from-transparent via-gold to-transparent" />
+                          </div>
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16">
+                  <p className="text-h3 text-cream-muted mb-4">{t('noTours')}</p>
+                  <p className="text-body text-cream-dim mb-6">
+                    {searchQuery || activeCategory !== 'all'
+                      ? t('noToursMessage')
+                      : t('noToursEmpty')}
+                  </p>
+                  {(searchQuery || activeCategory !== 'all') && (
+                    <Button onClick={() => { handleCategoryChange('all'); setSearchQuery(''); }}>
+                      {t('clearFilters')}
+                    </Button>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-10 sm:py-14 md:py-16 bg-navy-dark">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-xl sm:text-2xl md:text-h1 font-bold text-cream mb-2 sm:mb-4">
+            {t('wantFeatured')}
+          </h2>
+          <p className="text-sm sm:text-base md:text-body-lg text-cream-muted mb-6 sm:mb-8">
+            {t('wantFeaturedDesc')}
+          </p>
+          <Link href="/contact">
+            <Button size="lg" className="w-full sm:w-auto">{t('getFreeQuote')}</Button>
+          </Link>
+        </div>
+      </section>
+    </>
+  )
+}
+
+function ToursLoading() {
+  const tCommon = useTranslations('common')
+  return (
+    <div className="py-32 flex items-center justify-center">
+      <div className="text-cream">{tCommon('loading')}</div>
+    </div>
+  )
+}
+
+export default function ToursPage() {
+  return (
+    <div className="min-h-screen bg-navy">
+      <PublicHeader />
+      <Suspense fallback={<ToursLoading />}>
+        <ToursContent />
+      </Suspense>
+      <Footer />
+    </div>
+  )
+}

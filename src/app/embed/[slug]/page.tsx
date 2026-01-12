@@ -1,48 +1,43 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { Home, Grid3X3, Calendar, CreditCard, Menu, X, ExternalLink, Play } from 'lucide-react'
-import { sanitizeEmbedHTML } from '@/lib/utils'
+import Image from 'next/image'
+import { MapPin, ExternalLink, Eye } from 'lucide-react'
 
 interface Tour {
   id: string
   title: string
   slug: string
+  description: string | null
+  clientName: string | null
+  location: string | null
+  coverImage: string
   tourUrl: string | null
   tourEmbed: string | null
-  coverImage: string | null
-  location?: string | null
+  category: {
+    name: string
+  }
 }
-
-const baseUrl = 'https://z360-virtual-tour.vercel.app'
 
 export default function EmbedTourPage() {
   const params = useParams()
   const slug = params.slug as string
   const [tour, setTour] = useState<Tour | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [showNav, setShowNav] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchTour() {
+    const fetchTour = async () => {
       try {
-        const response = await fetch(`/api/public/tours/${slug}`)
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('Tour not found')
-          } else {
-            setError('Failed to load tour')
-          }
-          return
+        const res = await fetch(`/api/embed/${slug}`)
+        if (res.ok) {
+          const data = await res.json()
+          setTour(data)
         }
-        const data = await response.json()
-        setTour(data)
-      } catch {
-        setError('Failed to load tour')
+      } catch (error) {
+        console.error('Failed to fetch tour:', error)
       } finally {
-        setLoading(false)
+        setIsLoading(false)
       }
     }
 
@@ -51,373 +46,212 @@ export default function EmbedTourPage() {
     }
   }, [slug])
 
-  // Send message to parent window about tour loading
-  useEffect(() => {
-    if (tour) {
-      window.parent.postMessage({
-        type: 'z360-tour-loaded',
-        tour: {
-          id: tour.id,
-          title: tour.title,
-          slug: tour.slug,
-        }
-      }, '*')
-    }
-  }, [tour])
-
-  const navLinks = [
-    { name: 'Home', href: `${baseUrl}/`, icon: Home },
-    { name: 'All Tours', href: `${baseUrl}/tours`, icon: Grid3X3 },
-    { name: 'Availability', href: `${baseUrl}/schedule`, icon: Calendar },
-    { name: 'Get a Quote', href: `${baseUrl}/pricing`, icon: CreditCard },
-  ]
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div style={{
-        width: '100vw',
-        height: '100vh',
+        minHeight: '100vh',
+        background: '#0A1520',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#0D1B2A',
-        color: '#C9A962',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
       }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '50px',
-            height: '50px',
-            border: '3px solid rgba(201, 169, 98, 0.3)',
-            borderTop: '3px solid #C9A962',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 20px',
-          }} />
-          <p>Loading Virtual Tour...</p>
-          <style>{`
-            @keyframes spin {
-              0% { transform: rotate(0deg); }
-              100% { transform: rotate(360deg); }
-            }
-          `}</style>
+        <div style={{
+          width: '40px',
+          height: '40px',
+          border: '3px solid #C9A962',
+          borderTopColor: 'transparent',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite',
+        }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    )
+  }
+
+  if (!tour) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#0A1520',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#E8DCC4',
+        fontFamily: 'system-ui, sans-serif',
+      }}>
+        <p>Tour not found</p>
+      </div>
+    )
+  }
+
+  // If tour has embed code, show it
+  if (tour.tourEmbed) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#0A1520',
+        fontFamily: 'system-ui, sans-serif',
+      }}>
+        {/* Embedded Tour */}
+        <div
+          style={{ width: '100%', height: 'calc(100vh - 60px)' }}
+          dangerouslySetInnerHTML={{ __html: tour.tourEmbed }}
+        />
+
+        {/* Footer Bar */}
+        <div style={{
+          height: '60px',
+          background: '#0A1520',
+          borderTop: '1px solid rgba(201, 169, 98, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ color: '#C9A962', fontWeight: 'bold', fontSize: '14px' }}>
+              Z<span style={{ color: '#E8DCC4' }}>360</span>
+            </span>
+            <span style={{ color: '#E8DCC4', fontSize: '14px' }}>{tour.title}</span>
+            {tour.location && (
+              <span style={{ color: '#B8A88A', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <MapPin style={{ width: '12px', height: '12px' }} />
+                {tour.location}
+              </span>
+            )}
+          </div>
+          {tour.tourUrl && (
+            <a
+              href={tour.tourUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: '#C9A962',
+                textDecoration: 'none',
+                fontSize: '13px',
+              }}
+            >
+              <ExternalLink style={{ width: '14px', height: '14px' }} />
+              Full Screen
+            </a>
+          )}
         </div>
       </div>
     )
   }
 
-  if (error || !tour) {
-    return (
-      <div style={{
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#0D1B2A',
-        color: '#fff',
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <h2 style={{ color: '#C9A962', marginBottom: '10px' }}>Tour Not Found</h2>
-          <p style={{ color: '#888' }}>{error || 'The requested tour could not be loaded.'}</p>
+  // Fallback: show cover image with link
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#0A1520',
+      fontFamily: 'system-ui, sans-serif',
+      position: 'relative',
+    }}>
+      {/* Cover Image */}
+      <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 60px)' }}>
+        <Image
+          src={tour.coverImage}
+          alt={tour.title}
+          fill
+          style={{ objectFit: 'cover' }}
+        />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(to top, rgba(10, 21, 32, 0.9), transparent)',
+        }} />
+
+        {/* Play Button */}
+        {tour.tourUrl && (
           <a
-            href={`${baseUrl}/tours`}
+            href={tour.tourUrl}
             target="_blank"
             rel="noopener noreferrer"
             style={{
-              display: 'inline-block',
-              marginTop: '20px',
-              padding: '12px 24px',
-              background: '#C9A962',
-              color: '#0D1B2A',
-              borderRadius: '8px',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '80px',
+              height: '80px',
+              background: 'rgba(201, 169, 98, 0.9)',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               textDecoration: 'none',
-              fontWeight: '600',
+              transition: 'transform 0.2s',
             }}
           >
-            Browse All Tours
+            <Eye style={{ width: '32px', height: '32px', color: '#0A1520' }} />
           </a>
-        </div>
-      </div>
-    )
-  }
+        )}
 
-  // Render tour content with navigation overlay
-  const renderTourContent = () => {
-    if (tour.tourEmbed) {
-      // Sanitize the embed HTML to prevent XSS attacks
-      const sanitizedEmbed = sanitizeEmbedHTML(tour.tourEmbed)
-      return (
-        <div
-          style={{ width: '100%', height: '100%', overflow: 'hidden' }}
-          dangerouslySetInnerHTML={{ __html: sanitizedEmbed }}
-        />
-      )
-    }
-
-    if (tour.tourUrl) {
-      return (
-        <iframe
-          src={tour.tourUrl}
-          style={{
-            width: '100%',
-            height: '100%',
-            border: 'none',
-          }}
-          allowFullScreen
-          allow="xr-spatial-tracking; gyroscope; accelerometer"
-          title={tour.title}
-        />
-      )
-    }
-
-    // Fallback if no tour content
-    return (
-      <div style={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: '#0D1B2A',
-        backgroundImage: tour.coverImage ? `url(${tour.coverImage})` : undefined,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        color: '#fff',
-      }}>
+        {/* Info Overlay */}
         <div style={{
-          textAlign: 'center',
-          background: 'rgba(13, 27, 42, 0.9)',
-          padding: '40px',
-          borderRadius: '12px',
-          maxWidth: '500px',
-        }}>
-          <h2 style={{ color: '#C9A962', marginBottom: '10px' }}>{tour.title}</h2>
-          <p style={{ color: '#888' }}>Virtual tour coming soon</p>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div style={{
-      width: '100vw',
-      height: '100vh',
-      position: 'relative',
-      overflow: 'hidden',
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-    }}>
-      {/* Tour Content */}
-      {renderTourContent()}
-
-      {/* Floating Menu Button */}
-      <button
-        onClick={() => setShowNav(!showNav)}
-        style={{
           position: 'absolute',
-          top: '16px',
-          right: '16px',
-          width: '48px',
-          height: '48px',
-          borderRadius: '12px',
-          background: 'rgba(13, 27, 42, 0.9)',
-          backdropFilter: 'blur(10px)',
-          border: '1px solid rgba(201, 169, 98, 0.3)',
-          color: '#C9A962',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          transition: 'all 0.2s',
-        }}
-        onMouseOver={(e) => {
-          e.currentTarget.style.background = 'rgba(201, 169, 98, 0.2)'
-          e.currentTarget.style.borderColor = 'rgba(201, 169, 98, 0.6)'
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.background = 'rgba(13, 27, 42, 0.9)'
-          e.currentTarget.style.borderColor = 'rgba(201, 169, 98, 0.3)'
-        }}
-      >
-        {showNav ? <X size={24} /> : <Menu size={24} />}
-      </button>
-
-      {/* Navigation Sidebar */}
-      <div style={{
-        position: 'absolute',
-        top: '0',
-        right: showNav ? '0' : '-320px',
-        width: '300px',
-        height: '100%',
-        background: 'rgba(13, 27, 42, 0.95)',
-        backdropFilter: 'blur(20px)',
-        borderLeft: '1px solid rgba(201, 169, 98, 0.2)',
-        transition: 'right 0.3s ease',
-        zIndex: 99,
-        display: 'flex',
-        flexDirection: 'column',
-        padding: '80px 20px 20px',
-      }}>
-        {/* Tour Info */}
-        <div style={{
-          marginBottom: '24px',
-          paddingBottom: '24px',
-          borderBottom: '1px solid rgba(201, 169, 98, 0.2)',
+          bottom: '20px',
+          left: '20px',
+          right: '20px',
         }}>
-          <p style={{
-            color: 'rgba(255,255,255,0.5)',
+          <span style={{
+            display: 'inline-block',
+            background: '#C9A962',
+            color: '#0A1520',
+            padding: '4px 12px',
+            borderRadius: '20px',
             fontSize: '12px',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
+            fontWeight: '600',
             marginBottom: '8px',
           }}>
-            Currently Viewing
-          </p>
-          <h3 style={{
-            color: '#fff',
-            fontSize: '18px',
-            fontWeight: '600',
-            marginBottom: '4px',
-          }}>
+            {tour.category.name}
+          </span>
+          <h1 style={{ color: '#E8DCC4', fontSize: '24px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
             {tour.title}
-          </h3>
+          </h1>
           {tour.location && (
-            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
-              📍 {tour.location}
+            <p style={{ color: '#B8A88A', fontSize: '14px', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <MapPin style={{ width: '14px', height: '14px' }} />
+              {tour.location}
             </p>
           )}
         </div>
+      </div>
 
-        {/* Branding */}
-        <div style={{
-          marginBottom: '24px',
-          paddingBottom: '24px',
-          borderBottom: '1px solid rgba(201, 169, 98, 0.2)',
-        }}>
-          <p style={{
-            color: 'rgba(255,255,255,0.5)',
-            fontSize: '12px',
-            marginBottom: '8px',
-          }}>
-            Powered by
-          </p>
-          <a
-            href={baseUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              color: '#C9A962',
-              fontSize: '20px',
-              fontWeight: 'bold',
-              textDecoration: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-            }}
-          >
-            Z360 Virtual Tours
-            <ExternalLink size={16} />
-          </a>
-        </div>
-
-        {/* Navigation Links */}
-        <nav style={{ flex: 1 }}>
-          <p style={{
-            color: 'rgba(255,255,255,0.5)',
-            fontSize: '12px',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            marginBottom: '12px',
-          }}>
-            Explore
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {navLinks.map((link) => {
-              const Icon = link.icon
-              return (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '14px 16px',
-                    borderRadius: '10px',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    border: '1px solid rgba(201, 169, 98, 0.1)',
-                    color: '#fff',
-                    textDecoration: 'none',
-                    transition: 'all 0.2s',
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = 'rgba(201, 169, 98, 0.15)'
-                    e.currentTarget.style.borderColor = 'rgba(201, 169, 98, 0.4)'
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                    e.currentTarget.style.borderColor = 'rgba(201, 169, 98, 0.1)'
-                  }}
-                >
-                  <Icon size={20} style={{ color: '#C9A962' }} />
-                  <span style={{ fontSize: '15px' }}>{link.name}</span>
-                  <ExternalLink size={14} style={{ marginLeft: 'auto', opacity: 0.5 }} />
-                </a>
-              )
-            })}
-          </div>
-        </nav>
-
-        {/* View Full Tour Button */}
+      {/* Footer Bar */}
+      <div style={{
+        height: '60px',
+        background: '#0A1520',
+        borderTop: '1px solid rgba(201, 169, 98, 0.3)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 16px',
+      }}>
+        <span style={{ color: '#C9A962', fontWeight: 'bold', fontSize: '14px' }}>
+          Z<span style={{ color: '#E8DCC4' }}>360</span> Virtual Tours
+        </span>
         <a
-          href={`${baseUrl}/tour/${tour.slug}`}
+          href={`https://z360virtualtours.com/tour/${tour.slug}`}
           target="_blank"
           rel="noopener noreferrer"
           style={{
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
-            gap: '10px',
-            padding: '16px',
-            borderRadius: '12px',
-            background: '#C9A962',
-            color: '#0D1B2A',
+            gap: '6px',
+            color: '#C9A962',
             textDecoration: 'none',
-            fontWeight: '600',
-            fontSize: '15px',
-            transition: 'all 0.2s',
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.background = '#dbbe75'
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.background = '#C9A962'
+            fontSize: '13px',
           }}
         >
-          <Play size={18} />
-          View Full Tour Page
+          <ExternalLink style={{ width: '14px', height: '14px' }} />
+          View Full Tour
         </a>
       </div>
-
-      {/* Overlay when nav is open */}
-      {showNav && (
-        <div
-          onClick={() => setShowNav(false)}
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: '300px',
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.3)',
-            zIndex: 98,
-          }}
-        />
-      )}
     </div>
   )
 }

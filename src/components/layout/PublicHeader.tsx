@@ -1,29 +1,15 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { Menu, Phone, User, LogIn } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { MobileDrawer } from './MobileDrawer'
-
-interface UserData {
-  id: string
-  name: string
-  email: string
-}
-
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/tours', label: 'Portfolio' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/schedule', label: 'Availability' },
-  { href: '/about', label: 'About' },
-]
+import { Link } from '@/i18n/routing'
+import { useState } from 'react'
+import { Menu, X, LogIn, UserPlus } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from '@/components/ui'
 
 export function PublicHeader() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+<<<<<<< HEAD
   const [isScrolled, setIsScrolled] = useState(false)
   const [user, setUser] = useState<UserData | null>(null)
   const [isMounted, setIsMounted] = useState(false)
@@ -58,6 +44,19 @@ export function PublicHeader() {
   const handleCloseMenu = useCallback(() => {
     setMobileMenuOpen(false)
   }, [])
+=======
+  const t = useTranslations('nav')
+  const tContact = useTranslations('contact')
+  const tAuth = useTranslations('auth')
+
+  const navLinks = [
+    { href: '/', label: t('home') },
+    { href: '/tours', label: t('tours') },
+    { href: '/testimonials', label: t('testimonials') },
+    { href: '/pricing', label: t('pricing') },
+    { href: '/contact', label: t('contact') },
+  ]
+>>>>>>> claude/add-translation-support-YzG9S
 
   return (
     <>
@@ -83,6 +82,7 @@ export function PublicHeader() {
             </Link>
 
             {/* Desktop Navigation */}
+<<<<<<< HEAD
             <nav className="hidden lg:flex items-center gap-1">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href
@@ -141,6 +141,53 @@ export function PublicHeader() {
               <Link href="/contact" className="hidden lg:block">
                 <button className="bg-gold hover:bg-gold-soft text-navy font-bold px-6 py-2.5 rounded-lg transition-all shadow-lg shadow-gold/20 hover:shadow-xl hover:shadow-gold/30 hover:scale-105">
                   Work With Us
+=======
+            <nav className="hidden md:flex items-center gap-8">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-cream font-medium hover:text-gold transition-colors"
+                  style={{ textDecoration: 'none' }}
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Right side - Language Switcher + Auth + CTA */}
+            <div className="hidden md:flex items-center gap-3">
+              <LanguageSwitcher />
+              <Link
+                href="/account/login"
+                className="flex items-center gap-1.5 text-cream-muted hover:text-cream transition-colors text-sm"
+                style={{ textDecoration: 'none' }}
+              >
+                <LogIn className="w-4 h-4" />
+                {tAuth('login')}
+              </Link>
+              <Link
+                href="/account/signup"
+                className="flex items-center gap-1.5 text-cream hover:text-gold transition-colors text-sm font-medium"
+                style={{ textDecoration: 'none' }}
+              >
+                <UserPlus className="w-4 h-4" />
+                {tAuth('signup')}
+              </Link>
+              <Link href="/contact" style={{ textDecoration: 'none' }}>
+                <button
+                  style={{
+                    backgroundColor: '#C9A962',
+                    color: '#0A1520',
+                    padding: '0.5rem 1.5rem',
+                    borderRadius: '0.375rem',
+                    fontWeight: 600,
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {tContact('title')}
+>>>>>>> claude/add-translation-support-YzG9S
                 </button>
               </Link>
 
@@ -156,6 +203,96 @@ export function PublicHeader() {
             </div>
           </div>
         </div>
+<<<<<<< HEAD
+=======
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div
+            style={{
+              backgroundColor: '#0A1520',
+              borderTop: '1px solid rgba(201, 169, 98, 0.2)',
+              padding: '1rem',
+            }}
+            className="md:hidden"
+          >
+            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  style={{
+                    color: '#E8DCC4',
+                    fontWeight: 500,
+                    textDecoration: 'none',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '0.5rem',
+                    display: 'block',
+                  }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div style={{ padding: '0.75rem 1rem' }}>
+                <LanguageSwitcher />
+              </div>
+              <Link
+                href="/account/login"
+                style={{
+                  color: '#B8A88A',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <LogIn style={{ width: '16px', height: '16px' }} />
+                {tAuth('login')}
+              </Link>
+              <Link
+                href="/account/signup"
+                style={{
+                  color: '#E8DCC4',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <UserPlus style={{ width: '16px', height: '16px' }} />
+                {tAuth('signup')}
+              </Link>
+              <div style={{ paddingTop: '0.5rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
+                <Link href="/contact" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none' }}>
+                  <button
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#C9A962',
+                      color: '#0A1520',
+                      padding: '0.75rem',
+                      borderRadius: '0.375rem',
+                      fontWeight: 600,
+                      border: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {tContact('title')}
+                  </button>
+                </Link>
+              </div>
+            </nav>
+          </div>
+        )}
+>>>>>>> claude/add-translation-support-YzG9S
       </header>
 
       {/* Mobile Drawer */}

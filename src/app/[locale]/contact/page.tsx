@@ -10,6 +10,7 @@ import {
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card, Input, Modal } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 const socialLinks = [
   {
@@ -110,6 +111,8 @@ interface QuoteResult {
   depositAmount: number | null
 }
 
+export default function ContactPage() {
+  const t = useTranslations('contact')
 interface BookingResponse {
   bookingId: string
   quote: {
@@ -130,6 +133,33 @@ function ContactPageContent() {
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [quote, setQuote] = useState<QuoteResult | null>(null)
   const [isCalculating, setIsCalculating] = useState(false)
+
+  const contactInfo = [
+    {
+      icon: MapPin,
+      label: t('info.location'),
+      value: t('info.locationValue'),
+      subtext: t('info.locationSubtext'),
+    },
+    {
+      icon: Phone,
+      label: t('info.phone'),
+      value: '+389 71 967 915',
+      subtext: t('info.phoneSubtext'),
+    },
+    {
+      icon: Mail,
+      label: t('info.email'),
+      value: 'z360virtualtours@gmail.com',
+      subtext: t('info.emailSubtext'),
+    },
+    {
+      icon: Clock,
+      label: t('info.responseTime'),
+      value: t('info.responseTimeValue'),
+      subtext: t('info.responseTimeSubtext'),
+    },
+  ]
   const [bookingResponse, setBookingResponse] = useState<BookingResponse | null>(null)
   const [sameCityDiscountPercent, setSameCityDiscountPercent] = useState(15)
   const [modalState, setModalState] = useState<{
@@ -820,7 +850,7 @@ function ContactPageContent() {
       <PublicHeader />
 
       {/* Hero */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
+      <section className="relative py-10 sm:py-14 md:py-20 lg:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial opacity-30" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -828,20 +858,20 @@ function ContactPageContent() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-display font-bold text-cream mb-6">
-              Book Your <span className="text-gold">Virtual Tour</span>
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-display font-bold text-cream mb-3 sm:mb-4 md:mb-6">
+              {t('heroTitle')} <span className="text-gold">{t('heroTitleHighlight')}</span>
             </h1>
-            <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-              Get an instant quote and schedule your professional 360° virtual tour.
-              Fill in the details below and we'll get back to you within 24 hours.
+            <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-2">
+              {t('description')}
             </p>
           </motion.div>
         </div>
       </section>
 
       {/* Booking Form & Info */}
-      <section className="py-8 pb-20">
+      <section className="py-6 sm:py-8 pb-12 sm:pb-16 md:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
           <div className="grid lg:grid-cols-5 gap-6 lg:gap-12">
             {/* Contact Info & Quote Preview */}
             <motion.div
@@ -927,11 +957,11 @@ function ContactPageContent() {
 
               {/* Quote Preview */}
               {quote && (
-                <Card className="p-6 border-gold/30">
-                  <h3 className="text-lg font-semibold text-gold mb-4">Quote Estimate</h3>
+                <Card className="p-4 sm:p-6 border-gold/30">
+                  <h3 className="text-base sm:text-lg font-semibold text-gold mb-3 sm:mb-4">{t('quote.title')}</h3>
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-cream-muted">Base Price ({selectedPlan?.name})</span>
+                      <span className="text-cream-muted">{t('quote.basePrice')} ({selectedPlan?.name})</span>
                       <span className="text-cream">€{quote.basePrice.toFixed(2)}</span>
                     </div>
 
@@ -946,14 +976,14 @@ function ContactPageContent() {
 
                     {quote.travelFee > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-cream-muted">Travel ({quote.travelZoneName})</span>
+                        <span className="text-cream-muted">{t('quote.travel')} ({quote.travelZoneName})</span>
                         <span className="text-cream">+€{quote.travelFee.toFixed(2)}</span>
                       </div>
                     )}
 
                     {quote.bundleDiscount > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-cream-muted">Bundle Discount</span>
+                        <span className="text-cream-muted">{t('quote.bundleDiscount')}</span>
                         <span className="text-green-400">-€{quote.bundleDiscount.toFixed(2)}</span>
                       </div>
                     )}
@@ -968,32 +998,32 @@ function ContactPageContent() {
                     )}
 
                     <div className="flex justify-between pt-3 border-t border-gold/20">
-                      <span className="text-cream font-medium">Estimated Total</span>
+                      <span className="text-cream font-medium">{t('quote.estimatedTotal')}</span>
                       <span className="text-gold text-xl font-bold">€{quote.total.toFixed(2)}</span>
                     </div>
 
                     {quote.depositAmount && (
                       <div className="flex justify-between text-cream-muted">
-                        <span>Deposit Required</span>
+                        <span>{t('quote.depositRequired')}</span>
                         <span>€{quote.depositAmount.toFixed(2)}</span>
                       </div>
                     )}
                   </div>
                   <p className="text-xs text-cream-muted mt-4">
-                    * Final price confirmed after review
+                    {t('quote.finalPriceNote')}
                   </p>
                 </Card>
               )}
 
               {/* Available Bundles */}
               {availableBundles.length > 0 && (
-                <Card className="p-6">
-                  <h3 className="text-lg font-semibold text-cream mb-4 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-gold" />
-                    Save with Group Bookings
+                <Card className="p-4 sm:p-6">
+                  <h3 className="text-base sm:text-lg font-semibold text-cream mb-3 sm:mb-4 flex items-center gap-2">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
+                    {t('bundles.title')}
                   </h3>
-                  <p className="text-sm text-cream-muted mb-4">
-                    Join a scheduled trip and share travel costs with other clients!
+                  <p className="text-xs sm:text-sm text-cream-muted mb-3 sm:mb-4">
+                    {t('bundles.description')}
                   </p>
                   <div className="space-y-3">
                     {availableBundles.slice(0, 3).map((bundle) => (
@@ -1036,9 +1066,16 @@ function ContactPageContent() {
                             <p className="text-xs text-cream-muted">{bundle.city}</p>
                           </div>
                           <span className="text-green-400 text-xs font-medium">
-                            {bundle.discountPercent}% off
+                            {bundle.discountPercent}% {t('bundles.off')}
                           </span>
                         </div>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-xs text-cream-muted">
+                            {new Date(bundle.scheduledDate).toLocaleDateString()}
+                          </span>
+                          <span className="text-xs text-cream-muted">
+                            {bundle.spotsRemaining} {t('bundles.spotsLeft')}
+                          </span>
                         <div className="mt-2 space-y-1">
                           <div className="flex justify-between items-center">
                             <span className="text-xs text-cream-muted">
@@ -1072,20 +1109,20 @@ function ContactPageContent() {
               )}
 
               {/* Contact Info */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-cream">Contact Information</h3>
+              <div className="space-y-3 sm:space-y-4">
+                <h3 className="text-base sm:text-lg font-semibold text-cream">{t('contactInfo')}</h3>
                 {contactInfo.map((info) => {
                   const Icon = info.icon
                   return (
-                    <Card key={info.label} className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center flex-shrink-0">
-                          <Icon className="w-5 h-5 text-gold" />
+                    <Card key={info.label} className="p-3 sm:p-4">
+                      <div className="flex items-start gap-3 sm:gap-4">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-gold/10 flex items-center justify-center flex-shrink-0">
+                          <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
                         </div>
-                        <div>
-                          <p className="text-xs text-cream-muted">{info.label}</p>
-                          <p className="text-sm font-semibold text-cream">{info.value}</p>
-                          <p className="text-xs text-cream-muted">{info.subtext}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-[10px] sm:text-xs text-cream-muted">{info.label}</p>
+                          <p className="text-xs sm:text-sm font-semibold text-cream break-words">{info.value}</p>
+                          <p className="text-[10px] sm:text-xs text-cream-muted">{info.subtext}</p>
                         </div>
                       </div>
                     </Card>
@@ -1101,11 +1138,52 @@ function ContactPageContent() {
               transition={{ delay: 0.1 }}
               className="lg:col-span-3"
             >
-              <Card className="p-8">
+              <Card className="p-4 sm:p-6 md:p-8">
                 {isSubmitted ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
+                    className="text-center py-12"
+                  >
+                    <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6">
+                      <CheckCircle className="w-8 h-8 text-green-500" />
+                    </div>
+                    <h3 className="text-h3 font-bold text-cream mb-2">
+                      {t('success.title')}
+                    </h3>
+                    <p className="text-body text-cream-muted mb-6">
+                      {t('success.message')}
+                    </p>
+                    {quote && (
+                      <p className="text-gold font-semibold mb-6">
+                        {t('success.estimatedTotal')}: €{quote.total.toFixed(2)}
+                      </p>
+                    )}
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setIsSubmitted(false)
+                        setFormData({
+                          name: '',
+                          email: '',
+                          phone: '',
+                          company: '',
+                          propertyAddress: '',
+                          propertyCity: '',
+                          pricingPlanId: '',
+                          urgencyTierId: '',
+                          preferredDate: '',
+                          alternateDate: '',
+                          deadlineDate: '',
+                          isUrgent: false,
+                          bundleId: '',
+                          message: '',
+                        })
+                        setQuote(null)
+                      }}
+                    >
+                      {t('success.submitAnother')}
+                    </Button>
                     className="py-8"
                   >
                     {/* Success Header */}
@@ -1269,61 +1347,61 @@ function ContactPageContent() {
                     </div>
                   </motion.div>
                 ) : (
-                  <form onSubmit={handleSubmit} className="space-y-6">
+                  <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                     {/* Contact Info */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">Your Information</h3>
-                      <div className="grid sm:grid-cols-2 gap-4">
+                      <h3 className="text-base sm:text-lg font-semibold text-cream mb-3 sm:mb-4">{t('form.yourInfo')}</h3>
+                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Your Name *
+                            {t('form.name')} *
                           </label>
                           <Input
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            placeholder="Marko Petrovski"
+                            placeholder={t('form.namePlaceholder')}
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Email Address *
+                            {t('form.email')} *
                           </label>
                           <Input
                             type="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            placeholder="marko@example.com"
+                            placeholder={t('form.emailPlaceholder')}
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Phone Number *
+                            {t('form.phone')} *
                           </label>
                           <Input
                             type="tel"
                             name="phone"
                             value={formData.phone}
                             onChange={handleChange}
-                            placeholder="+389 70 123 456"
+                            placeholder={t('form.phonePlaceholder')}
                             required
                           />
                           <p className="text-xs text-cream-muted mt-1">
-                            We'll contact you to confirm your booking
+                            {t('form.phoneNote')}
                           </p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Company / Business Name
+                            {t('form.company')}
                           </label>
                           <Input
                             name="company"
                             value={formData.company}
                             onChange={handleChange}
-                            placeholder="Hotel Skopje"
+                            placeholder={t('form.companyPlaceholder')}
                           />
                         </div>
                       </div>
@@ -1331,33 +1409,33 @@ function ContactPageContent() {
 
                     {/* Property Location */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">Property Location</h3>
-                      <div className="grid sm:grid-cols-2 gap-4">
+                      <h3 className="text-base sm:text-lg font-semibold text-cream mb-3 sm:mb-4">{t('form.propertyLocation')}</h3>
+                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                         <div className="sm:col-span-2">
                           <label className="block text-sm font-medium text-cream mb-2">
-                            Property Address *
+                            {t('form.propertyAddress')} *
                           </label>
                           <Input
                             name="propertyAddress"
                             value={formData.propertyAddress}
                             onChange={handleChange}
-                            placeholder="Street name and number"
+                            placeholder={t('form.addressPlaceholder')}
                             required
                           />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
-                            City *
+                            {t('form.city')} *
                           </label>
                           <Input
                             name="propertyCity"
                             value={formData.propertyCity}
                             onChange={handleChange}
-                            placeholder="Skopje, Ohrid, Bitola..."
+                            placeholder={t('form.cityPlaceholder')}
                             required
                           />
                           <p className="text-xs text-cream-muted mt-1">
-                            Travel fees calculated based on distance
+                            {t('form.cityNote')}
                           </p>
                         </div>
                       </div>
@@ -1365,21 +1443,21 @@ function ContactPageContent() {
 
                     {/* Service Selection */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">Service Package</h3>
-                      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <h3 className="text-base sm:text-lg font-semibold text-cream mb-3 sm:mb-4">{t('form.servicePackage')}</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3">
                         {pricingPlans.map((plan) => (
                           <button
                             key={plan.id}
                             type="button"
                             onClick={() => setFormData({ ...formData, pricingPlanId: plan.id })}
-                            className={`p-4 rounded-xl text-left transition-all ${
+                            className={`p-3 sm:p-4 rounded-lg sm:rounded-xl text-left transition-all ${
                               formData.pricingPlanId === plan.id
                                 ? 'bg-gold/20 border-2 border-gold'
                                 : 'bg-navy-medium border border-gold/10 hover:border-gold/30'
                             }`}
                           >
-                            <p className="font-semibold text-cream">{plan.name}</p>
-                            <p className="text-gold font-bold">€{plan.price}</p>
+                            <p className="text-sm sm:text-base font-semibold text-cream">{plan.name}</p>
+                            <p className="text-gold text-sm sm:text-base font-bold">€{plan.price}</p>
                           </button>
                         ))}
                       </div>
@@ -1387,43 +1465,58 @@ function ContactPageContent() {
 
                     {/* Scheduling */}
                     <div>
-                      <h3 className="text-lg font-semibold text-cream mb-4">Scheduling</h3>
+                      <h3 className="text-base sm:text-lg font-semibold text-cream mb-3 sm:mb-4">{t('form.scheduling')}</h3>
 
                       {/* Urgency Selection */}
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-cream mb-2">
-                          Delivery Speed
+                      <div className="mb-3 sm:mb-4">
+                        <label className="block text-xs sm:text-sm font-medium text-cream mb-2">
+                          {t('form.deliverySpeed')}
                         </label>
-                        <div className="grid sm:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
                           {urgencyTiers.map((tier) => (
                             <button
                               key={tier.id}
                               type="button"
                               onClick={() => setFormData({ ...formData, urgencyTierId: tier.id })}
-                              className={`p-3 rounded-xl text-left transition-all ${
+                              className={`p-2.5 sm:p-3 rounded-lg sm:rounded-xl text-left transition-all ${
                                 formData.urgencyTierId === tier.id
                                   ? 'bg-gold/20 border-2 border-gold'
                                   : 'bg-navy-medium border border-gold/10 hover:border-gold/30'
                               }`}
                             >
                               <div className="flex justify-between items-start">
-                                <p className="font-medium text-cream text-sm">{tier.displayName}</p>
+                                <p className="font-medium text-cream text-xs sm:text-sm">{tier.displayName}</p>
                                 {tier.surchargePercent > 0 && (
-                                  <span className="text-orange-400 text-xs">+{tier.surchargePercent}%</span>
+                                  <span className="text-orange-400 text-[10px] sm:text-xs">+{tier.surchargePercent}%</span>
                                 )}
                               </div>
-                              <p className="text-xs text-cream-muted mt-1">{tier.description}</p>
+                              <p className="text-[10px] sm:text-xs text-cream-muted mt-1">{tier.description}</p>
                             </button>
                           ))}
                         </div>
                       </div>
 
+                      {/* Dates */}
+                      <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-cream mb-2">
+                            {t('form.preferredDate')}
                       {/* Preferred Date & Time */}
                       <div className="space-y-4">
                         <div className="p-4 rounded-xl bg-navy border border-gold/10">
                           <label className="block text-sm font-medium text-cream mb-3">
                             Preferred Date & Time
                           </label>
+                          <Input
+                            type="date"
+                            name="preferredDate"
+                            value={formData.preferredDate}
+                            onChange={handleChange}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-cream mb-2">
+                            {t('form.alternateDate')}
                           <div className="grid sm:grid-cols-2 gap-3">
                             <Input
                               type="date"
@@ -1491,7 +1584,7 @@ function ContactPageContent() {
                             className="w-4 h-4 rounded border-gold/20 bg-navy text-gold focus:ring-gold/50"
                           />
                           <span className="text-sm text-cream">
-                            I need this done by a specific deadline
+                            {t('form.deadlineCheckbox')}
                           </span>
                         </label>
 
@@ -1507,11 +1600,11 @@ function ContactPageContent() {
                                 <AlertCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
                                 <div className="flex-1">
                                   <p className="text-sm text-cream">
-                                    Rush requests may incur additional fees based on availability.
+                                    {t('form.rushWarning')}
                                   </p>
                                   <div className="mt-2">
                                     <label className="block text-xs text-cream-muted mb-1">
-                                      Must be completed by:
+                                      {t('form.mustCompleteBy')}
                                     </label>
                                     <Input
                                       type="date"
@@ -1532,13 +1625,13 @@ function ContactPageContent() {
                     {/* Project Details */}
                     <div>
                       <label className="block text-sm font-medium text-cream mb-2">
-                        Tell Us About Your Project
+                        {t('form.projectDetails')}
                       </label>
                       <textarea
                         name="message"
                         value={formData.message}
                         onChange={handleChange}
-                        placeholder="Describe your space, number of rooms, any specific requirements..."
+                        placeholder={t('form.projectPlaceholder')}
                         rows={4}
                         className="w-full px-4 py-3 rounded-xl bg-navy border border-gold/20 text-cream
                                    placeholder:text-cream-muted focus:outline-none focus:ring-2
@@ -1555,19 +1648,18 @@ function ContactPageContent() {
                       {isSubmitting ? (
                         <>
                           <div className="w-5 h-5 border-2 border-navy border-t-transparent rounded-full animate-spin mr-2" />
-                          Submitting...
+                          {t('form.submitting')}
                         </>
                       ) : (
                         <>
-                          Request Quote
+                          {t('form.submit')}
                           <ChevronRight className="w-5 h-5 ml-2" />
                         </>
                       )}
                     </Button>
 
                     <p className="text-sm text-cream-muted text-center">
-                      You'll receive a confirmed quote within 24 hours.
-                      No payment required until you approve.
+                      {t('form.quoteNote')}
                     </p>
                   </form>
                 )}

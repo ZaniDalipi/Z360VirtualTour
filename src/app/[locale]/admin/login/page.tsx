@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { Lock, Mail, AlertCircle } from 'lucide-react'
 import { Button, Card, Input } from '@/components/ui'
@@ -9,10 +9,14 @@ import { motion } from 'framer-motion'
 
 export default function AdminLoginPage() {
   const router = useRouter()
+  const pathname = usePathname()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  // Get current locale from pathname
+  const locale = pathname.split('/')[1] || 'en'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,7 +33,7 @@ export default function AdminLoginPage() {
       const data = await res.json()
 
       if (res.ok) {
-        router.push('/admin')
+        router.push(`/${locale}/admin`)
       } else {
         setError(data.error || 'Invalid credentials')
       }

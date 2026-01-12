@@ -1,16 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import Image from 'next/image'
 import {
   Eye, Star, Home, Building2, Hotel, Car, GraduationCap, Heart,
-  Play, ArrowRight, Quote, ChevronRight
+  Play, ArrowRight, Quote, Users
 } from 'lucide-react'
 import { PublicHeader, Footer, Navbar } from '@/components/layout'
 import { Button, Card } from '@/components/ui'
 import { FeaturedCarousel, MobileFeaturedSlider } from '@/components/home'
 import { motion } from 'framer-motion'
+import { useTranslations } from 'next-intl'
 
 // Icon mapping for categories
 const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -60,6 +61,13 @@ export default function HomePage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [stats, setStats] = useState<Stats>({ totalTours: 0, totalCategories: 0, totalViews: 0 })
   const [isLoading, setIsLoading] = useState(true)
+
+  const tHero = useTranslations('hero')
+  const tIndustries = useTranslations('industries')
+  const tFeatured = useTranslations('featured')
+  const tTestimonials = useTranslations('testimonials')
+  const tPartners = useTranslations('partners')
+  const tCta = useTranslations('cta')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -120,64 +128,60 @@ export default function HomePage() {
           }}
         />
 
-        <div className="relative w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="text-center lg:text-left"
-              >
-                <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-3 py-1.5 mb-4 sm:mb-6">
-                  <Eye className="w-3.5 h-3.5 text-gold flex-shrink-0" />
-                  <span className="text-xs text-gold">360° Virtual Tours</span>
-                </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 md:py-32">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-4 py-2 mb-6">
+                <Eye className="w-4 h-4 text-gold" />
+                <span className="text-caption text-gold">{tHero('badge')}</span>
+              </div>
 
-                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-cream leading-tight mb-4 sm:mb-6">
-                  Bring Your Space
-                  <span className="text-gold"> to Life</span>
-                </h1>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[64px] font-bold text-cream leading-tight mb-4 sm:mb-6">
+                {tHero('title')}
+                <span className="text-gold"> {tHero('titleHighlight')}</span>
+              </h1>
 
-                <p className="text-sm sm:text-base text-cream-soft mb-6 sm:mb-8">
-                  Immersive 360° virtual tours for real estate, businesses, and hospitality.
-                  Captivate your audience.
-                </p>
+              <p className="text-body-lg text-cream-soft mb-8 max-w-xl">
+                {tHero('description')}
+              </p>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-                  <Link href="/contact" className="block">
-                    <Button size="lg" className="w-full flex items-center justify-center gap-2 bg-gold hover:bg-gold-soft text-navy font-bold text-lg shadow-lg shadow-gold/25 hover:shadow-xl hover:shadow-gold/30 transition-all">
-                      Work With Us
-                      <ArrowRight className="w-5 h-5" />
-                    </Button>
-                  </Link>
-                  <Link href="/tours" className="block">
-                    <Button variant="secondary" size="lg" className="w-full flex items-center justify-center gap-2">
-                      <Play className="w-4 h-4" />
-                      View Portfolio
-                    </Button>
-                  </Link>
-                </div>
+              <div className="flex flex-wrap gap-4">
+                <Link href="/tours">
+                  <Button size="lg" className="flex items-center gap-2">
+                    <Play className="w-5 h-5" />
+                    {tHero('viewPortfolio')}
+                  </Button>
+                </Link>
+                <Link href="/contact">
+                  <Button variant="secondary" size="lg">
+                    {tHero('getFreeQuote')}
+                  </Button>
+                </Link>
+              </div>
 
               {/* Dynamic Stats */}
               {(stats.totalTours > 0 || stats.totalViews > 0) && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gold/10">
                   {stats.totalTours > 0 && (
-                    <div className="text-center lg:text-left">
-                      <p className="text-xl sm:text-2xl md:text-h2 font-bold text-gold">{stats.totalTours}</p>
-                      <p className="text-xs sm:text-caption text-cream-muted">Tours Created</p>
+                    <div>
+                      <p className="text-h2 font-bold text-gold">{stats.totalTours}</p>
+                      <p className="text-caption text-cream-muted">{tHero('toursCreated')}</p>
                     </div>
                   )}
                   {categories.length > 0 && (
-                    <div className="text-center lg:text-left">
-                      <p className="text-xl sm:text-2xl md:text-h2 font-bold text-gold">{categories.length}</p>
-                      <p className="text-xs sm:text-caption text-cream-muted">Categories</p>
+                    <div>
+                      <p className="text-h2 font-bold text-gold">{categories.length}</p>
+                      <p className="text-caption text-cream-muted">{tHero('categories')}</p>
                     </div>
                   )}
                   {stats.totalViews > 0 && (
-                    <div className="text-center lg:text-left col-span-2 sm:col-span-1">
-                      <p className="text-xl sm:text-2xl md:text-h2 font-bold text-gold">{stats.totalViews.toLocaleString()}</p>
-                      <p className="text-xs sm:text-caption text-cream-muted">Total Views</p>
+                    <div>
+                      <p className="text-h2 font-bold text-gold">{stats.totalViews.toLocaleString()}</p>
+                      <p className="text-caption text-cream-muted">{tHero('totalViews')}</p>
                     </div>
                   )}
                 </div>
@@ -189,7 +193,7 @@ export default function HomePage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden lg:block"
+              className="relative hidden md:block"
             >
               <FeaturedCarousel tours={tours} />
             </motion.div>
@@ -213,13 +217,13 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-8 sm:mb-12"
+              className="text-center mb-8 md:mb-12"
             >
-              <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-3 sm:mb-4">
-                Industries We Serve
+              <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 md:mb-4">
+                {tIndustries('title')}
               </h2>
               <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-4">
-                From real estate to hospitality, we create stunning virtual experiences for every industry
+                {tIndustries('description')}
               </p>
             </motion.div>
 
@@ -270,7 +274,7 @@ export default function HomePage() {
                           <Icon className="w-7 h-7 text-gold" />
                         </div>
                         <h3 className="text-h4 font-semibold text-cream mb-1">{category.name}</h3>
-                        <p className="text-caption text-cream-muted">{category.tourCount} tours</p>
+                        <p className="text-caption text-cream-muted">{category.tourCount} {tIndustries('tours')}</p>
                       </Card>
                     </Link>
                   </motion.div>
@@ -289,18 +293,18 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-12"
+              className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 md:mb-12"
             >
-              <div className="text-center sm:text-left">
-                <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 sm:mb-4">
-                  Featured Tours
+              <div>
+                <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 md:mb-4">
+                  {tFeatured('title')}
                 </h2>
                 <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-xl">
-                  Explore some of our recent projects and see the quality we deliver
+                  {tFeatured('description')}
                 </p>
               </div>
-              <Link href="/tours" className="hidden md:flex items-center gap-2 text-gold hover:text-gold-soft transition-colors whitespace-nowrap">
-                View All <ArrowRight className="w-5 h-5" />
+              <Link href="/tours" className="hidden sm:flex items-center gap-2 text-gold hover:text-gold-soft transition-colors whitespace-nowrap">
+                {tFeatured('viewAll')} <ArrowRight className="w-5 h-5" />
               </Link>
             </motion.div>
 
@@ -397,12 +401,9 @@ export default function HomePage() {
               ))}
             </div>
 
-            <div className="text-center mt-6 sm:mt-8 md:hidden">
+            <div className="text-center mt-8 sm:hidden">
               <Link href="/tours">
-                <Button variant="secondary" className="w-full sm:w-auto">
-                  View All Tours
-                  <ChevronRight className="w-4 h-4 ml-1" />
-                </Button>
+                <Button variant="secondary">{tFeatured('viewAllTours')}</Button>
               </Link>
             </div>
           </div>
@@ -417,52 +418,17 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-8 sm:mb-12"
+              className="text-center mb-8 md:mb-12"
             >
-              <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-3 sm:mb-4">
-                What Our Clients Say
+              <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 md:mb-4">
+                {tTestimonials('title')}
               </h2>
               <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-4">
-                Don't just take our word for it - hear from businesses we've helped
+                {tTestimonials('description')}
               </p>
             </motion.div>
 
-            {/* Mobile: Horizontal scroll */}
-            <div className="md:hidden">
-              <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4 snap-x snap-mandatory">
-                {testimonials.map((testimonial, index) => (
-                  <motion.div
-                    key={testimonial.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex-shrink-0 w-[85vw] max-w-[320px] snap-start"
-                  >
-                    <Card className="p-5 h-full">
-                      <Quote className="w-8 h-8 text-gold/30 mb-3" />
-                      <p className="text-sm text-cream-soft mb-4 leading-relaxed line-clamp-4">
-                        "{testimonial.content}"
-                      </p>
-                      <div className="flex items-center gap-1 mb-3">
-                        {[...Array(testimonial.rating)].map((_, i) => (
-                          <Star key={i} className="w-3.5 h-3.5 text-gold fill-gold" />
-                        ))}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-cream">{testimonial.clientName}</p>
-                        {testimonial.clientTitle && (
-                          <p className="text-xs text-cream-muted">{testimonial.clientTitle}</p>
-                        )}
-                      </div>
-                    </Card>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-
-            {/* Tablet+: Grid */}
-            <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
               {testimonials.map((testimonial, index) => (
                 <motion.div
                   key={testimonial.id}
@@ -495,8 +461,71 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* Partners Section */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-8 md:mb-12"
+          >
+            <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
+              <Users className="w-4 h-4 text-gold" />
+              <span className="text-xs sm:text-caption text-gold">{tPartners('badge')}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-display font-bold text-cream mb-2 md:mb-4">
+              {tPartners('title')}
+            </h2>
+            <p className="text-sm sm:text-base md:text-body-lg text-cream-muted max-w-2xl mx-auto px-4">
+              {tPartners('description')}
+            </p>
+          </motion.div>
+
+          {/* Partner Logos Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+            {[
+              { name: 'Google Street View', description: tPartners('googleDesc') },
+              { name: 'Matterport', description: tPartners('matterportDesc') },
+              { name: 'Kuula', description: tPartners('kuulaDesc') },
+              { name: 'Cloudpano', description: tPartners('cloudpanoDesc') },
+              { name: 'ThreeSixty Tours', description: tPartners('threesixtyDesc') },
+            ].map((partner, index) => (
+              <motion.div
+                key={partner.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="p-3 sm:p-4 md:p-6 text-center hover:border-gold/30 transition-all group">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 rounded-lg md:rounded-xl bg-gold/10 flex items-center justify-center mx-auto mb-2 sm:mb-3 md:mb-4 group-hover:bg-gold/20 transition-colors">
+                    <span className="text-lg sm:text-xl md:text-2xl font-bold text-gold">{partner.name.charAt(0)}</span>
+                  </div>
+                  <h3 className="text-xs sm:text-sm font-semibold text-cream mb-0.5 sm:mb-1 line-clamp-2">{partner.name}</h3>
+                  <p className="text-[10px] sm:text-xs text-cream-muted hidden sm:block">{partner.description}</p>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Partnership CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <p className="text-cream-muted mb-4">{tPartners('becomePartner')}</p>
+            <Link href="/contact">
+              <Button variant="secondary">{tPartners('contactUs')}</Button>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="py-12 sm:py-16 md:py-20">
+      <section className="py-20 bg-navy-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -504,18 +533,18 @@ export default function HomePage() {
             viewport={{ once: true }}
           >
             <Card className="p-6 sm:p-8 md:p-12 text-center bg-gradient-to-br from-navy-medium to-navy-dark border-gold/20">
-              <h2 className="text-xl sm:text-2xl md:text-display font-bold text-cream mb-3 sm:mb-4">
-                Ready to Showcase Your Space?
+              <h2 className="text-xl sm:text-2xl md:text-display font-bold text-cream mb-2 md:mb-4">
+                {tCta('title')}
               </h2>
-              <p className="text-sm sm:text-base md:text-body-lg text-cream-muted mb-6 sm:mb-8 max-w-xl mx-auto">
-                Let's create an immersive virtual tour that captivates your audience and drives results.
+              <p className="text-sm sm:text-base md:text-body-lg text-cream-muted mb-6 md:mb-8 max-w-xl mx-auto">
+                {tCta('description')}
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-                <Link href="/contact" className="w-full sm:w-auto">
-                  <Button size="lg" className="w-full sm:w-auto">Get Started Today</Button>
+              <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4">
+                <Link href="/contact">
+                  <Button size="lg" className="w-full sm:w-auto">{tCta('getStarted')}</Button>
                 </Link>
-                <Link href="/pricing" className="w-full sm:w-auto">
-                  <Button variant="secondary" size="lg" className="w-full sm:w-auto">View Pricing</Button>
+                <Link href="/pricing">
+                  <Button variant="secondary" size="lg" className="w-full sm:w-auto">{tCta('viewPricing')}</Button>
                 </Link>
               </div>
             </Card>

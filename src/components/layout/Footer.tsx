@@ -1,30 +1,9 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import Image from 'next/image'
-import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter, Eye } from 'lucide-react'
-
-const footerLinks = {
-  services: [
-    { label: 'Real Estate Tours', href: '/tours?category=real-estate' },
-    { label: 'Business Tours', href: '/tours?category=business' },
-    { label: 'Hospitality Tours', href: '/tours?category=hospitality' },
-    { label: 'Custom Solutions', href: '/contact' },
-  ],
-  company: [
-    { label: 'About Us', href: '/about' },
-    { label: 'Portfolio', href: '/tours' },
-    { label: 'Testimonials', href: '/testimonials' },
-    { label: 'Pricing', href: '/pricing' },
-    { label: 'Integration', href: '/integration' },
-    { label: 'Work with Us', href: '/contact' },
-  ],
-  legal: [
-    { label: 'Privacy Policy', href: '/privacy' },
-    { label: 'Terms of Service', href: '/terms' },
-    { label: 'Cookie Policy', href: '/cookies' },
-  ],
-}
+import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 const socialLinks = [
   { icon: Facebook, href: '#', label: 'Facebook' },
@@ -34,6 +13,29 @@ const socialLinks = [
 ]
 
 export function Footer() {
+  const t = useTranslations('footer')
+  const tNav = useTranslations('nav')
+
+  const footerLinks = {
+    services: [
+      { label: t('realEstateTours'), href: '/tours?category=real-estate' },
+      { label: t('businessTours'), href: '/tours?category=business' },
+      { label: t('hospitalityTours'), href: '/tours?category=hospitality' },
+      { label: t('customSolutions'), href: '/contact' },
+    ],
+    company: [
+      { label: t('aboutUs'), href: '/about' },
+      { label: t('portfolio'), href: '/tours' },
+      { label: tNav('testimonials'), href: '/testimonials' },
+      { label: t('pricing'), href: '/pricing' },
+      { label: t('contact'), href: '/contact' },
+    ],
+    legal: [
+      { label: t('privacyPolicy'), href: '/privacy' },
+      { label: t('termsOfService'), href: '/terms' },
+    ],
+  }
+
   return (
     <footer className="bg-navy-dark border-t border-gold/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12 md:py-16">
@@ -50,8 +52,8 @@ export function Footer() {
                 <span className="text-sm text-cream-soft ml-1">Virtual Tours</span>
               </div>
             </Link>
-            <p className="text-sm sm:text-body text-cream-muted mb-5">
-              Professional 360° virtual tour services that bring your spaces to life and captivate your audience.
+            <p className="text-body text-cream-muted mb-6">
+              {t('description')}
             </p>
             <div className="flex gap-2 sm:gap-3">
               {socialLinks.map((social) => {
@@ -71,9 +73,9 @@ export function Footer() {
           </div>
 
           {/* Services */}
-          <div className="col-span-1">
-            <h3 className="text-sm sm:text-h4 font-semibold text-cream mb-3 sm:mb-4">Services</h3>
-            <ul className="space-y-2 sm:space-y-3">
+          <div>
+            <h3 className="text-h4 font-semibold text-cream mb-4">{t('services')}</h3>
+            <ul className="space-y-3">
               {footerLinks.services.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-xs sm:text-body text-cream-muted hover:text-cream transition-colors">
@@ -85,9 +87,9 @@ export function Footer() {
           </div>
 
           {/* Company */}
-          <div className="col-span-1">
-            <h3 className="text-sm sm:text-h4 font-semibold text-cream mb-3 sm:mb-4">Company</h3>
-            <ul className="space-y-2 sm:space-y-3">
+          <div>
+            <h3 className="text-h4 font-semibold text-cream mb-4">{t('company')}</h3>
+            <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
                   <Link href={link.href} className="text-xs sm:text-body text-cream-muted hover:text-cream transition-colors">
@@ -98,13 +100,13 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact - Full width on mobile, spans on tablet+ */}
-          <div className="col-span-2 sm:col-span-2 md:col-span-1">
-            <h3 className="text-sm sm:text-h4 font-semibold text-cream mb-3 sm:mb-4">Contact</h3>
-            <ul className="space-y-2 sm:space-y-3">
-              <li className="flex items-start gap-2 sm:gap-3 text-xs sm:text-body text-cream-muted">
-                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-gold flex-shrink-0 mt-0.5" />
-                <a href="mailto:z360virtualtours@gmail.com" className="hover:text-cream transition-colors break-all">
+          {/* Contact */}
+          <div>
+            <h3 className="text-h4 font-semibold text-cream mb-4">{t('contact')}</h3>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-3 text-body text-cream-muted">
+                <Mail className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                <a href="mailto:z360virtualtours@gmail.com" className="hover:text-cream transition-colors">
                   z360virtualtours@gmail.com
                 </a>
               </li>
@@ -114,9 +116,9 @@ export function Footer() {
                   +389 71 967 915
                 </a>
               </li>
-              <li className="flex items-start gap-2 sm:gap-3 text-xs sm:text-body text-cream-muted">
-                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-gold flex-shrink-0 mt-0.5" />
-                <span>Balkans</span>
+              <li className="flex items-start gap-3 text-body text-cream-muted">
+                <MapPin className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                <span>{t('location')}</span>
               </li>
             </ul>
           </div>
@@ -144,9 +146,9 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gold/10 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
-          <p className="text-xs sm:text-caption text-cream-muted text-center sm:text-left">
-            © {new Date().getFullYear()} Z360 Virtual Tours. All rights reserved.
+        <div className="mt-12 pt-8 border-t border-gold/10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-caption text-cream-muted">
+            {t('copyright', { year: new Date().getFullYear() })}
           </p>
           <div className="flex gap-4 sm:gap-6">
             {footerLinks.legal.map((link) => (

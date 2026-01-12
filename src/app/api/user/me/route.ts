@@ -31,30 +31,33 @@ export async function GET() {
       )
     }
 
-    // Get user's bookings
-    const bookings = await prisma.booking.findMany({
-      where: { userId: decoded.userId },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        pricingPlan: {
-          select: {
-            name: true,
-          },
-        },
-        urgencyTier: {
-          select: {
-            displayName: true,
-          },
-        },
+    // Get user from database
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        company: true,
+        isActive: true,
+        createdAt: true,
       },
     })
 
-    return NextResponse.json({ bookings })
+    if (!user || !user.isActive) {
+      return NextResponse.json(
+        { error: 'User not found or inactive' },
+        { status: 401 }
+      )
+    }
+
+    return NextResponse.json({ user })
   } catch (error) {
-    console.error('Failed to fetch bookings:', error)
+    console.error('Auth check error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch bookings' },
-      { status: 500 }
+      { error: 'Not authenticated' },
+      { status: 401 }
     )
   }
 }

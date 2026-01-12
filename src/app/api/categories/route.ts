@@ -41,16 +41,13 @@ export async function GET() {
       { maxRetries: 2, initialDelayMs: 300 }
     )
 
-    const result = categories.map((cat) => ({
-      ...cat,
-      tourCount: cat._count.tours,
-      _count: undefined,
-    }))
-
-    // Cache for longer since categories rarely change
-    cache.set(CacheKeys.CATEGORIES, result, CacheTTL.LONG)
-
-    return NextResponse.json(result)
+    return NextResponse.json(
+      categories.map((cat: { _count: { tours: number }; [key: string]: unknown }) => ({
+        ...cat,
+        tourCount: cat._count.tours,
+        _count: undefined,
+      }))
+    )
   } catch (error) {
     console.error('Failed to fetch categories:', error)
 

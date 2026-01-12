@@ -52,6 +52,9 @@ export default function AdminLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
 
+  // Check if we're on the login page (accounting for locale prefix)
+  const isLoginPage = pathname.endsWith('/admin/login')
+
   useEffect(() => {
     // Check authentication
     const checkAuth = async () => {
@@ -60,29 +63,33 @@ export default function AdminLayout({
         if (res.ok) {
           setIsAuthenticated(true)
         } else {
-          if (pathname !== '/admin/login') {
-            router.push('/admin/login')
+          if (!isLoginPage) {
+            // Get current locale from pathname
+            const locale = pathname.split('/')[1] || 'en'
+            router.push(`/${locale}/admin/login`)
           }
           setIsAuthenticated(false)
         }
       } catch {
-        if (pathname !== '/admin/login') {
-          router.push('/admin/login')
+        if (!isLoginPage) {
+          const locale = pathname.split('/')[1] || 'en'
+          router.push(`/${locale}/admin/login`)
         }
         setIsAuthenticated(false)
       }
     }
 
     checkAuth()
-  }, [pathname, router])
+  }, [pathname, router, isLoginPage])
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/admin/login')
+    const locale = pathname.split('/')[1] || 'en'
+    router.push(`/${locale}/admin/login`)
   }
 
   // Show login page without layout
-  if (pathname === '/admin/login') {
+  if (isLoginPage) {
     return <>{children}</>
   }
 

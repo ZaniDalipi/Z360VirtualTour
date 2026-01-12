@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Find admin by email (case-insensitive for SQLite compatibility)
+    // Find admin by email (case-insensitive using lowercase comparison)
     const admin = await prisma.admin.findFirst({
       where: {
         email: email.toLowerCase()

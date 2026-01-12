@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import {
   ArrowLeft,
   MapPin,
@@ -28,7 +28,7 @@ import {
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card, ImageGallery3D } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
-import { sanitizeEmbedHTML } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 
 interface Tour {
   id: string
@@ -73,6 +73,9 @@ function parseImages(images: string | string[] | null | undefined): string[] {
 export default function TourDetailPage() {
   const params = useParams()
   const slug = params.slug as string
+  const t = useTranslations('tourDetail')
+  const tCta = useTranslations('cta')
+  const tCommon = useTranslations('common')
 
   const [tour, setTour] = useState<Tour | null>(null)
   const [relatedTours, setRelatedTours] = useState<RelatedTour[]>([])
@@ -182,12 +185,12 @@ export default function TourDetailPage() {
       <div className="min-h-screen bg-navy">
         <PublicHeader />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <h1 className="text-h2 font-bold text-cream mb-4">Tour Not Found</h1>
+          <h1 className="text-h2 font-bold text-cream mb-4">{t('notFound')}</h1>
           <p className="text-cream-muted mb-8">
-            The tour you're looking for doesn't exist or has been removed.
+            {t('notFoundMessage')}
           </p>
           <Link href="/tours">
-            <Button>View All Tours</Button>
+            <Button>{t('viewAllTours')}</Button>
           </Link>
         </div>
         <Footer />
@@ -289,6 +292,7 @@ export default function TourDetailPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/60 to-navy/30" />
         </div>
 
+<<<<<<< HEAD:src/app/tour/[slug]/page.tsx
         {/* Fullscreen Button */}
         {tour.tourUrl && (
           <div className="absolute top-4 right-4 z-10">
@@ -303,46 +307,76 @@ export default function TourDetailPage() {
             </a>
           </div>
         )}
+=======
+        {/* Back Button */}
+        <div className="absolute top-6 left-4 sm:left-8 z-10">
+          <Link
+            href="/tours"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-navy/60 backdrop-blur-sm border border-gold/20 text-cream hover:bg-navy/80 transition-all"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">{t('backToTours')}</span>
+          </Link>
+        </div>
+>>>>>>> claude/add-translation-support-YzG9S:src/app/[locale]/tour/[slug]/page.tsx
 
         {/* Hero Content */}
         <div className="absolute inset-0 flex items-end">
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 md:pb-16">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8 sm:pb-12 md:pb-16">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="space-y-4"
+              className="space-y-3 sm:space-y-4"
             >
               {/* Category Badge */}
-              <span className="inline-block px-4 py-1.5 rounded-full bg-gold text-navy text-sm font-semibold">
+              <span className="inline-block px-3 sm:px-4 py-1 sm:py-1.5 rounded-full bg-gold text-navy text-xs sm:text-sm font-semibold">
                 {tour.category.name}
               </span>
 
               {/* Title */}
+<<<<<<< HEAD:src/app/tour/[slug]/page.tsx
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-cream max-w-3xl">
+=======
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-cream max-w-3xl">
+>>>>>>> claude/add-translation-support-YzG9S:src/app/[locale]/tour/[slug]/page.tsx
                 {tour.title}
               </h1>
 
               {/* Meta Info */}
-              <div className="flex flex-wrap items-center gap-4 text-cream/80">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm sm:text-base text-cream/80">
                 {tour.clientName && (
                   <span className="text-cream font-medium">{tour.clientName}</span>
                 )}
                 {tour.location && (
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4" />
+                  <span className="flex items-center gap-1 sm:gap-1.5">
+                    <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
                     {tour.location}
                   </span>
                 )}
+<<<<<<< HEAD:src/app/tour/[slug]/page.tsx
+=======
+                <span className="flex items-center gap-1 sm:gap-1.5">
+                  <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                  {tour.views.toLocaleString()} {t('views')}
+                </span>
+>>>>>>> claude/add-translation-support-YzG9S:src/app/[locale]/tour/[slug]/page.tsx
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 sm:gap-4 pt-2 sm:pt-4">
                 {tour.tourUrl && (
+<<<<<<< HEAD:src/app/tour/[slug]/page.tsx
                   <a href={tour.tourUrl} target="_blank" rel="noopener noreferrer">
                     <Button size="lg" className="group">
                       <Play className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform" />
                       Start Virtual Tour
+=======
+                  <a href={tour.tourUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                    <Button size="lg" className="group w-full sm:w-auto">
+                      <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-2 group-hover:scale-110 transition-transform" />
+                      {t('viewVirtualTour')}
+>>>>>>> claude/add-translation-support-YzG9S:src/app/[locale]/tour/[slug]/page.tsx
                     </Button>
                   </a>
                 )}
@@ -350,10 +384,14 @@ export default function TourDetailPage() {
                   variant="secondary"
                   size="lg"
                   onClick={() => setShowShareModal(true)}
-                  className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
+                  className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20 w-full sm:w-auto"
                 >
                   <Share2 className="w-4 h-4 mr-2" />
+<<<<<<< HEAD:src/app/tour/[slug]/page.tsx
                   Share Tour
+=======
+                  {t('share')}
+>>>>>>> claude/add-translation-support-YzG9S:src/app/[locale]/tour/[slug]/page.tsx
                 </Button>
               </div>
             </motion.div>
@@ -364,17 +402,17 @@ export default function TourDetailPage() {
       {/* Embedded Tour Section */}
       {tour.tourEmbed && (
         <section className="bg-navy-dark">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <h2 className="text-h3 font-bold text-cream mb-6 flex items-center gap-3">
-                <span className="w-10 h-10 rounded-full bg-gold/20 flex items-center justify-center">
-                  <Play className="w-5 h-5 text-gold" />
+              <h2 className="text-lg sm:text-xl md:text-h3 font-bold text-cream mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+                <span className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gold/20 flex items-center justify-center">
+                  <Play className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
                 </span>
-                Interactive Tour
+                {t('interactiveTour')}
               </h2>
               <Card className="overflow-hidden">
                 <div
@@ -389,18 +427,18 @@ export default function TourDetailPage() {
 
       {/* Description Section */}
       {tour.description && (
-        <section className="py-12 md:py-16">
+        <section className="py-8 sm:py-12 md:py-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Card className="p-8 md:p-12">
-                <h2 className="text-h3 font-bold text-cream mb-6">
-                  About This Project
+              <Card className="p-4 sm:p-6 md:p-8 lg:p-12">
+                <h2 className="text-lg sm:text-xl md:text-h3 font-bold text-cream mb-4 sm:mb-6">
+                  {t('aboutProject')}
                 </h2>
-                <p className="text-lg text-cream-muted leading-relaxed whitespace-pre-wrap max-w-4xl">
+                <p className="text-sm sm:text-base md:text-lg text-cream-muted leading-relaxed whitespace-pre-wrap max-w-4xl">
                   {tour.description}
                 </p>
               </Card>
@@ -409,15 +447,22 @@ export default function TourDetailPage() {
         </section>
       )}
 
+<<<<<<< HEAD:src/app/tour/[slug]/page.tsx
       {/* Gallery Section - 3D Carousel */}
       {tour.images && tour.images.length > 0 && (
         <section className="py-12 md:py-20 bg-gradient-to-b from-navy-dark/50 to-navy overflow-hidden">
+=======
+      {/* Gallery Section */}
+      {Array.isArray(tour.images) && tour.images.length > 0 && (
+        <section className="py-8 sm:py-12 md:py-16 bg-navy-dark/50">
+>>>>>>> claude/add-translation-support-YzG9S:src/app/[locale]/tour/[slug]/page.tsx
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
             >
+<<<<<<< HEAD:src/app/tour/[slug]/page.tsx
               <div className="text-center mb-8 md:mb-12">
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-cream mb-3">
                   Project Gallery
@@ -486,6 +531,28 @@ export default function TourDetailPage() {
                       </div>
                     </motion.div>
                   </Link>
+=======
+              <h2 className="text-lg sm:text-xl md:text-h3 font-bold text-cream mb-6 sm:mb-8">
+                {t('projectGallery')}
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+                {tour.images.map((image, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1 * index }}
+                    className="group relative aspect-[4/3] rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden border border-gold/20"
+                  >
+                    <Image
+                      src={image}
+                      alt={`${tour.title} - Image ${index + 1}`}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-navy/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  </motion.div>
+>>>>>>> claude/add-translation-support-YzG9S:src/app/[locale]/tour/[slug]/page.tsx
                 ))}
               </div>
             </motion.div>
@@ -494,36 +561,35 @@ export default function TourDetailPage() {
       )}
 
       {/* CTA Section */}
-      <section className="py-16 md:py-24">
+      <section className="py-10 sm:py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
           >
-            <Card className="p-12 md:p-16 text-center relative overflow-hidden">
+            <Card className="p-6 sm:p-8 md:p-12 lg:p-16 text-center relative overflow-hidden">
               {/* Background Pattern */}
               <div className="absolute inset-0 opacity-5">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--gold)_1px,_transparent_1px)] bg-[length:24px_24px]" />
               </div>
 
               <div className="relative z-10">
-                <h2 className="text-h2 md:text-display font-bold text-cream mb-4">
-                  Want a Tour Like This?
+                <h2 className="text-xl sm:text-2xl md:text-h2 lg:text-display font-bold text-cream mb-2 sm:mb-4">
+                  {t('wantTourLikeThis')}
                 </h2>
-                <p className="text-lg text-cream-muted mb-8 max-w-2xl mx-auto">
-                  Let's create an immersive 360° virtual tour for your space.
-                  Professional quality, delivered fast.
+                <p className="text-sm sm:text-base md:text-lg text-cream-muted mb-6 sm:mb-8 max-w-2xl mx-auto">
+                  {t('wantTourDescription')}
                 </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <Link href="/contact">
-                    <Button size="lg">
-                      Get a Free Quote
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                  <Link href="/contact" className="w-full sm:w-auto">
+                    <Button size="lg" className="w-full sm:w-auto">
+                      {t('getFreeQuote')}
                     </Button>
                   </Link>
-                  <Link href="/tours">
-                    <Button variant="secondary" size="lg">
-                      View More Projects
+                  <Link href="/tours" className="w-full sm:w-auto">
+                    <Button variant="secondary" size="lg" className="w-full sm:w-auto">
+                      {t('viewMoreProjects')}
                     </Button>
                   </Link>
                 </div>
@@ -550,10 +616,17 @@ export default function TourDetailPage() {
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 mx-auto max-w-md"
             >
+<<<<<<< HEAD:src/app/tour/[slug]/page.tsx
               <Card className="p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-4 sm:mb-6">
                   <h3 className="text-lg sm:text-h4 font-semibold text-cream">
                     Share This Tour
+=======
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-h4 font-semibold text-cream">
+                    {t('shareThisTour')}
+>>>>>>> claude/add-translation-support-YzG9S:src/app/[locale]/tour/[slug]/page.tsx
                   </h3>
                   <button
                     onClick={() => setShowShareModal(false)}
@@ -586,7 +659,11 @@ export default function TourDetailPage() {
                 {/* Copy page link */}
                 <div className="space-y-2">
                   <label className="text-sm text-cream-muted">
+<<<<<<< HEAD:src/app/tour/[slug]/page.tsx
                     Copy page link
+=======
+                    {t('orCopyLink')}
+>>>>>>> claude/add-translation-support-YzG9S:src/app/[locale]/tour/[slug]/page.tsx
                   </label>
                   <div className="flex gap-2">
                     <input

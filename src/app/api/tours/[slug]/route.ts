@@ -93,7 +93,21 @@ export async function GET(
     // Increment view count asynchronously (fire and forget)
     incrementViewCount(slug).catch(console.error)
 
-    return NextResponse.json(tourWithParsedImages)
+    // Parse images JSON string to array
+    let parsedImages: string[] = []
+    if (tour.images) {
+      try {
+        parsedImages = JSON.parse(tour.images)
+      } catch {
+        // If parsing fails, treat as empty array
+        parsedImages = []
+      }
+    }
+
+    return NextResponse.json({
+      ...tour,
+      images: parsedImages,
+    })
   } catch (error) {
     console.error('Failed to fetch tour:', error)
     return NextResponse.json(

@@ -28,7 +28,8 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
+    "@prisma/client": "^5.7.1",
+    "@types/jsonwebtoken": "^9.0.10",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^12.5.0",
     "cloudinary": "^2.8.0",
@@ -36,9 +37,10 @@
     "cookies-next": "^4.1.0",
     "framer-motion": "^10.17.9",
     "jose": "^5.2.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.303.0",
-    "mongodb": "^7.0.0",
-    "next": "14.2.35",
+    "next": "^14.0.4",
+    "next-intl": "^4.7.0",
     "nodemailer": "^7.0.11",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -46,6 +48,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20.10.6",
     "@types/nodemailer": "^7.0.4",
     "@types/react": "^18.2.46",

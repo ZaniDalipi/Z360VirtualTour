@@ -1,3 +1,65 @@
+// Legacy types for backward compatibility
+export interface Agent {
+  id: string
+  name: string
+  avatar: string
+  rating: number
+  reviews: number
+  phone: string
+  email: string
+}
+
+export interface Hotspot {
+  id: string
+  position: {
+    pitch: number
+    yaw: number
+  }
+  type: 'navigation' | 'info' | 'link'
+  label?: string
+  description?: string
+  target?: string
+  url?: string
+  icon?: string
+}
+
+export interface Room {
+  id: string
+  name: string
+  panoramaUrl: string
+  thumbnail?: string
+  thumbnailUrl?: string
+  hotspots?: Hotspot[]
+}
+
+export interface Property {
+  id: string
+  title: string
+  slug?: string
+  description: string
+  address: string
+  location: {
+    lat: number
+    lng: number
+  }
+  price: number
+  bedrooms: number
+  bathrooms: number
+  sqft: number
+  parking?: number
+  image: string
+  coverImage?: string
+  images: string[]
+  category?: string
+  has360Tour: boolean
+  hasARView?: boolean
+  featured: boolean
+  status: 'available' | 'pending' | 'sold'
+  amenities?: string[]
+  agent?: Agent
+  rooms?: Room[]
+}
+
 // Database model types (matching Prisma schema)
 export interface Category {
   id: string

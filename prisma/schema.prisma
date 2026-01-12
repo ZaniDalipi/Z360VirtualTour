@@ -20,7 +20,7 @@ model Admin {
   updatedAt DateTime @updatedAt
 }
 
-// Regular user for client profiles
+// Regular user (customer) for authentication
 model User {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
   email     String    @unique
@@ -28,11 +28,10 @@ model User {
   name      String
   phone     String?
   company   String?
-  avatar    String?   // Profile image URL
   isActive  Boolean   @default(true)
+  bookings  Booking[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  bookings  Booking[]
 }
 
 // Tour categories (Real Estate, Business, Hospitality, etc.)
@@ -51,24 +50,22 @@ model Category {
 
 // Main tour entity
 model Tour {
-  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   slug          String    @unique
   description   String
   shortDesc     String?   // Short description for cards
   clientName    String?   // Client/business name
   location      String?
-  coverImage    String    // Main thumbnail
-  images        String?   // JSON array of additional images
-  tourUrl       String?   // External 360 tour URL (e.g., from Kuula, Matterport)
-  tourEmbed     String?   // Embed code for 360 viewer
-  categoryId    String    @db.ObjectId
-  category      Category  @relation(fields: [categoryId], references: [id])
-  premium       Boolean   @default(false)  // Gold border, always first
-  highlight     Boolean   @default(false)  // Pink style, second priority
-  featured      Boolean   @default(false)  // Third priority
-  isActive      Boolean   @default(true)
-  views         Int       @default(0)
+  coverImage    String   // Main thumbnail
+  images        String?  // JSON array of additional images
+  tourUrl       String?  // External 360 tour URL (e.g., from Kuula, Matterport)
+  tourEmbed     String?  // Embed code for 360 viewer
+  categoryId    String   @db.ObjectId
+  category      Category @relation(fields: [categoryId], references: [id])
+  featured      Boolean  @default(false)
+  isActive      Boolean  @default(true)
+  views         Int      @default(0)
   completedAt   DateTime? // When the tour project was completed
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -167,17 +164,15 @@ model TravelZone {
 
 // Travel bundles - group bookings for same city/date range
 model TravelBundle {
-  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
-  name               String              // "Ohrid Bundle - January 2025"
-  city               String              // Target city
-  region             String?             // Region/area
-  startDate          DateTime?           // When the bundle period starts (optional for backward compat)
-  endDate            DateTime?           // When the bundle period ends (optional for backward compat)
-  scheduledDate      DateTime            // Main working date (required, used as fallback)
-  maxParticipants    Int       @default(10) // Maximum clients in bundle
-  currentCount       Int       @default(0)  // Current participants
-  distanceKm         Float?              // Distance from base
-  totalTravelCost    Float?              // Total travel cost to split
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  name              String              // "Ohrid Bundle - January 2025"
+  city              String              // Target city
+  region            String?             // Region/area
+  scheduledDate     DateTime            // When the photographer will be there
+  maxParticipants   Int       @default(10) // Maximum clients in bundle
+  currentCount      Int       @default(0)  // Current participants
+  distanceKm        Float?              // Distance from base
+  totalTravelCost   Float?              // Total travel cost to split
   perPersonTravelFee Float?             // Calculated: totalTravelCost / participants
   discountPercent    Float     @default(0)  // Additional discount for bundle participants
   description        String?             // "Join our Ohrid trip and save on travel!"
@@ -200,15 +195,11 @@ model BlockedDate {
 
 // Main booking/quote request entity
 model Booking {
-  id                  String        @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String       @id @default(auto()) @map("_id") @db.ObjectId
 
-  // User relationship (optional - booking can exist without user account)
-  userId              String?       @db.ObjectId
-  user                User?         @relation(fields: [userId], references: [id])
-
-  // External API reference (for BalkanEstateAI integration)
-  externalId          String?       // External app's reference ID (e.g., property listing ID)
-  externalSource      String?       // Source app name (e.g., "balkanestate")
+  // User relation (optional - for registered users)
+  userId              String?      @db.ObjectId
+  user                User?        @relation(fields: [userId], references: [id])
 
   // Client Info
   clientName          String
@@ -225,12 +216,12 @@ model Booking {
   specialRequests     String?             // Any special needs
 
   // Pricing Plan
-  pricingPlanId       String?       @db.ObjectId
-  pricingPlan         PricingPlan?  @relation(fields: [pricingPlanId], references: [id])
+  pricingPlanId       String?   @db.ObjectId
+  pricingPlan         PricingPlan? @relation(fields: [pricingPlanId], references: [id])
 
   // Scheduling
-  urgencyTierId       String?       @db.ObjectId
-  urgencyTier         UrgencyTier?  @relation(fields: [urgencyTierId], references: [id])
+  urgencyTierId       String?   @db.ObjectId
+  urgencyTier         UrgencyTier? @relation(fields: [urgencyTierId], references: [id])
   preferredDate       DateTime?           // Client's preferred date
   preferredTime       String?             // Client's preferred time (e.g., "09:00", "14:00")
   alternateDate       DateTime?           // Backup date option
@@ -241,11 +232,11 @@ model Booking {
   isFlexible          Boolean   @default(true)
 
   // Travel
-  travelZoneId        String?       @db.ObjectId
-  travelZone          TravelZone?   @relation(fields: [travelZoneId], references: [id])
+  travelZoneId        String?   @db.ObjectId
+  travelZone          TravelZone?  @relation(fields: [travelZoneId], references: [id])
 
   // Bundle (optional - if joining a bundle)
-  travelBundleId      String?       @db.ObjectId
+  travelBundleId      String?   @db.ObjectId
   travelBundle        TravelBundle? @relation(fields: [travelBundleId], references: [id])
 
   // Pricing (calculated quote)
