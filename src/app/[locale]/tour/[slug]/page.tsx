@@ -280,7 +280,7 @@ export default function TourDetailPage() {
       )}
 
       {/* Gallery Section */}
-      {tour.images && tour.images.length > 0 && (
+      {Array.isArray(tour.images) && tour.images.length > 0 && (
         <section className="py-8 sm:py-12 md:py-16 bg-navy-dark/50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
