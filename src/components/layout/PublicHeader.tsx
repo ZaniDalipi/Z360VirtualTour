@@ -43,16 +43,13 @@ export function PublicHeader() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }} className="hidden md:flex">
+            <nav className="hidden md:flex items-center gap-8">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  style={{
-                    color: '#E8DCC4',
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                  }}
+                  className="text-cream font-medium hover:text-gold transition-colors"
+                  style={{ textDecoration: 'none' }}
                 >
                   {link.label}
                 </Link>
