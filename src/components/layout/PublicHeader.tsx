@@ -2,7 +2,7 @@
 
 import { Link } from '@/i18n/routing'
 import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, LogIn } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/ui'
 
@@ -56,9 +56,17 @@ export function PublicHeader() {
               ))}
             </nav>
 
-            {/* Right side - Language Switcher + CTA */}
-            <div className="hidden md:flex items-center gap-4">
+            {/* Right side - Language Switcher + Login + CTA */}
+            <div className="hidden md:flex items-center gap-3">
               <LanguageSwitcher />
+              <Link
+                href="/admin/login"
+                className="flex items-center gap-1.5 text-cream-muted hover:text-cream transition-colors text-sm"
+                style={{ textDecoration: 'none' }}
+              >
+                <LogIn className="w-4 h-4" />
+                Login
+              </Link>
               <Link href="/contact" style={{ textDecoration: 'none' }}>
                 <button
                   style={{
@@ -118,6 +126,23 @@ export function PublicHeader() {
               <div style={{ padding: '0.75rem 1rem' }}>
                 <LanguageSwitcher />
               </div>
+              <Link
+                href="/admin/login"
+                style={{
+                  color: '#B8A88A',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <LogIn style={{ width: '16px', height: '16px' }} />
+                Login
+              </Link>
               <div style={{ paddingTop: '0.5rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
                 <Link href="/contact" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none' }}>
                   <button
