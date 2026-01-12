@@ -2,7 +2,7 @@
 
 import { Link } from '@/i18n/routing'
 import { useState } from 'react'
-import { Menu, X, LogIn } from 'lucide-react'
+import { Menu, X, LogIn, UserPlus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/ui'
 
@@ -10,6 +10,7 @@ export function PublicHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const t = useTranslations('nav')
   const tContact = useTranslations('contact')
+  const tAuth = useTranslations('auth')
 
   const navLinks = [
     { href: '/', label: t('home') },
@@ -56,16 +57,24 @@ export function PublicHeader() {
               ))}
             </nav>
 
-            {/* Right side - Language Switcher + Login + CTA */}
+            {/* Right side - Language Switcher + Auth + CTA */}
             <div className="hidden md:flex items-center gap-3">
               <LanguageSwitcher />
               <Link
-                href="/admin/login"
+                href="/account/login"
                 className="flex items-center gap-1.5 text-cream-muted hover:text-cream transition-colors text-sm"
                 style={{ textDecoration: 'none' }}
               >
                 <LogIn className="w-4 h-4" />
-                Login
+                {tAuth('login')}
+              </Link>
+              <Link
+                href="/account/signup"
+                className="flex items-center gap-1.5 text-cream hover:text-gold transition-colors text-sm font-medium"
+                style={{ textDecoration: 'none' }}
+              >
+                <UserPlus className="w-4 h-4" />
+                {tAuth('signup')}
               </Link>
               <Link href="/contact" style={{ textDecoration: 'none' }}>
                 <button
@@ -127,7 +136,7 @@ export function PublicHeader() {
                 <LanguageSwitcher />
               </div>
               <Link
-                href="/admin/login"
+                href="/account/login"
                 style={{
                   color: '#B8A88A',
                   fontWeight: 500,
@@ -141,7 +150,24 @@ export function PublicHeader() {
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <LogIn style={{ width: '16px', height: '16px' }} />
-                Login
+                {tAuth('login')}
+              </Link>
+              <Link
+                href="/account/signup"
+                style={{
+                  color: '#E8DCC4',
+                  fontWeight: 500,
+                  textDecoration: 'none',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                }}
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <UserPlus style={{ width: '16px', height: '16px' }} />
+                {tAuth('signup')}
               </Link>
               <div style={{ paddingTop: '0.5rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
                 <Link href="/contact" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none' }}>

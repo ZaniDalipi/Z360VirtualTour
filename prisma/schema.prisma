@@ -19,6 +19,20 @@ model Admin {
   updatedAt DateTime @updatedAt
 }
 
+// Regular user (customer) for authentication
+model User {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  email     String    @unique
+  password  String
+  name      String
+  phone     String?
+  company   String?
+  isActive  Boolean   @default(true)
+  bookings  Booking[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
 // Tour categories (Real Estate, Business, Hospitality, etc.)
 model Category {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
@@ -179,6 +193,10 @@ model BlockedDate {
 // Main booking/quote request entity
 model Booking {
   id                  String       @id @default(auto()) @map("_id") @db.ObjectId
+
+  // User relation (optional - for registered users)
+  userId              String?      @db.ObjectId
+  user                User?        @relation(fields: [userId], references: [id])
 
   // Client Info
   clientName          String
