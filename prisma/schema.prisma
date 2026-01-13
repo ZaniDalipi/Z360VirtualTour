@@ -63,6 +63,8 @@ model Tour {
   tourEmbed     String?  // Embed code for 360 viewer
   categoryId    String   @db.ObjectId
   category      Category @relation(fields: [categoryId], references: [id])
+  premium       Boolean  @default(false)  // Premium tours shown first
+  highlight     Boolean  @default(false)  // Highlighted tours shown second
   featured      Boolean  @default(false)
   isActive      Boolean  @default(true)
   views         Int      @default(0)
