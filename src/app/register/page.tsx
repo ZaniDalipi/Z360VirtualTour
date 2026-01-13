@@ -42,7 +42,7 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/user/auth/register', {
+      const res = await fetch('/api/user/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
