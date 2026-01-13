@@ -5,13 +5,13 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 // Admin user for authentication
 model Admin {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
   password  String
   name      String
@@ -21,7 +21,7 @@ model Admin {
 
 // Tour categories (Real Estate, Business, Hospitality, etc.)
 model Category {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String   @unique
   slug        String   @unique
   description String?
@@ -35,7 +35,7 @@ model Category {
 
 // Main tour entity
 model Tour {
-  id            String   @id @default(cuid())
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   slug          String   @unique
   description   String
@@ -46,7 +46,7 @@ model Tour {
   images        String?  // JSON array of additional images
   tourUrl       String?  // External 360 tour URL (e.g., from Kuula, Matterport)
   tourEmbed     String?  // Embed code for 360 viewer
-  categoryId    String
+  categoryId    String   @db.ObjectId
   category      Category @relation(fields: [categoryId], references: [id])
   featured      Boolean  @default(false)
   isActive      Boolean  @default(true)
@@ -58,7 +58,7 @@ model Tour {
 
 // Client testimonials
 model Testimonial {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   clientName  String
   clientTitle String?  // e.g., "CEO at Company"
   clientImage String?
@@ -73,7 +73,7 @@ model Testimonial {
 
 // Pricing packages
 model PricingPlan {
-  id          String    @id @default(cuid())
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String
   price       Float
@@ -89,7 +89,7 @@ model PricingPlan {
 
 // Contact form submissions
 model ContactSubmission {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   name      String
   email     String
   phone     String?
@@ -102,7 +102,7 @@ model ContactSubmission {
 
 // Site settings (about content, contact info, etc.)
 model SiteSetting {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
@@ -114,7 +114,7 @@ model SiteSetting {
 
 // Urgency tiers with surcharge percentages
 model UrgencyTier {
-  id                String    @id @default(cuid())
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
   name              String    @unique  // "standard", "express", "rush"
   displayName       String              // "Standard Delivery", "Express", "Rush/Urgent"
   description       String?             // "7-14 day turnaround"
@@ -130,7 +130,7 @@ model UrgencyTier {
 
 // Travel zones for distance-based pricing
 model TravelZone {
-  id                String    @id @default(cuid())
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
   name              String              // "Local", "Regional", "Extended"
   description       String?             // "Within 15km of base location"
   minDistanceKm     Float     @default(0)
@@ -147,7 +147,7 @@ model TravelZone {
 
 // Travel bundles - group bookings for same city/date
 model TravelBundle {
-  id                String    @id @default(cuid())
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
   name              String              // "Ohrid Bundle - January 2025"
   city              String              // Target city
   region            String?             // Region/area
@@ -169,7 +169,7 @@ model TravelBundle {
 
 // Blocked dates (unavailable for booking)
 model BlockedDate {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   date        DateTime @unique
   reason      String?  // "Holiday", "Personal", "Fully Booked"
   isAllDay    Boolean  @default(true)
@@ -178,7 +178,7 @@ model BlockedDate {
 
 // Main booking/quote request entity
 model Booking {
-  id                  String       @id @default(cuid())
+  id                  String       @id @default(auto()) @map("_id") @db.ObjectId
 
   // Client Info
   clientName          String
@@ -195,11 +195,11 @@ model Booking {
   specialRequests     String?             // Any special needs
 
   // Pricing Plan
-  pricingPlanId       String?
+  pricingPlanId       String?             @db.ObjectId
   pricingPlan         PricingPlan? @relation(fields: [pricingPlanId], references: [id])
 
   // Scheduling
-  urgencyTierId       String?
+  urgencyTierId       String?             @db.ObjectId
   urgencyTier         UrgencyTier? @relation(fields: [urgencyTierId], references: [id])
   preferredDate       DateTime?           // Client's preferred date
   alternateDate       DateTime?           // Backup date option
@@ -208,11 +208,11 @@ model Booking {
   isFlexible          Boolean   @default(true)
 
   // Travel
-  travelZoneId        String?
+  travelZoneId        String?             @db.ObjectId
   travelZone          TravelZone?  @relation(fields: [travelZoneId], references: [id])
 
   // Bundle (optional - if joining a bundle)
-  travelBundleId      String?
+  travelBundleId      String?             @db.ObjectId
   travelBundle        TravelBundle? @relation(fields: [travelBundleId], references: [id])
 
   // Pricing (calculated quote)
@@ -239,11 +239,30 @@ model Booking {
   quoteSentAt         DateTime?           // When quote was sent
   confirmedAt         DateTime?           // When client confirmed
   completedAt         DateTime?           // When project completed
+
+  // Change requests
+  changeRequests      ChangeRequest[]
+}
+
+// Change requests for bookings
+model ChangeRequest {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  bookingId       String   @db.ObjectId
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  requestType     String   // "date_change", "scope_change", "cancellation"
+  originalValue   String?  // JSON of original values
+  requestedValue  String?  // JSON of requested changes
+  reason          String?
+  status          String   @default("pending") // pending, approved, rejected
+  adminNotes      String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  resolvedAt      DateTime?
 }
 
 // Booking settings (singleton-style config)
 model BookingSettings {
-  id                    String   @id @default("default")
+  id                    String   @id @default("default") @map("_id")
 
   // Lead time defaults
   defaultMinLeadDays    Int      @default(3)
