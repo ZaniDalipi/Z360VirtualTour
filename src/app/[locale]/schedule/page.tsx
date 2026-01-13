@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
+import { useTranslations } from 'next-intl'
 import {
   ChevronLeft,
   ChevronRight,
@@ -36,7 +37,7 @@ interface Bundle {
   region: string | null
   startDate: string
   endDate: string
-  dates: string[] // All dates in the bundle range
+  dates: string[]
   scheduledDate: string
   maxParticipants: number
   currentCount: number
@@ -58,24 +59,30 @@ interface SelectedDay {
   bundles: Bundle[]
 }
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
-]
-
-// Helper to format date consistently without timezone issues
 const formatDateStr = (year: number, month: number, day: number): string => {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-// Helper to get today's date string
 const getTodayStr = (): string => {
   const now = new Date()
   return formatDateStr(now.getFullYear(), now.getMonth(), now.getDate())
 }
 
 export default function SchedulePage() {
+  const t = useTranslations('schedule')
+
+  const DAYS = [
+    t('days.sun'), t('days.mon'), t('days.tue'), t('days.wed'),
+    t('days.thu'), t('days.fri'), t('days.sat')
+  ]
+
+  const MONTHS = [
+    t('months.january'), t('months.february'), t('months.march'),
+    t('months.april'), t('months.may'), t('months.june'),
+    t('months.july'), t('months.august'), t('months.september'),
+    t('months.october'), t('months.november'), t('months.december')
+  ]
+
   const [currentDate, setCurrentDate] = useState(new Date())
   const [schedule, setSchedule] = useState<ScheduleDay[]>([])
   const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([])
@@ -142,7 +149,6 @@ export default function SchedulePage() {
     const dateStr = formatDateStr(currentYear, currentMonth, day)
     const scheduleDay = schedule.find((s) => s.date === dateStr)
     const blockedDay = blockedDates.find((b) => b.date === dateStr)
-    // Check if this date falls within any bundle's date range
     const dayBundles = bundles.filter((b) => b.dates.includes(dateStr))
 
     return {
@@ -160,7 +166,6 @@ export default function SchedulePage() {
     const info = getDateInfo(day)
     const date = new Date(currentYear, currentMonth, day)
 
-    // Compare using date strings to avoid timezone issues
     if (info.dateStr < todayStr) return
 
     setSelectedDay({
@@ -187,12 +192,10 @@ export default function SchedulePage() {
     const firstDay = getFirstDayOfMonth(currentYear, currentMonth)
     const days = []
 
-    // Empty cells for days before the first day of the month
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="h-12 sm:h-16 md:h-20" />)
     }
 
-    // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const info = getDateInfo(day)
       const isPast = info.dateStr < todayStr
@@ -225,7 +228,7 @@ export default function SchedulePage() {
             <div className="flex items-center gap-0.5">
               <Users className={`w-3 h-3 ${isSelected ? 'text-navy' : 'text-purple-400'}`} />
               <span className={`text-[10px] sm:text-xs ${isSelected ? 'text-navy' : 'text-purple-400'} hidden sm:inline`}>
-                Bundle
+                {t('bundle')}
               </span>
             </div>
           )}
@@ -233,7 +236,7 @@ export default function SchedulePage() {
             <div className="flex items-center gap-0.5">
               <MapPin className={`w-3 h-3 ${isSelected ? 'text-navy' : 'text-green-400'}`} />
               <span className={`text-[10px] sm:text-xs ${isSelected ? 'text-navy' : 'text-green-400'} hidden sm:inline`}>
-                {info.cities.length} {info.cities.length === 1 ? 'city' : 'cities'}
+                {info.cities.length} {info.cities.length === 1 ? t('city') : t('cities')}
               </span>
             </div>
           )}
@@ -261,13 +264,13 @@ export default function SchedulePage() {
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gold/10 border border-gold/20 text-gold mb-6">
               <Calendar className="w-4 h-4" />
-              <span className="text-sm font-medium">Work Schedule</span>
+              <span className="text-sm font-medium">{t('badge')}</span>
             </div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-cream mb-4">
-              Check My Availability
+              {t('title')}
             </h1>
             <p className="text-lg text-cream-muted max-w-2xl mx-auto mb-6">
-              See where I'll be working and save on travel costs by booking when I'm already in your city
+              {t('description')}
             </p>
 
             {/* Discount Banner */}
@@ -276,8 +279,8 @@ export default function SchedulePage() {
                 <Percent className="w-5 h-5 text-green-400" />
               </div>
               <div className="text-left">
-                <p className="text-green-400 font-semibold">{sameCityDiscountPercent}% Same-City Discount</p>
-                <p className="text-green-400/70 text-sm">Book when I'm already in your area</p>
+                <p className="text-green-400 font-semibold">{t('sameCityDiscount', { percent: sameCityDiscountPercent })}</p>
+                <p className="text-green-400/70 text-sm">{t('bookInArea')}</p>
               </div>
             </div>
           </motion.div>
@@ -290,23 +293,23 @@ export default function SchedulePage() {
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-purple-500/20 border border-purple-500/30" />
-              <span className="text-sm text-cream-muted">Group Bundle</span>
+              <span className="text-sm text-cream-muted">{t('legend.groupBundle')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-green-500/20 border border-green-500/30" />
-              <span className="text-sm text-cream-muted">Scheduled Work</span>
+              <span className="text-sm text-cream-muted">{t('legend.scheduledWork')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-red-500/20 border border-red-500/30" />
-              <span className="text-sm text-cream-muted">Unavailable</span>
+              <span className="text-sm text-cream-muted">{t('legend.unavailable')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded bg-navy-dark/50 border border-gold/10" />
-              <span className="text-sm text-cream-muted">Available</span>
+              <span className="text-sm text-cream-muted">{t('legend.available')}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded ring-2 ring-gold ring-offset-1 ring-offset-navy" />
-              <span className="text-sm text-cream-muted">Today</span>
+              <span className="text-sm text-cream-muted">{t('legend.today')}</span>
             </div>
           </div>
         </div>
@@ -388,12 +391,12 @@ export default function SchedulePage() {
                           <div className="flex items-center gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20">
                             <XCircle className="w-6 h-6 text-red-400" />
                             <div>
-                              <p className="text-red-400 font-medium">Unavailable</p>
+                              <p className="text-red-400 font-medium">{t('unavailableTitle')}</p>
                               <p className="text-red-400/70 text-sm">{selectedDay.blockReason}</p>
                             </div>
                           </div>
                           <p className="text-cream-muted text-sm">
-                            This date is not available for bookings. Please select another date.
+                            {t('unavailableDesc')}
                           </p>
                         </div>
                       ) : (
@@ -419,11 +422,11 @@ export default function SchedulePage() {
                                     </div>
                                     {bundle.isFull ? (
                                       <span className="px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 text-xs font-medium">
-                                        Full
+                                        {t('full')}
                                       </span>
                                     ) : (
                                       <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-400 text-xs font-medium">
-                                        {bundle.discountPercent}% off
+                                        {bundle.discountPercent}% {t('off')}
                                       </span>
                                     )}
                                   </div>
@@ -448,11 +451,11 @@ export default function SchedulePage() {
 
                                   <div className="flex items-center justify-between text-sm mb-3">
                                     <span className="text-cream-muted">
-                                      {bundle.isFull ? 'No spots available' : `${bundle.spotsRemaining} spots left`}
+                                      {bundle.isFull ? t('noSpotsAvailable') : t('spotsLeft', { count: bundle.spotsRemaining })}
                                     </span>
                                     {bundle.perPersonTravelFee && (
                                       <span className="text-cream">
-                                        €{bundle.perPersonTravelFee} travel/person
+                                        {t('travelPerPerson', { amount: bundle.perPersonTravelFee })}
                                       </span>
                                     )}
                                   </div>
@@ -462,20 +465,20 @@ export default function SchedulePage() {
                                       <div className="flex items-start gap-2 p-2 rounded-lg bg-orange-500/10">
                                         <AlertTriangle className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
                                         <p className="text-xs text-orange-300">
-                                          This bundle is full. Emergency requests get {bundle.discountPercent / 2}% discount (half of regular {bundle.discountPercent}%)
+                                          {t('bundleFull', { halfPercent: bundle.discountPercent / 2, fullPercent: bundle.discountPercent })}
                                         </p>
                                       </div>
                                       <Link href={`/contact?date=${selectedDay.dateStr}&cities=${bundle.city}&bundleId=${bundle.id}&emergency=true&discountPercent=${bundle.discountPercent / 2}`}>
                                         <Button variant="secondary" className="w-full" size="sm">
                                           <Zap className="w-4 h-4 mr-2" />
-                                          Emergency Request ({bundle.discountPercent / 2}% off)
+                                          {t('emergencyRequest', { percent: bundle.discountPercent / 2 })}
                                         </Button>
                                       </Link>
                                     </div>
                                   ) : (
                                     <Link href={`/contact?date=${selectedDay.dateStr}&cities=${bundle.city}&bundleId=${bundle.id}&discountPercent=${bundle.discountPercent}`}>
                                       <Button className="w-full" size="sm">
-                                        Join Bundle ({bundle.discountPercent}% off)
+                                        {t('joinBundle', { percent: bundle.discountPercent })}
                                       </Button>
                                     </Link>
                                   )}
@@ -491,7 +494,7 @@ export default function SchedulePage() {
                                 <div className="flex items-center gap-2 mb-3">
                                   <MapPin className="w-5 h-5 text-green-400" />
                                   <span className="text-green-400 font-medium">
-                                    Scheduled in:
+                                    {t('scheduledIn')}
                                   </span>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
@@ -513,10 +516,9 @@ export default function SchedulePage() {
                                     <Percent className="w-5 h-5 text-gold" />
                                   </div>
                                   <div>
-                                    <p className="text-gold font-semibold">{sameCityDiscountPercent}% Discount Available!</p>
+                                    <p className="text-gold font-semibold">{t('discountAvailable', { percent: sameCityDiscountPercent })}</p>
                                     <p className="text-cream-muted text-sm mt-1">
-                                      If your property is in or near {selectedDay.cities.join(' or ')},
-                                      you'll automatically get {sameCityDiscountPercent}% off since I'm already in the area.
+                                      {t('discountDesc', { cities: selectedDay.cities.join(' or '), percent: sameCityDiscountPercent })}
                                     </p>
                                   </div>
                                 </div>
@@ -524,7 +526,7 @@ export default function SchedulePage() {
 
                               <Link href={`/contact?date=${selectedDay.dateStr}&cities=${selectedDay.cities.join(',')}&discountPercent=${sameCityDiscountPercent}`}>
                                 <Button className="w-full">
-                                  Book This Date
+                                  {t('bookThisDate')}
                                 </Button>
                               </Link>
                             </>
@@ -536,14 +538,14 @@ export default function SchedulePage() {
                               <div className="flex items-center gap-3 p-4 rounded-xl bg-navy border border-gold/20">
                                 <CheckCircle className="w-6 h-6 text-gold" />
                                 <div>
-                                  <p className="text-cream font-medium">Available</p>
-                                  <p className="text-cream-muted text-sm">This date is open for booking</p>
+                                  <p className="text-cream font-medium">{t('availableTitle')}</p>
+                                  <p className="text-cream-muted text-sm">{t('availableDesc')}</p>
                                 </div>
                               </div>
 
                               <Link href={`/contact?date=${selectedDay.dateStr}`}>
                                 <Button className="w-full">
-                                  Request This Date
+                                  {t('requestThisDate')}
                                 </Button>
                               </Link>
                             </>
@@ -563,10 +565,10 @@ export default function SchedulePage() {
                           <Calendar className="w-8 h-8 text-gold" />
                         </div>
                         <h3 className="text-lg font-semibold text-cream mb-2">
-                          Select a Date
+                          {t('selectDate')}
                         </h3>
                         <p className="text-cream-muted text-sm">
-                          Click on a date to see availability and booking options
+                          {t('selectDateDesc')}
                         </p>
                       </div>
                     </Card>
@@ -579,7 +581,7 @@ export default function SchedulePage() {
                 <Card className="p-4 mt-4">
                   <h4 className="text-sm font-semibold text-cream mb-3 flex items-center gap-2">
                     <Users className="w-4 h-4 text-purple-400" />
-                    Upcoming Group Bundles
+                    {t('upcomingBundles')}
                   </h4>
                   <div className="space-y-2">
                     {bundles.slice(0, 3).map((bundle) => (
@@ -592,9 +594,9 @@ export default function SchedulePage() {
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-sm font-medium text-cream">{bundle.city}</span>
                           {bundle.isFull ? (
-                            <span className="text-xs text-orange-400">Full</span>
+                            <span className="text-xs text-orange-400">{t('full')}</span>
                           ) : (
-                            <span className="text-xs text-purple-400">{bundle.discountPercent}% off</span>
+                            <span className="text-xs text-purple-400">{bundle.discountPercent}% {t('off')}</span>
                           )}
                         </div>
                         <div className="flex items-center justify-between text-xs text-cream-muted">
@@ -603,7 +605,7 @@ export default function SchedulePage() {
                               ? bundle.startDate
                               : `${bundle.startDate} - ${bundle.endDate}`}
                           </span>
-                          <span>{bundle.isFull ? 'Emergency only' : `${bundle.spotsRemaining} spots`}</span>
+                          <span>{bundle.isFull ? t('emergencyOnly') : `${bundle.spotsRemaining} ${t('spots')}`}</span>
                         </div>
                       </div>
                     ))}
@@ -616,12 +618,12 @@ export default function SchedulePage() {
                 <div className="flex items-start gap-3">
                   <Info className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
                   <div className="text-sm text-cream-muted">
-                    <p className="font-medium text-cream mb-1">How it works</p>
+                    <p className="font-medium text-cream mb-1">{t('howItWorks')}</p>
                     <ul className="space-y-1">
-                      <li>• Purple dates have group bundles with discounts</li>
-                      <li>• Green dates show where I'll already be working</li>
-                      <li>• Book on those dates in the same city for {sameCityDiscountPercent}% off</li>
-                      <li>• Full bundles offer emergency requests at half discount</li>
+                      <li>• {t('howItWorksItems.purple')}</li>
+                      <li>• {t('howItWorksItems.green')}</li>
+                      <li>• {t('howItWorksItems.discount', { percent: sameCityDiscountPercent })}</li>
+                      <li>• {t('howItWorksItems.emergency')}</li>
                     </ul>
                   </div>
                 </div>
@@ -635,13 +637,13 @@ export default function SchedulePage() {
       <section className="py-12 md:py-16 bg-navy-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-2xl md:text-3xl font-bold text-cream mb-4">
-            Don't See Your Preferred Date?
+            {t('dontSeeDate')}
           </h2>
           <p className="text-cream-muted mb-8">
-            Contact me directly and we'll find a time that works for you
+            {t('dontSeeDateDesc')}
           </p>
           <Link href="/contact">
-            <Button size="lg">Get in Touch</Button>
+            <Button size="lg">{t('getInTouch')}</Button>
           </Link>
         </div>
       </section>
