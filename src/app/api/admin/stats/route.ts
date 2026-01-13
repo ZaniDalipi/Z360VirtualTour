@@ -68,7 +68,7 @@ export async function GET() {
       totalViews: viewsAggregate._sum.views || 0,
       totalTestimonials,
       unreadMessages,
-      recentTours: tours.map((tour) => ({
+      recentTours: tours.map((tour: { id: string; title: string; views: number; category: { name: string } }) => ({
         id: tour.id,
         title: tour.title,
         views: tour.views,

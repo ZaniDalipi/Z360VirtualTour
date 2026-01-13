@@ -241,7 +241,7 @@ export default function NewTourPage() {
                   </label>
                   <ImageUpload
                     value={formData.coverImage}
-                    onChange={(url) => setFormData(prev => ({ ...prev, coverImage: url as string }))}
+                    onChange={(url: string | string[]) => setFormData(prev => ({ ...prev, coverImage: url as string }))}
                     tourSlug={formData.slug || undefined}
                     imageType="cover"
                     placeholder="Upload cover image"
@@ -263,7 +263,7 @@ export default function NewTourPage() {
                   </label>
                   <ImageUpload
                     value={formData.images}
-                    onChange={(urls) => setFormData(prev => ({ ...prev, images: urls as string[] }))}
+                    onChange={(urls: string | string[]) => setFormData(prev => ({ ...prev, images: urls as string[] }))}
                     multiple
                     maxFiles={10}
                     tourSlug={formData.slug || undefined}

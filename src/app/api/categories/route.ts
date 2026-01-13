@@ -42,7 +42,7 @@ export async function GET() {
     )
 
     return NextResponse.json(
-      categories.map((cat: { _count: { tours: number }; [key: string]: unknown }) => ({
+      categories.map((cat: CategoryWithCount) => ({
         ...cat,
         tourCount: cat._count.tours,
         _count: undefined,
