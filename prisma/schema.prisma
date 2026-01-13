@@ -202,6 +202,10 @@ model BlockedDate {
 model Booking {
   id                  String       @id @default(auto()) @map("_id") @db.ObjectId
 
+  // External API integration (for bookings from BalkanEstateAI, etc.)
+  externalId          String?      // ID from external system
+  externalSource      String?      // Source app name (e.g., "BalkanEstateAI")
+
   // User relation (optional - for registered users)
   userId              String?      @db.ObjectId
   user                User?        @relation(fields: [userId], references: [id])
