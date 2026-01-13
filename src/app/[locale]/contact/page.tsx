@@ -871,7 +871,6 @@ function ContactPageContent() {
       {/* Booking Form & Info */}
       <section className="py-6 sm:py-8 pb-12 sm:pb-16 md:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
           <div className="grid lg:grid-cols-5 gap-6 lg:gap-12">
             {/* Contact Info & Quote Preview */}
             <motion.div
