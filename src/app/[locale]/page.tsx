@@ -204,7 +204,6 @@ export default function HomePage() {
                 <MobileFeaturedSlider tours={tours} />
               </div>
             )}
-            </div>
           </div>
         </div>
       </section>
