@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
 import { cache, CacheKeys, CacheTTL } from '@/lib/cache'
-import { withRetry, withFallback } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,11 +35,20 @@ export async function GET() {
   }
 
   try {
+    // Check cache first
+    const cached = cache.get<StatsData>(CacheKeys.STATS)
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: { 'X-Cache-Status': 'hit' }
+      })
+    }
+
     const [
       totalTours,
       totalTestimonials,
       unreadMessages,
       tours,
+      viewsAggregate,
     ] = await Promise.all([
       prisma.tour.count(),
       prisma.testimonial.count(),
@@ -50,16 +58,17 @@ export async function GET() {
         orderBy: { createdAt: 'desc' },
         include: { category: true },
       }),
+      prisma.tour.aggregate({
+        _sum: { views: true },
+      }),
     ])
 
-    const totalViews = tours.reduce((sum: number, tour: { views: number }) => sum + tour.views, 0)
-
-    return NextResponse.json({
+    const stats: StatsData = {
       totalTours,
       totalViews: viewsAggregate._sum.views || 0,
       totalTestimonials,
       unreadMessages,
-      recentTours: tours.map((tour: { id: string; title: string; views: number; category: { name: string } }) => ({
+      recentTours: tours.map((tour) => ({
         id: tour.id,
         title: tour.title,
         views: tour.views,
