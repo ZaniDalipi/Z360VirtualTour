@@ -2,7 +2,7 @@
 
 import { Link } from '@/i18n/routing'
 import Image from 'next/image'
-import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter } from 'lucide-react'
+import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin, Twitter, Eye } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 const socialLinks = [
