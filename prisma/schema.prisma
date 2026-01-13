@@ -171,6 +171,8 @@ model TravelBundle {
   city              String              // Target city
   region            String?             // Region/area
   scheduledDate     DateTime            // When the photographer will be there
+  startDate         DateTime?           // Start date of the bundle period
+  endDate           DateTime?           // End date of the bundle period
   maxParticipants   Int       @default(10) // Maximum clients in bundle
   currentCount      Int       @default(0)  // Current participants
   distanceKm        Float?              // Distance from base
