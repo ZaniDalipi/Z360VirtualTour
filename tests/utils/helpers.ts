@@ -1,24 +1,24 @@
 import { PrismaClient } from '@prisma/client'
-import { getTestPrisma, isDatabaseConnected } from '../setup'
+import { getTestPrisma, isDatabaseWritable } from '../setup'
 
 // Get test prisma client with connection check
 export function requireDatabase(): PrismaClient {
   const prisma = getTestPrisma()
-  if (!prisma || !isDatabaseConnected()) {
-    throw new Error('Database not available')
+  if (!prisma || !isDatabaseWritable()) {
+    throw new Error('Database not available or not writable (replica set required)')
   }
   return prisma
 }
 
-// Skip test if database not available
+// Skip test if database not writable
 export function skipIfNoDatabase(): boolean {
-  return !isDatabaseConnected()
+  return !isDatabaseWritable()
 }
 
 // Clean up test data for a specific collection
 export async function cleanupCollection(collection: string): Promise<void> {
   const prisma = getTestPrisma()
-  if (!prisma) return
+  if (!prisma || !isDatabaseWritable()) return
 
   try {
     switch (collection) {
@@ -52,7 +52,7 @@ export async function cleanupCollection(collection: string): Promise<void> {
 // Clean up all test data
 export async function cleanupAllTestData(): Promise<void> {
   const prisma = getTestPrisma()
-  if (!prisma) return
+  if (!prisma || !isDatabaseWritable()) return
 
   try {
     // Delete in order of dependencies

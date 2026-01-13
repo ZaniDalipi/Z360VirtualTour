@@ -1,4 +1,4 @@
-import { getTestPrisma, isDatabaseConnected } from '../setup'
+import { getTestPrisma, isDatabaseWritable } from '../setup'
 import {
   createTestBooking,
   createTestBlockedDate,
@@ -10,31 +10,37 @@ import {
   cleanupAllTestData,
   calculateSurcharge,
   calculatePerPersonTravelFee,
+  skipIfNoDatabase,
 } from '../utils/helpers'
+
+// Conditionally run tests based on database availability
+const describeIfDb = () => isDatabaseWritable() ? describe : describe.skip
 
 describe('Booking & Scheduling System', () => {
   // Clean up before all tests
   beforeAll(async () => {
-    if (isDatabaseConnected()) {
+    if (isDatabaseWritable()) {
       await cleanupAllTestData()
-    } else {
-      console.log('    Database not available, skipping setup')
     }
   })
 
   // Clean up after all tests
   afterAll(async () => {
-    if (isDatabaseConnected()) {
+    if (isDatabaseWritable()) {
       await cleanupAllTestData()
+    }
+  })
+
+  // Check if we should skip all tests
+  beforeEach(() => {
+    if (skipIfNoDatabase()) {
+      console.log('    Skipping: MongoDB replica set not available')
     }
   })
 
   describe('Booking Creation', () => {
     it('should create a new booking with required fields', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const booking = await createTestBooking({
         clientName: 'John Doe',
@@ -54,10 +60,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should create booking with pricing plan', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const plan = await createTestPricingPlan({
         name: 'Premium Tour',
@@ -85,10 +88,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should create booking with urgency tier surcharge', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const tier = await createTestUrgencyTier({
         name: 'express-test',
@@ -124,10 +124,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should create booking with travel zone fee', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const zone = await createTestTravelZone({
         name: 'Regional Zone',
@@ -158,10 +155,7 @@ describe('Booking & Scheduling System', () => {
 
   describe('Booking Status Workflow', () => {
     it('should update booking status from quote_requested to quote_sent', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const booking = await createTestBooking()
@@ -184,10 +178,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should update booking status to confirmed with deposit', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const booking = await createTestBooking({
@@ -216,10 +207,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should update booking status through complete workflow', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const booking = await createTestBooking()
@@ -241,10 +229,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should track work duration for in_progress bookings', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const booking = await createTestBooking({
@@ -270,10 +255,7 @@ describe('Booking & Scheduling System', () => {
 
   describe('Scheduling & Date Management', () => {
     it('should set preferred and alternate dates', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const preferredDate = new Date('2025-02-15')
@@ -292,10 +274,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should confirm scheduled date', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const booking = await createTestBooking({
@@ -319,10 +298,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should handle deadline dates for rush bookings', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const deadlineDate = new Date('2025-01-25')
@@ -341,10 +317,7 @@ describe('Booking & Scheduling System', () => {
 
   describe('Blocked Dates', () => {
     it('should create blocked date', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const blockedDate = await createTestBlockedDate(
@@ -361,10 +334,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should prevent duplicate blocked dates', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const date = new Date('2025-03-02')
@@ -379,10 +349,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should list all blocked dates', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
 
@@ -410,10 +377,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should delete blocked date', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const blockedDate = await createTestBlockedDate(
@@ -433,10 +397,7 @@ describe('Booking & Scheduling System', () => {
 
   describe('Travel Bundles', () => {
     it('should create travel bundle', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const bundle = await createTestTravelBundle({
@@ -458,10 +419,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should add booking to travel bundle', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const bundle = await createTestTravelBundle({
@@ -491,10 +449,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should calculate per-person travel fee', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const totalCost = 100
@@ -521,10 +476,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should update bundle status when full', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const bundle = await createTestTravelBundle({
@@ -551,10 +503,7 @@ describe('Booking & Scheduling System', () => {
 
   describe('Urgency Tiers', () => {
     it('should create standard urgency tier', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const tier = await createTestUrgencyTier({
@@ -574,10 +523,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should create express urgency tier with surcharge', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const tier = await createTestUrgencyTier({
@@ -596,10 +542,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should create rush urgency tier with high surcharge', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const tier = await createTestUrgencyTier({
@@ -618,10 +561,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should calculate surcharge correctly', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const tier = await createTestUrgencyTier({
@@ -642,10 +582,7 @@ describe('Booking & Scheduling System', () => {
 
   describe('Change Requests', () => {
     it('should create date change request', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const booking = await createTestBooking({
@@ -669,10 +606,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should approve change request', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const booking = await createTestBooking()
@@ -698,10 +632,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should reject change request', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const booking = await createTestBooking()
@@ -728,10 +659,7 @@ describe('Booking & Scheduling System', () => {
 
   describe('Payment Tracking', () => {
     it('should track deposit payment', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const booking = await createTestBooking({
@@ -757,10 +685,7 @@ describe('Booking & Scheduling System', () => {
     })
 
     it('should track full payment', async () => {
-      if (!isDatabaseConnected()) {
-        console.log('    Skipping: Database not available')
-        return
-      }
+      if (skipIfNoDatabase()) return
 
       const prisma = getTestPrisma()!
       const booking = await createTestBooking({
