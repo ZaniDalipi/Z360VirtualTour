@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { travelBundles } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const admin = await getAdminFromCookies()
@@ -10,8 +12,18 @@ export async function GET() {
   }
 
   try {
-    const bundles = travelBundles.findMany()
-    return NextResponse.json(bundles)
+    const bundles = await prisma.travelBundle.findMany({
+      orderBy: { scheduledDate: 'asc' },
+    })
+
+    // Map bundles to include startDate/endDate fallbacks for older entries
+    const mappedBundles = bundles.map((bundle: typeof bundles[number]) => ({
+      ...bundle,
+      startDate: bundle.startDate || bundle.scheduledDate,
+      endDate: bundle.endDate || bundle.scheduledDate,
+    }))
+
+    return NextResponse.json(mappedBundles)
   } catch (error) {
     console.error('Failed to fetch travel bundles:', error)
     return NextResponse.json(
@@ -31,20 +43,28 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
-    const bundle = travelBundles.create({
-      name: data.name,
-      city: data.city,
-      region: data.region,
-      scheduledDate: data.scheduledDate,
-      maxParticipants: parseInt(data.maxParticipants) || 10,
-      distanceKm: data.distanceKm ? parseFloat(data.distanceKm) : null,
-      totalTravelCost: data.totalTravelCost ? parseFloat(data.totalTravelCost) : null,
-      perPersonTravelFee: data.perPersonTravelFee ? parseFloat(data.perPersonTravelFee) : null,
-      discountPercent: parseFloat(data.discountPercent) || 0,
-      description: data.description,
-      status: data.status || 'open',
-      isActive: data.isActive ?? true,
-      registrationDeadline: data.registrationDeadline,
+    const startDate = new Date(data.startDate)
+    const endDate = data.endDate ? new Date(data.endDate) : startDate
+
+    const bundle = await prisma.travelBundle.create({
+      data: {
+        name: data.name,
+        city: data.city,
+        region: data.region || null,
+        startDate: startDate,
+        endDate: endDate,
+        scheduledDate: startDate, // Use startDate for compatibility
+        maxParticipants: parseInt(data.maxParticipants) || 10,
+        currentCount: 0,
+        distanceKm: data.distanceKm ? parseFloat(data.distanceKm) : null,
+        totalTravelCost: data.totalTravelCost ? parseFloat(data.totalTravelCost) : null,
+        perPersonTravelFee: data.perPersonTravelFee ? parseFloat(data.perPersonTravelFee) : null,
+        discountPercent: parseFloat(data.discountPercent) || 0,
+        description: data.description || null,
+        status: data.status || 'open',
+        isActive: data.isActive ?? true,
+        registrationDeadline: data.registrationDeadline ? new Date(data.registrationDeadline) : null,
+      },
     })
 
     return NextResponse.json(bundle, { status: 201 })

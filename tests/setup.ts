@@ -1,93 +1,68 @@
-import { PrismaClient } from '@prisma/client'
+// Test setup file
+// Mock environment variables for testing
+process.env.DATABASE_URL = process.env.DATABASE_URL || 'mongodb://localhost:27017/z360_test'
+process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing'
 
-// Global test prisma client
-let testPrisma: PrismaClient | null = null
-let isConnected = false
-let isWritable = false
+// Try to load Prisma client, but don't fail if not available
+let PrismaClient: any
+let testPrisma: any = null
 
-// Initialize test database connection
-export async function initTestDatabase(): Promise<PrismaClient | null> {
-  if (testPrisma && isConnected) {
-    return testPrisma
-  }
+try {
+  const prismaModule = require('@prisma/client')
+  PrismaClient = prismaModule.PrismaClient
+  testPrisma = new PrismaClient()
+} catch (error) {
+  console.log('⚠ Prisma client not available - running tests in mock mode')
+}
+
+export { testPrisma }
+
+// Clean up function
+export async function cleanDatabase() {
+  if (!testPrisma) return
 
   try {
-    testPrisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL || process.env.TEST_DATABASE_URL,
-        },
-      },
-    })
-
-    // Test the connection
-    await testPrisma.$connect()
-    isConnected = true
-    console.log('    ✓ Database connected for testing')
-
-    // Test if we can actually write (requires replica set for MongoDB)
-    try {
-      // Try a simple write operation to verify replica set is available
-      const testSetting = await testPrisma.siteSetting.upsert({
-        where: { key: '__test_connection__' },
-        update: { value: new Date().toISOString() },
-        create: { key: '__test_connection__', value: new Date().toISOString() },
-      })
-      // Clean up test record
-      await testPrisma.siteSetting.delete({ where: { id: testSetting.id } })
-      isWritable = true
-      console.log('    ✓ Database is writable (replica set available)')
-    } catch (writeError: any) {
-      if (writeError.message?.includes('replica set')) {
-        console.log('    ✗ MongoDB replica set not configured - tests will be skipped')
-        console.log('      Use MongoDB Atlas or configure local MongoDB as replica set')
-        isWritable = false
-      } else {
-        throw writeError
-      }
-    }
-
-    return testPrisma
-  } catch (error: any) {
-    console.log('    ✗ Database not available for testing:', error.message)
-    testPrisma = null
-    isConnected = false
-    isWritable = false
-    return null
+    // Clean up test data in reverse order of dependencies
+    await testPrisma.apiLog?.deleteMany({})
+    await testPrisma.webhook?.deleteMany({})
+    await testPrisma.apiKey?.deleteMany({})
+    await testPrisma.expense?.deleteMany({})
+    await testPrisma.expenseCategory?.deleteMany({})
+    await testPrisma.financialReport?.deleteMany({})
+    await testPrisma.booking?.deleteMany({})
+    await testPrisma.travelBundle?.deleteMany({})
+    await testPrisma.blockedDate?.deleteMany({})
+    await testPrisma.travelZone?.deleteMany({})
+    await testPrisma.urgencyTier?.deleteMany({})
+    await testPrisma.pricingPlan?.deleteMany({})
+    await testPrisma.testimonial?.deleteMany({})
+    await testPrisma.contactSubmission?.deleteMany({})
+    await testPrisma.tour?.deleteMany({})
+    await testPrisma.category?.deleteMany({})
+    await testPrisma.user?.deleteMany({})
+    await testPrisma.admin?.deleteMany({})
+    await testPrisma.siteSetting?.deleteMany({})
+    await testPrisma.bookingSettings?.deleteMany({})
+  } catch (error) {
+    // Ignore cleanup errors
   }
 }
 
-// Get the test prisma client
-export function getTestPrisma(): PrismaClient | null {
-  return testPrisma
-}
-
-// Check if database is connected
-export function isDatabaseConnected(): boolean {
-  return isConnected
-}
-
-// Check if database is writable (replica set available for MongoDB)
-export function isDatabaseWritable(): boolean {
-  return isConnected && isWritable
-}
-
-// Cleanup function for after all tests
-export async function cleanupTestDatabase(): Promise<void> {
-  if (testPrisma) {
-    await testPrisma.$disconnect()
-    testPrisma = null
-    isConnected = false
-    isWritable = false
-  }
-}
-
-// Global setup
+// Setup and teardown
 beforeAll(async () => {
-  await initTestDatabase()
+  if (testPrisma) {
+    try {
+      await testPrisma.$connect()
+      console.log('✓ Database connected for testing')
+    } catch (error) {
+      console.log('⚠ Database connection skipped (not available)')
+      testPrisma = null
+    }
+  }
 })
 
-// Global teardown
 afterAll(async () => {
-  await cleanupTestDatabase()
+  if (testPrisma) {
+    await testPrisma.$disconnect()
+  }
 })

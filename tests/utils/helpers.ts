@@ -1,75 +1,112 @@
-import { PrismaClient } from '@prisma/client'
-import { getTestPrisma, isDatabaseWritable } from '../setup'
+import { testPrisma } from '../setup'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 
-// Get test prisma client with connection check
-export function requireDatabase(): PrismaClient {
-  const prisma = getTestPrisma()
-  if (!prisma || !isDatabaseWritable()) {
-    throw new Error('Database not available or not writable (replica set required)')
-  }
-  return prisma
+const JWT_SECRET = process.env.JWT_SECRET || 'test-jwt-secret-key-for-testing'
+
+// Helper to create test admin
+export async function createTestAdmin(data?: Partial<{
+  email: string
+  password: string
+  name: string
+}>) {
+  const password = await bcrypt.hash(data?.password || 'testpassword123', 10)
+  return testPrisma.admin.create({
+    data: {
+      email: data?.email || `admin-${Date.now()}@test.com`,
+      password,
+      name: data?.name || 'Test Admin',
+    },
+  })
 }
 
-// Skip test if database not writable
-export function skipIfNoDatabase(): boolean {
-  return !isDatabaseWritable()
+// Helper to create test user
+export async function createTestUser(data?: Partial<{
+  email: string
+  password: string
+  name: string
+  phone: string
+  company: string
+}>) {
+  const password = await bcrypt.hash(data?.password || 'testpassword123', 10)
+  return testPrisma.user.create({
+    data: {
+      email: data?.email || `user-${Date.now()}@test.com`,
+      password,
+      name: data?.name || 'Test User',
+      phone: data?.phone,
+      company: data?.company,
+    },
+  })
 }
 
-// Clean up test data for a specific collection
-export async function cleanupCollection(collection: string): Promise<void> {
-  const prisma = getTestPrisma()
-  if (!prisma || !isDatabaseWritable()) return
-
-  try {
-    switch (collection) {
-      case 'booking':
-        await prisma.booking.deleteMany({})
-        break
-      case 'blockedDate':
-        await prisma.blockedDate.deleteMany({})
-        break
-      case 'travelBundle':
-        await prisma.travelBundle.deleteMany({})
-        break
-      case 'urgencyTier':
-        await prisma.urgencyTier.deleteMany({})
-        break
-      case 'travelZone':
-        await prisma.travelZone.deleteMany({})
-        break
-      case 'pricingPlan':
-        await prisma.pricingPlan.deleteMany({})
-        break
-      case 'changeRequest':
-        await prisma.changeRequest.deleteMany({})
-        break
-    }
-  } catch (error) {
-    // Ignore cleanup errors
-  }
+// Helper to create JWT token for admin
+export function createAdminToken(admin: { id: string; email: string; name: string }) {
+  return jwt.sign(
+    { id: admin.id, email: admin.email, name: admin.name, type: 'admin' },
+    JWT_SECRET,
+    { expiresIn: '1d' }
+  )
 }
 
-// Clean up all test data
-export async function cleanupAllTestData(): Promise<void> {
-  const prisma = getTestPrisma()
-  if (!prisma || !isDatabaseWritable()) return
+// Helper to create JWT token for user
+export function createUserToken(user: { id: string; email: string; name: string }) {
+  return jwt.sign(
+    { userId: user.id, email: user.email, type: 'user' },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  )
+}
 
-  try {
-    // Delete in order of dependencies
-    await prisma.changeRequest.deleteMany({})
-    await prisma.booking.deleteMany({})
-    await prisma.blockedDate.deleteMany({})
-    await prisma.travelBundle.deleteMany({})
-    await prisma.urgencyTier.deleteMany({})
-    await prisma.travelZone.deleteMany({})
-    await prisma.pricingPlan.deleteMany({})
-  } catch (error) {
-    // Ignore cleanup errors
-  }
+// Helper to create test category
+export async function createTestCategory(data?: Partial<{
+  name: string
+  slug: string
+  description: string
+}>) {
+  const timestamp = Date.now()
+  return testPrisma.category.create({
+    data: {
+      name: data?.name || `Test Category ${timestamp}`,
+      slug: data?.slug || `test-category-${timestamp}`,
+      description: data?.description || 'Test category description',
+      isActive: true,
+    },
+  })
+}
+
+// Helper to create test tour
+export async function createTestTour(categoryId: string, data?: Partial<{
+  title: string
+  slug: string
+  description: string
+  clientName: string
+  location: string
+  coverImage: string
+  featured: boolean
+  premium: boolean
+  highlight: boolean
+}>) {
+  const timestamp = Date.now()
+  return testPrisma.tour.create({
+    data: {
+      title: data?.title || `Test Tour ${timestamp}`,
+      slug: data?.slug || `test-tour-${timestamp}`,
+      description: data?.description || 'Test tour description',
+      clientName: data?.clientName || 'Test Client',
+      location: data?.location || 'Test Location',
+      coverImage: data?.coverImage || 'https://example.com/image.jpg',
+      categoryId,
+      featured: data?.featured ?? false,
+      premium: data?.premium ?? false,
+      highlight: data?.highlight ?? false,
+      isActive: true,
+    },
+  })
 }
 
 // Helper to create test booking
-export async function createTestBooking(data: Partial<{
+export async function createTestBooking(data?: Partial<{
   clientName: string
   clientEmail: string
   clientPhone: string
@@ -77,49 +114,23 @@ export async function createTestBooking(data: Partial<{
   propertyCity: string
   status: string
   totalQuote: number
-  pricingPlanId: string
-  urgencyTierId: string
-  travelZoneId: string
-  travelBundleId: string
-  preferredDate: Date
-  alternateDate: Date
-  deadlineDate: Date
-  confirmedDate: Date
-  basePrice: number
-  urgencySurcharge: number
-  travelFee: number
-}> = {}) {
-  const prisma = requireDatabase()
-
-  return prisma.booking.create({
+}>) {
+  return testPrisma.booking.create({
     data: {
-      clientName: data.clientName || 'Test Client',
-      clientEmail: data.clientEmail || 'test@example.com',
-      clientPhone: data.clientPhone || '+389 70 123 456',
-      propertyAddress: data.propertyAddress || '123 Test Street, Skopje',
-      propertyCity: data.propertyCity || 'Skopje',
-      status: data.status || 'quote_requested',
-      totalQuote: data.totalQuote,
-      pricingPlanId: data.pricingPlanId,
-      urgencyTierId: data.urgencyTierId,
-      travelZoneId: data.travelZoneId,
-      travelBundleId: data.travelBundleId,
-      preferredDate: data.preferredDate,
-      alternateDate: data.alternateDate,
-      deadlineDate: data.deadlineDate,
-      confirmedDate: data.confirmedDate,
-      basePrice: data.basePrice,
-      urgencySurcharge: data.urgencySurcharge,
-      travelFee: data.travelFee,
+      clientName: data?.clientName || 'Test Client',
+      clientEmail: data?.clientEmail || `client-${Date.now()}@test.com`,
+      clientPhone: data?.clientPhone || '+1234567890',
+      propertyAddress: data?.propertyAddress || '123 Test Street',
+      propertyCity: data?.propertyCity || 'Test City',
+      status: data?.status || 'quote_requested',
+      totalQuote: data?.totalQuote || 500,
     },
   })
 }
 
 // Helper to create test blocked date
 export async function createTestBlockedDate(date: Date, reason?: string) {
-  const prisma = requireDatabase()
-
-  return prisma.blockedDate.create({
+  return testPrisma.blockedDate.create({
     data: {
       date,
       reason: reason || 'Test blocked date',
@@ -129,132 +140,112 @@ export async function createTestBlockedDate(date: Date, reason?: string) {
 }
 
 // Helper to create test travel bundle
-export async function createTestTravelBundle(data: Partial<{
+export async function createTestTravelBundle(data?: Partial<{
   name: string
   city: string
-  region: string
   scheduledDate: Date
   maxParticipants: number
-  currentCount: number
-  totalTravelCost: number
-  perPersonTravelFee: number
-  status: string
-}> = {}) {
-  const prisma = requireDatabase()
-
-  return prisma.travelBundle.create({
+}>) {
+  return testPrisma.travelBundle.create({
     data: {
-      name: data.name || 'Test Bundle',
-      city: data.city || 'Ohrid',
-      region: data.region || 'Southwest',
-      scheduledDate: data.scheduledDate || new Date('2025-02-01'),
-      maxParticipants: data.maxParticipants || 10,
-      currentCount: data.currentCount || 0,
-      totalTravelCost: data.totalTravelCost,
-      perPersonTravelFee: data.perPersonTravelFee,
-      status: data.status || 'open',
+      name: data?.name || `Test Bundle ${Date.now()}`,
+      city: data?.city || 'Test City',
+      scheduledDate: data?.scheduledDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+      maxParticipants: data?.maxParticipants || 10,
+      status: 'open',
+      isActive: true,
     },
   })
 }
 
-// Helper to create test pricing plan
-export async function createTestPricingPlan(data: Partial<{
+// Helper to create expense category
+export async function createTestExpenseCategory(data?: Partial<{
+  name: string
+  description: string
+  color: string
+}>) {
+  return testPrisma.expenseCategory.create({
+    data: {
+      name: data?.name || `Expense Category ${Date.now()}`,
+      description: data?.description || 'Test expense category',
+      color: data?.color || '#FF5733',
+      isActive: true,
+    },
+  })
+}
+
+// Helper to create expense
+export async function createTestExpense(categoryId: string, data?: Partial<{
+  description: string
+  amount: number
+  date: Date
+  vendor: string
+}>) {
+  return testPrisma.expense.create({
+    data: {
+      description: data?.description || 'Test expense',
+      amount: data?.amount || 100,
+      date: data?.date || new Date(),
+      categoryId,
+      vendor: data?.vendor || 'Test Vendor',
+    },
+  })
+}
+
+// Helper to create pricing plan
+export async function createTestPricingPlan(data?: Partial<{
   name: string
   description: string
   price: number
   features: string[]
   isPopular: boolean
-}> = {}) {
-  const prisma = requireDatabase()
-
-  return prisma.pricingPlan.create({
+}>) {
+  return testPrisma.pricingPlan.create({
     data: {
-      name: data.name || 'Test Plan',
-      description: data.description || 'Test pricing plan',
-      price: data.price || 299,
-      features: JSON.stringify(data.features || ['Feature 1', 'Feature 2']),
-      isPopular: data.isPopular || false,
+      name: data?.name || `Test Plan ${Date.now()}`,
+      description: data?.description || 'Test pricing plan',
+      price: data?.price || 299,
+      features: JSON.stringify(data?.features || ['Feature 1', 'Feature 2', 'Feature 3']),
+      isPopular: data?.isPopular ?? false,
+      isActive: true,
     },
   })
 }
 
-// Helper to create test urgency tier
-export async function createTestUrgencyTier(data: Partial<{
+// Helper to create urgency tier
+export async function createTestUrgencyTier(data?: Partial<{
   name: string
   displayName: string
-  description: string
   minLeadDays: number
   maxLeadDays: number
   surchargePercent: number
-}> = {}) {
-  const prisma = requireDatabase()
-
-  return prisma.urgencyTier.create({
+}>) {
+  return testPrisma.urgencyTier.create({
     data: {
-      name: data.name || `tier-${Date.now()}`,
-      displayName: data.displayName || 'Test Tier',
-      description: data.description || 'Test urgency tier',
-      minLeadDays: data.minLeadDays ?? 7,
-      maxLeadDays: data.maxLeadDays,
-      surchargePercent: data.surchargePercent ?? 0,
+      name: data?.name || `urgency-${Date.now()}`,
+      displayName: data?.displayName || 'Test Urgency',
+      minLeadDays: data?.minLeadDays ?? 3,
+      maxLeadDays: data?.maxLeadDays,
+      surchargePercent: data?.surchargePercent ?? 0,
+      isActive: true,
     },
   })
 }
 
-// Helper to create test travel zone
-export async function createTestTravelZone(data: Partial<{
+// Helper to create travel zone
+export async function createTestTravelZone(data?: Partial<{
   name: string
-  description: string
   minDistanceKm: number
   maxDistanceKm: number
   flatFee: number
-  perKmRate: number
-  isIncluded: boolean
-}> = {}) {
-  const prisma = requireDatabase()
-
-  return prisma.travelZone.create({
+}>) {
+  return testPrisma.travelZone.create({
     data: {
-      name: data.name || 'Test Zone',
-      description: data.description || 'Test travel zone',
-      minDistanceKm: data.minDistanceKm ?? 0,
-      maxDistanceKm: data.maxDistanceKm,
-      flatFee: data.flatFee,
-      perKmRate: data.perKmRate,
-      isIncluded: data.isIncluded ?? false,
+      name: data?.name || `Zone ${Date.now()}`,
+      minDistanceKm: data?.minDistanceKm ?? 0,
+      maxDistanceKm: data?.maxDistanceKm,
+      flatFee: data?.flatFee ?? 0,
+      isActive: true,
     },
   })
-}
-
-// Helper to create test change request
-export async function createTestChangeRequest(bookingId: string, data: Partial<{
-  requestType: string
-  originalValue: string
-  requestedValue: string
-  reason: string
-  status: string
-}> = {}) {
-  const prisma = requireDatabase()
-
-  return prisma.changeRequest.create({
-    data: {
-      bookingId,
-      requestType: data.requestType || 'date_change',
-      originalValue: data.originalValue,
-      requestedValue: data.requestedValue,
-      reason: data.reason || 'Test reason',
-      status: data.status || 'pending',
-    },
-  })
-}
-
-// Calculate urgency surcharge
-export function calculateSurcharge(basePrice: number, surchargePercent: number): number {
-  return basePrice * (surchargePercent / 100)
-}
-
-// Calculate per-person travel fee
-export function calculatePerPersonTravelFee(totalCost: number, participants: number): number {
-  if (participants <= 0) return totalCost
-  return totalCost / participants
 }

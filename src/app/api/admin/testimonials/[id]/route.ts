@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -13,7 +15,7 @@ export async function GET(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const testimonial = await prisma.testimonial.findUnique({
       where: { id },
     })
@@ -34,7 +36,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -43,7 +45,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const data = await request.json()
 
     // Build update object with only provided fields (allows partial updates)
@@ -75,7 +77,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -84,7 +86,7 @@ export async function DELETE(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     await prisma.testimonial.delete({
       where: { id },
     })

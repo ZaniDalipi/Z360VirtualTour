@@ -1,133 +1,223 @@
 'use client'
 
-import Link from 'next/link'
-import { useState } from 'react'
-import { Menu, X } from 'lucide-react'
+import { Link } from '@/i18n/routing'
+import { useState, useEffect, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
+import { Menu, X, LogIn, UserPlus, Phone, User } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { LanguageSwitcher } from '@/components/ui'
+import { cn } from '@/lib/utils'
 
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/tours', label: 'Portfolio' },
-  { href: '/testimonials', label: 'Testimonials' },
-  { href: '/pricing', label: 'Pricing' },
-  { href: '/contact', label: 'Contact' },
-]
+interface UserData {
+  name: string
+  email: string
+}
 
 export function PublicHeader() {
+  const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
+  const [user, setUser] = useState<UserData | null>(null)
+  const [isMounted, setIsMounted] = useState(false)
+
+  const t = useTranslations('nav')
+  const tContact = useTranslations('contact')
+  const tAuth = useTranslations('auth')
+
+  const navLinks = [
+    { href: '/', label: t('home') },
+    { href: '/tours', label: t('tours') },
+    { href: '/schedule', label: t('schedule') || 'Schedule' },
+    { href: '/testimonials', label: t('testimonials') },
+    { href: '/pricing', label: t('pricing') },
+    { href: '/contact', label: t('contact') },
+  ]
+
+  // Mark as mounted and check auth
+  useEffect(() => {
+    setIsMounted(true)
+    const checkAuth = async () => {
+      try {
+        const res = await fetch('/api/user/auth/me')
+        if (res.ok) {
+          const data = await res.json()
+          setUser(data.user)
+        }
+      } catch {
+        // Not logged in
+      }
+    }
+    checkAuth()
+  }, [])
+
+  // Handle scroll for header background
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10)
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  const handleCloseMenu = useCallback(() => {
+    setMobileMenuOpen(false)
+  }, [])
 
   return (
     <>
       {/* Fixed Header */}
       <header
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 9999,
-          backgroundColor: '#0A1520',
-          borderBottom: '1px solid rgba(201, 169, 98, 0.3)',
-        }}
+        className={cn(
+          'fixed top-0 left-0 right-0 z-[9990] transition-all duration-300 safe-top',
+          isScrolled
+            ? 'bg-navy-dark/95 backdrop-blur-lg border-b border-gold/20 shadow-lg'
+            : 'bg-navy-dark border-b border-gold/15'
+        )}
       >
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '64px' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
-            <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none' }}>
-              <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#E8DCC4' }}>Z</span>
-              <span style={{ fontSize: '1.25rem', fontWeight: '600', color: '#C9A962' }}>360</span>
-              <span style={{ fontSize: '0.875rem', color: '#E8DCC4' }}>Virtual Tours</span>
+            <Link
+              href="/"
+              className="flex items-center gap-1.5"
+            >
+              <span className="text-2xl font-bold text-cream">Z</span>
+              <span className="text-xl font-semibold text-gold">360</span>
+              <span className="text-sm text-cream-soft ml-0.5">Virtual Tours</span>
             </Link>
 
             {/* Desktop Navigation */}
-            <nav style={{ display: 'flex', alignItems: 'center', gap: '2rem' }} className="hidden md:flex">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  style={{
-                    color: '#E8DCC4',
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                  }}
-                >
-                  {link.label}
-                </Link>
-              ))}
+            <nav className="hidden lg:flex items-center gap-1">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href || pathname?.includes(link.href + '/')
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      'px-4 py-2 rounded-lg text-body font-medium transition-all duration-200',
+                      isActive
+                        ? 'text-gold bg-gold/10'
+                        : 'text-cream-soft hover:text-cream hover:bg-cream/5'
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              })}
             </nav>
 
-            {/* CTA Button - Desktop */}
-            <div className="hidden md:block">
-              <Link href="/contact" style={{ textDecoration: 'none' }}>
-                <button
-                  style={{
-                    backgroundColor: '#C9A962',
-                    color: '#0A1520',
-                    padding: '0.5rem 1.5rem',
-                    borderRadius: '0.375rem',
-                    fontWeight: 600,
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Get a Quote
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-2 sm:gap-3">
+              {/* Language Switcher - Desktop */}
+              <div className="hidden lg:block">
+                <LanguageSwitcher />
+              </div>
+
+              {/* Login/Profile Button - Desktop */}
+              {isMounted && (
+                <div className="hidden lg:block">
+                  {user ? (
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-2 px-4 py-2 rounded-lg text-cream-soft hover:text-cream hover:bg-cream/5 transition-colors"
+                    >
+                      <User className="w-4 h-4" />
+                      <span className="text-sm font-medium">{user.name.split(' ')[0]}</span>
+                    </Link>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href="/account/login"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-cream-soft hover:text-cream hover:bg-cream/5 transition-colors"
+                      >
+                        <LogIn className="w-4 h-4" />
+                        <span className="text-sm font-medium">{tAuth('login')}</span>
+                      </Link>
+                      <Link
+                        href="/account/signup"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg text-cream hover:text-gold hover:bg-cream/5 transition-colors"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        <span className="text-sm font-medium">{tAuth('signup')}</span>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* CTA Button - Desktop */}
+              <Link href="/contact" className="hidden lg:block">
+                <button className="bg-gold hover:bg-gold-soft text-navy font-bold px-6 py-2.5 rounded-lg transition-all shadow-lg shadow-gold/20 hover:shadow-xl hover:shadow-gold/30 hover:scale-105">
+                  {tContact('title')}
                 </button>
               </Link>
-            </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden"
-              style={{ color: '#E8DCC4', background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem' }}
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? <X style={{ width: '24px', height: '24px' }} /> : <Menu style={{ width: '24px', height: '24px' }} />}
-            </button>
+              {/* Mobile Menu Button */}
+              <button
+                className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg border border-cream/15 text-cream hover:border-gold/30 hover:text-gold transition-colors"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Toggle menu"
+                aria-expanded={mobileMenuOpen}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div
-            style={{
-              backgroundColor: '#0A1520',
-              borderTop: '1px solid rgba(201, 169, 98, 0.2)',
-              padding: '1rem',
-            }}
-            className="md:hidden"
-          >
-            <nav style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          <div className="lg:hidden bg-navy-dark border-t border-gold/20 p-4">
+            <nav className="flex flex-col gap-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  style={{
-                    color: '#E8DCC4',
-                    fontWeight: 500,
-                    textDecoration: 'none',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '0.5rem',
-                    display: 'block',
-                  }}
+                  className="text-cream font-medium px-4 py-3 rounded-lg hover:bg-cream/5 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {link.label}
                 </Link>
               ))}
-              <div style={{ paddingTop: '0.5rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
-                <Link href="/contact" onClick={() => setMobileMenuOpen(false)} style={{ textDecoration: 'none' }}>
-                  <button
-                    style={{
-                      width: '100%',
-                      backgroundColor: '#C9A962',
-                      color: '#0A1520',
-                      padding: '0.75rem',
-                      borderRadius: '0.375rem',
-                      fontWeight: 600,
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
+              <div className="px-4 py-3">
+                <LanguageSwitcher />
+              </div>
+              {!user && (
+                <>
+                  <Link
+                    href="/account/login"
+                    className="flex items-center gap-2 text-cream-muted font-medium px-4 py-3 rounded-lg hover:bg-cream/5 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
                   >
-                    Get a Quote
+                    <LogIn className="w-4 h-4" />
+                    {tAuth('login')}
+                  </Link>
+                  <Link
+                    href="/account/signup"
+                    className="flex items-center gap-2 text-cream font-medium px-4 py-3 rounded-lg hover:bg-cream/5 transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    {tAuth('signup')}
+                  </Link>
+                </>
+              )}
+              {user && (
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 text-cream font-medium px-4 py-3 rounded-lg hover:bg-cream/5 transition-colors"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <User className="w-4 h-4" />
+                  {user.name}
+                </Link>
+              )}
+              <div className="pt-2 px-4">
+                <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
+                  <button className="w-full bg-gold hover:bg-gold-soft text-navy font-bold py-3 rounded-lg transition-all">
+                    {tContact('title')}
                   </button>
                 </Link>
               </div>
@@ -137,7 +227,7 @@ export function PublicHeader() {
       </header>
 
       {/* Spacer to push content below fixed header */}
-      <div style={{ height: '64px' }} />
+      <div className="h-16 md:h-20" />
     </>
   )
 }

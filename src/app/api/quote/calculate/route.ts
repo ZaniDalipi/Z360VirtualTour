@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { calculateQuote, getDistanceByCity } from '@/lib/booking-db'
+import { calculateQuote, getDistanceByCity } from '@/lib/quote-utils'
 import { prisma } from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,11 +30,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate quote
-    const quote = calculateQuote({
+    const quote = await calculateQuote({
       pricingPlanPrice: basePrice,
       urgencyTierId: data.urgencyTierId,
       distanceKm,
       bundleId: data.bundleId,
+      userCity: data.city,  // Pass user's city for bundle eligibility check
+      scheduledCities: data.scheduledCities,  // Cities where photographer is already scheduled (for same-city discount)
     })
 
     return NextResponse.json({
