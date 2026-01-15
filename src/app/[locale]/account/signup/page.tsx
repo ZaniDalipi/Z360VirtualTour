@@ -1,9 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
 import Image from 'next/image'
-import { Link } from '@/i18n/routing'
+import { Link, useRouter } from '@/i18n/routing'
 import { User, Mail, Lock, Phone, Building2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { Button, Card, Input } from '@/components/ui'
 import { PublicHeader, Footer } from '@/components/layout'
@@ -12,9 +11,7 @@ import { useTranslations } from 'next-intl'
 
 export default function SignupPage() {
   const router = useRouter()
-  const pathname = usePathname()
   const t = useTranslations('auth')
-  const locale = pathname.split('/')[1] || 'en'
 
   const [formData, setFormData] = useState({
     name: '',
@@ -66,7 +63,8 @@ export default function SignupPage() {
       const data = await res.json()
 
       if (res.ok) {
-        router.push(`/${locale}/account`)
+        // Use i18n router which handles locale automatically
+        router.replace('/account')
       } else {
         setError(data.error || t('signupError'))
       }

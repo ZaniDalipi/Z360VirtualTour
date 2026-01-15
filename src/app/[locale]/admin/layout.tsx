@@ -27,6 +27,15 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
+// Valid locales for the app
+const validLocales = ['en', 'sq', 'mk']
+
+// Helper to extract locale from pathname (handles localePrefix: 'as-needed')
+function getLocaleFromPath(pathname: string): string {
+  const segments = pathname.split('/').filter(Boolean)
+  return validLocales.includes(segments[0]) ? segments[0] : 'en'
+}
+
 interface AdminUser {
   id: string
   email: string
@@ -90,9 +99,10 @@ export default function AdminLayout({
       const authenticated = await checkAuth()
       // Only redirect if not authenticated and not already on login page
       if (!authenticated && !isLoginPage) {
-        // Get current locale from pathname
-        const locale = pathname.split('/')[1] || 'en'
-        router.replace(`/${locale}/admin/login`)
+        const locale = getLocaleFromPath(pathname)
+        // For default locale, don't add prefix (as-needed)
+        const loginPath = locale === 'en' ? '/admin/login' : `/${locale}/admin/login`
+        router.replace(loginPath)
       }
     }
     init()
@@ -106,8 +116,9 @@ export default function AdminLayout({
     }
     setUser(null)
     setIsAuthenticated(false)
-    const locale = pathname.split('/')[1] || 'en'
-    router.replace(`/${locale}/admin/login`)
+    const locale = getLocaleFromPath(pathname)
+    const loginPath = locale === 'en' ? '/admin/login' : `/${locale}/admin/login`
+    router.replace(loginPath)
   }
 
   // Show login page without layout

@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { Link } from '@/i18n/routing'
+import { Link, useRouter } from '@/i18n/routing'
 import {
   User,
   Calendar,
@@ -44,9 +43,7 @@ interface Booking {
 
 export default function AccountPage() {
   const router = useRouter()
-  const pathname = usePathname()
   const t = useTranslations('account')
-  const locale = pathname.split('/')[1] || 'en'
 
   const [user, setUser] = useState<UserData | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -58,7 +55,8 @@ export default function AccountPage() {
         // Fetch user data
         const userRes = await fetch('/api/user/me')
         if (!userRes.ok) {
-          router.push(`/${locale}/account/login`)
+          // Use i18n router which handles locale automatically
+          router.replace('/account/login')
           return
         }
         const userData = await userRes.json()
@@ -72,18 +70,18 @@ export default function AccountPage() {
         }
       } catch (error) {
         console.error('Failed to fetch data:', error)
-        router.push(`/${locale}/account/login`)
+        router.replace('/account/login')
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchData()
-  }, [router, locale])
+  }, [router])
 
   const handleLogout = async () => {
     await fetch('/api/user/logout', { method: 'POST' })
-    router.push(`/${locale}`)
+    router.replace('/')
   }
 
   const getStatusColor = (status: string) => {

@@ -7,6 +7,15 @@ import { Lock, Mail, AlertCircle } from 'lucide-react'
 import { Button, Card, Input } from '@/components/ui'
 import { motion } from 'framer-motion'
 
+// Valid locales for the app
+const validLocales = ['en', 'sq', 'mk']
+
+// Helper to extract locale from pathname (handles localePrefix: 'as-needed')
+function getLocaleFromPath(pathname: string): string {
+  const segments = pathname.split('/').filter(Boolean)
+  return validLocales.includes(segments[0]) ? segments[0] : 'en'
+}
+
 export default function AdminLoginPage() {
   const router = useRouter()
   const pathname = usePathname()
@@ -14,9 +23,6 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-
-  // Get current locale from pathname
-  const locale = pathname.split('/')[1] || 'en'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,8 +40,10 @@ export default function AdminLoginPage() {
       const data = await res.json()
 
       if (res.ok && data.authenticated) {
-        // Use replace to prevent double navigation entries
-        router.replace(`/${locale}/admin`)
+        const locale = getLocaleFromPath(pathname)
+        // For default locale, don't add prefix (as-needed)
+        const adminPath = locale === 'en' ? '/admin' : `/${locale}/admin`
+        router.replace(adminPath)
       } else {
         setError(data.error || 'Invalid credentials')
       }
