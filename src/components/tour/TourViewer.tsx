@@ -146,7 +146,7 @@ export function TourViewer({ rooms, initialRoom, onRoomChange }: TourViewerProps
       </div>
 
       {/* Hotspots */}
-      {currentRoom.hotspots.map((hotspot) => {
+      {currentRoom.hotspots?.map((hotspot) => {
         const position = getHotspotPosition(hotspot)
         if (!position) return null
 

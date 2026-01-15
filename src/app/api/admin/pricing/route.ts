@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
+import { cache, CacheKeys } from '@/lib/cache'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const admin = await getAdminFromCookies()
@@ -51,6 +54,9 @@ export async function POST(request: NextRequest) {
         order: data.order || 0,
       },
     })
+
+    // Invalidate cache so changes reflect immediately
+    cache.delete(CacheKeys.PRICING_PLANS)
 
     return NextResponse.json(plan, { status: 201 })
   } catch (error) {

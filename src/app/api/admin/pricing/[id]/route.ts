@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminFromCookies } from '@/lib/auth'
+import { cache, CacheKeys } from '@/lib/cache'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -13,7 +16,7 @@ export async function GET(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const plan = await prisma.pricingPlan.findUnique({
       where: { id },
     })
@@ -34,7 +37,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -43,7 +46,7 @@ export async function PUT(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     const data = await request.json()
 
     // Convert features array to JSON string
@@ -65,6 +68,9 @@ export async function PUT(
       },
     })
 
+    // Invalidate cache so changes reflect immediately
+    cache.delete(CacheKeys.PRICING_PLANS)
+
     return NextResponse.json(plan)
   } catch (error) {
     console.error('Failed to update pricing plan:', error)
@@ -77,7 +83,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   const admin = await getAdminFromCookies()
 
@@ -86,10 +92,13 @@ export async function DELETE(
   }
 
   try {
-    const { id } = await params
+    const { id } = params
     await prisma.pricingPlan.delete({
       where: { id },
     })
+
+    // Invalidate cache so changes reflect immediately
+    cache.delete(CacheKeys.PRICING_PLANS)
 
     return NextResponse.json({ success: true })
   } catch (error) {

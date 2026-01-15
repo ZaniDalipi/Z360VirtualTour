@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { blockedDates, bookings, bookingSettings, urgencyTiers, travelBundles } from '@/lib/booking-db'
+import { prisma } from '@/lib/prisma'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,51 +10,73 @@ export async function GET(request: NextRequest) {
     const city = searchParams.get('city') // Optional: filter bundles by city
 
     // Get settings
-    const settings = bookingSettings.get()
+    const settings = await prisma.bookingSettings.findUnique({
+      where: { id: 'default' },
+    })
 
     // Calculate date range for the month
-    let startDate: string
-    let endDate: string
+    let startDate: Date
+    let endDate: Date
 
     if (month) {
-      startDate = `${month}-01`
+      startDate = new Date(`${month}-01`)
       const [year, monthNum] = month.split('-').map(Number)
       const lastDay = new Date(year, monthNum, 0).getDate()
-      endDate = `${month}-${lastDay.toString().padStart(2, '0')}`
+      endDate = new Date(`${month}-${lastDay.toString().padStart(2, '0')}`)
     } else {
       // Default to next 3 months
-      const today = new Date()
-      startDate = today.toISOString().split('T')[0]
-      const future = new Date(today)
-      future.setMonth(future.getMonth() + 3)
-      endDate = future.toISOString().split('T')[0]
+      startDate = new Date()
+      endDate = new Date()
+      endDate.setMonth(endDate.getMonth() + 3)
     }
 
     // Get blocked dates
-    const blocked = blockedDates.findMany({ startDate, endDate })
+    const blocked = await prisma.blockedDate.findMany({
+      where: {
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      orderBy: { date: 'asc' },
+    })
 
     // Get confirmed bookings
-    const confirmedBookings = bookings.findMany({
-      where: { status: 'confirmed' },
-    }).filter(b => {
-      if (!b.confirmedDate) return false
-      return b.confirmedDate >= startDate && b.confirmedDate <= endDate
+    const confirmedBookings = await prisma.booking.findMany({
+      where: {
+        status: 'confirmed',
+        confirmedDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
     })
 
     // Get urgency tiers for display
-    const tiers = urgencyTiers.findMany({ where: { isActive: true } })
+    const tiers = await prisma.urgencyTier.findMany({
+      where: { isActive: true },
+      orderBy: { order: 'asc' },
+    })
 
     // Get open bundles
-    let openBundles = travelBundles.findMany({
-      where: { isActive: true, status: 'open' },
-    })
+    let bundleWhere: {
+      isActive: boolean
+      status: string
+      city?: { contains: string; mode: 'insensitive' }
+    } = {
+      isActive: true,
+      status: 'open',
+    }
 
     // Filter by city if provided
     if (city) {
-      openBundles = openBundles.filter(b =>
-        b.city.toLowerCase().includes(city.toLowerCase())
-      )
+      bundleWhere.city = { contains: city, mode: 'insensitive' }
     }
+
+    const openBundles = await prisma.travelBundle.findMany({
+      where: bundleWhere,
+      orderBy: { scheduledDate: 'asc' },
+    })
 
     // Calculate minimum booking date based on settings
     const today = new Date()
@@ -64,10 +88,12 @@ export async function GET(request: NextRequest) {
     maxDate.setDate(maxDate.getDate() + (settings?.maxAdvanceBookingDays || 90))
 
     return NextResponse.json({
-      blockedDates: blocked.map(d => d.date.split('T')[0]),
-      bookedDates: confirmedBookings.map(b => b.confirmedDate?.split('T')[0]).filter(Boolean),
+      blockedDates: blocked.map((d: { date: Date }) => d.date.toISOString().split('T')[0]),
+      bookedDates: confirmedBookings
+        .filter((b: { confirmedDate: Date | null }) => b.confirmedDate)
+        .map((b: { confirmedDate: Date | null }) => b.confirmedDate!.toISOString().split('T')[0]),
       urgencyTiers: tiers,
-      bundles: openBundles.map(b => ({
+      bundles: openBundles.map((b: { id: string; name: string; city: string; scheduledDate: Date; maxParticipants: number; currentCount: number; perPersonTravelFee: number | null; discountPercent: number; registrationDeadline: Date | null }) => ({
         id: b.id,
         name: b.name,
         city: b.city,
@@ -82,6 +108,7 @@ export async function GET(request: NextRequest) {
         maxBookingDate: maxDate.toISOString().split('T')[0],
         workOnWeekends: settings?.workOnWeekends || false,
         workOnSunday: settings?.workOnSunday || false,
+        sameCityDiscountPercent: settings?.sameCityDiscountPercent ?? 15,
       },
     })
   } catch (error) {
