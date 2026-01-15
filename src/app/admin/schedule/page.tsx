@@ -1,9 +1,115 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { CalendarDays, Phone, Mail, MapPin, Clock, Check, ChevronRight, User, Building2, AlertCircle } from 'lucide-react'
+import { CalendarDays, Phone, Mail, MapPin, Clock, Check, ChevronRight, User, Building2, AlertCircle, Timer } from 'lucide-react'
 import { Card, Button } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
+
+// Countdown timer hook
+function useCountdown(targetDate: string | null) {
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null)
+  const [isExpired, setIsExpired] = useState(false)
+
+  useEffect(() => {
+    if (!targetDate) {
+      setTimeLeft(null)
+      return
+    }
+
+    const calculateTimeLeft = () => {
+      const difference = new Date(targetDate).getTime() - new Date().getTime()
+
+      if (difference <= 0) {
+        setIsExpired(true)
+        setTimeLeft(null)
+        return
+      }
+
+      setIsExpired(false)
+      setTimeLeft({
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      })
+    }
+
+    calculateTimeLeft()
+    const timer = setInterval(calculateTimeLeft, 1000)
+
+    return () => clearInterval(timer)
+  }, [targetDate])
+
+  return { timeLeft, isExpired }
+}
+
+// Countdown display component for deadlines
+function DeadlineCountdown({ targetDate }: { targetDate: string | null }) {
+  const { timeLeft, isExpired } = useCountdown(targetDate)
+
+  if (!targetDate) return null
+
+  if (isExpired) {
+    return (
+      <span className="text-red-400 font-medium text-sm">Overdue!</span>
+    )
+  }
+
+  if (!timeLeft) return null
+
+  const isUrgent = timeLeft.days <= 3
+
+  return (
+    <div className={`flex items-center gap-1 text-xs font-mono ${isUrgent ? 'text-orange-400' : 'text-cream-muted'}`}>
+      <Timer className="w-3 h-3" />
+      {timeLeft.days > 0 && <span>{timeLeft.days}d</span>}
+      <span>{String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}</span>
+    </div>
+  )
+}
+
+// Countdown card for expanded view
+function CountdownCard({ targetDate, label, variant = 'default' }: { targetDate: string | null; label: string; variant?: 'deadline' | 'preferred' | 'default' }) {
+  const { timeLeft, isExpired } = useCountdown(targetDate)
+
+  if (!targetDate) return null
+
+  const bgColor = variant === 'deadline' ? 'bg-orange-500/10 border-orange-500/30' :
+                  variant === 'preferred' ? 'bg-blue-500/10 border-blue-500/30' :
+                  'bg-navy/50 border-gold/20'
+  const textColor = variant === 'deadline' ? 'text-orange-400' :
+                    variant === 'preferred' ? 'text-blue-400' :
+                    'text-cream'
+
+  if (isExpired) {
+    return (
+      <div className={`rounded-lg p-2 border ${bgColor}`}>
+        <p className="text-xs text-cream-muted mb-1 flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          {label}
+        </p>
+        <p className="text-sm text-red-400 font-medium">Overdue</p>
+      </div>
+    )
+  }
+
+  if (!timeLeft) return null
+
+  return (
+    <div className={`rounded-lg p-2 border ${bgColor}`}>
+      <p className="text-xs text-cream-muted mb-1 flex items-center gap-1">
+        <Timer className="w-3 h-3" />
+        {label}
+      </p>
+      <div className={`flex items-center gap-1 text-sm font-mono ${textColor}`}>
+        {timeLeft.days > 0 && <span className="bg-navy px-1.5 py-0.5 rounded">{timeLeft.days}d</span>}
+        <span className="bg-navy px-1.5 py-0.5 rounded">{String(timeLeft.hours).padStart(2, '0')}h</span>
+        <span className="bg-navy px-1.5 py-0.5 rounded">{String(timeLeft.minutes).padStart(2, '0')}m</span>
+        <span className="bg-navy px-1.5 py-0.5 rounded">{String(timeLeft.seconds).padStart(2, '0')}s</span>
+      </div>
+    </div>
+  )
+}
 
 interface ScheduledBooking {
   id: string
@@ -265,7 +371,10 @@ export default function SchedulePage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
+                            {booking.deadlineDate && (
+                              <DeadlineCountdown targetDate={booking.deadlineDate} />
+                            )}
                             {booking.totalQuote && (
                               <span className="text-gold font-semibold">
                                 €{booking.totalQuote.toFixed(0)}
@@ -317,27 +426,30 @@ export default function SchedulePage() {
                                 </div>
                               </div>
 
-                              {/* Dates */}
-                              <div className="grid sm:grid-cols-3 gap-4 text-sm">
+                              {/* Dates with Countdown Timers */}
+                              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                 {booking.confirmedDate && (
-                                  <div>
-                                    <p className="text-xs text-cream-muted mb-1">Confirmed Date</p>
+                                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                                    <p className="text-xs text-cream-muted mb-1 flex items-center gap-1">
+                                      <CalendarDays className="w-3 h-3" />
+                                      Confirmed Date
+                                    </p>
                                     <p className="text-green-400 font-medium">{formatDate(booking.confirmedDate)}</p>
                                   </div>
                                 )}
-                                {booking.preferredDate && (
-                                  <div>
-                                    <p className="text-xs text-cream-muted mb-1">Preferred</p>
-                                    <p className="text-cream">{formatDate(booking.preferredDate)}</p>
-                                  </div>
+                                {booking.preferredDate && !booking.confirmedDate && (
+                                  <CountdownCard
+                                    targetDate={booking.preferredDate}
+                                    label="Time to Preferred Date"
+                                    variant="preferred"
+                                  />
                                 )}
                                 {booking.deadlineDate && (
-                                  <div>
-                                    <p className="text-xs text-cream-muted mb-1">Deadline</p>
-                                    <p className={`font-medium ${isUrgent(booking) ? 'text-orange-400' : 'text-cream'}`}>
-                                      {formatDate(booking.deadlineDate)}
-                                    </p>
-                                  </div>
+                                  <CountdownCard
+                                    targetDate={booking.deadlineDate}
+                                    label="Deadline Countdown"
+                                    variant="deadline"
+                                  />
                                 )}
                               </div>
 

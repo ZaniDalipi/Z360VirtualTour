@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -20,8 +20,15 @@ import {
   MapPin,
   Users,
   CalendarCheck,
+  User,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+
+interface AdminUser {
+  id: string
+  email: string
+  name?: string
+}
 
 const sidebarLinks = [
   { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
@@ -45,34 +52,50 @@ export default function AdminLayout({
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null)
+  const [user, setUser] = useState<AdminUser | null>(null)
+
+  const checkAuth = useCallback(async () => {
+    try {
+      const res = await fetch('/api/auth/me', {
+        credentials: 'include',
+      })
+      if (res.ok) {
+        const userData = await res.json()
+        setUser(userData)
+        setIsAuthenticated(true)
+        return true
+      } else {
+        setUser(null)
+        setIsAuthenticated(false)
+        return false
+      }
+    } catch {
+      setUser(null)
+      setIsAuthenticated(false)
+      return false
+    }
+  }, [])
 
   useEffect(() => {
-    // Check authentication
-    const checkAuth = async () => {
-      try {
-        const res = await fetch('/api/auth/me')
-        if (res.ok) {
-          setIsAuthenticated(true)
-        } else {
-          if (pathname !== '/admin/login') {
-            router.push('/admin/login')
-          }
-          setIsAuthenticated(false)
-        }
-      } catch {
-        if (pathname !== '/admin/login') {
-          router.push('/admin/login')
-        }
-        setIsAuthenticated(false)
+    const init = async () => {
+      const authenticated = await checkAuth()
+      // Only redirect if not authenticated and not already on login page
+      if (!authenticated && pathname !== '/admin/login') {
+        router.replace('/admin/login')
       }
     }
-
-    checkAuth()
-  }, [pathname, router])
+    init()
+  }, [pathname, router, checkAuth])
 
   const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/admin/login')
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' })
+    } catch {
+      // Continue with logout even if request fails
+    }
+    setUser(null)
+    setIsAuthenticated(false)
+    router.replace('/admin/login')
   }
 
   // Show login page without layout
@@ -184,6 +207,14 @@ export default function AdminLayout({
             </button>
 
             <div className="flex items-center gap-4 ml-auto">
+              {user && (
+                <div className="hidden sm:flex items-center gap-2 text-sm text-cream-muted">
+                  <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">
+                    <User className="w-4 h-4 text-gold" />
+                  </div>
+                  <span>{user.name || user.email}</span>
+                </div>
+              )}
               <Link
                 href="/"
                 target="_blank"

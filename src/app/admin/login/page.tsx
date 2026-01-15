@@ -23,13 +23,15 @@ export default function AdminLoginPage() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       })
 
       const data = await res.json()
 
-      if (res.ok) {
-        router.push('/admin')
+      if (res.ok && data.authenticated) {
+        // Use replace to prevent double navigation entries
+        router.replace('/admin')
       } else {
         setError(data.error || 'Invalid credentials')
       }

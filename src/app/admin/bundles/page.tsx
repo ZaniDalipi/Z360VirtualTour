@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, X, Users, MapPin, Calendar, Percent } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { Plus, Edit2, Trash2, X, Users, MapPin, Calendar, Percent, Clock, Timer, Tag } from 'lucide-react'
 import { Card, Button, Input } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -21,6 +21,91 @@ interface TravelBundle {
   status: string
   isActive: boolean
   registrationDeadline: string | null
+}
+
+// Countdown timer hook
+function useCountdown(targetDate: string | null) {
+  const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number } | null>(null)
+  const [isExpired, setIsExpired] = useState(false)
+
+  useEffect(() => {
+    if (!targetDate) {
+      setTimeLeft(null)
+      return
+    }
+
+    const calculateTimeLeft = () => {
+      const difference = new Date(targetDate).getTime() - new Date().getTime()
+
+      if (difference <= 0) {
+        setIsExpired(true)
+        setTimeLeft(null)
+        return
+      }
+
+      setIsExpired(false)
+      setTimeLeft({
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      })
+    }
+
+    calculateTimeLeft()
+    const timer = setInterval(calculateTimeLeft, 1000)
+
+    return () => clearInterval(timer)
+  }, [targetDate])
+
+  return { timeLeft, isExpired }
+}
+
+// Countdown display component
+function CountdownTimer({ targetDate, label, variant = 'default' }: { targetDate: string | null; label: string; variant?: 'default' | 'urgent' | 'scheduled' }) {
+  const { timeLeft, isExpired } = useCountdown(targetDate)
+
+  if (!targetDate) return null
+
+  const bgColor = variant === 'urgent' ? 'bg-red-500/10 border-red-500/30' :
+                  variant === 'scheduled' ? 'bg-gold/10 border-gold/30' :
+                  'bg-navy/50 border-gold/20'
+  const textColor = variant === 'urgent' ? 'text-red-400' :
+                    variant === 'scheduled' ? 'text-gold' :
+                    'text-cream'
+
+  if (isExpired) {
+    return (
+      <div className={`rounded-lg p-2 border ${bgColor}`}>
+        <p className="text-xs text-cream-muted mb-1 flex items-center gap-1">
+          <Clock className="w-3 h-3" />
+          {label}
+        </p>
+        <p className="text-sm text-red-400 font-medium">Expired</p>
+      </div>
+    )
+  }
+
+  if (!timeLeft) return null
+
+  return (
+    <div className={`rounded-lg p-2 border ${bgColor}`}>
+      <p className="text-xs text-cream-muted mb-1 flex items-center gap-1">
+        <Timer className="w-3 h-3" />
+        {label}
+      </p>
+      <div className={`flex items-center gap-1 text-sm font-mono ${textColor}`}>
+        {timeLeft.days > 0 && (
+          <>
+            <span className="bg-navy px-1.5 py-0.5 rounded">{timeLeft.days}d</span>
+          </>
+        )}
+        <span className="bg-navy px-1.5 py-0.5 rounded">{String(timeLeft.hours).padStart(2, '0')}h</span>
+        <span className="bg-navy px-1.5 py-0.5 rounded">{String(timeLeft.minutes).padStart(2, '0')}m</span>
+        <span className="bg-navy px-1.5 py-0.5 rounded">{String(timeLeft.seconds).padStart(2, '0')}s</span>
+      </div>
+    </div>
+  )
 }
 
 const statusColors: Record<string, string> = {
@@ -413,6 +498,19 @@ export default function BundlesAdminPage() {
               animate={{ opacity: 1, y: 0 }}
             >
               <Card className={`p-6 ${!bundle.isActive ? 'opacity-50' : ''}`}>
+                {/* Discount Banner - Always visible when there's a discount */}
+                {bundle.discountPercent > 0 && (
+                  <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-lg p-3 mb-4 -mx-2 -mt-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-5 h-5 text-green-400" />
+                        <span className="text-green-400 font-bold text-lg">{bundle.discountPercent}% OFF</span>
+                      </div>
+                      <span className="text-green-300 text-sm">Bundle Discount</span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-cream">{bundle.name}</h3>
@@ -427,6 +525,20 @@ export default function BundlesAdminPage() {
                   <span className={`text-xs px-2 py-1 rounded ${statusColors[bundle.status]}`}>
                     {bundle.status.charAt(0).toUpperCase() + bundle.status.slice(1)}
                   </span>
+                </div>
+
+                {/* Countdown Timers */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                  <CountdownTimer
+                    targetDate={bundle.registrationDeadline}
+                    label="Registration closes in"
+                    variant="urgent"
+                  />
+                  <CountdownTimer
+                    targetDate={bundle.scheduledDate}
+                    label="Trip starts in"
+                    variant="scheduled"
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -446,26 +558,25 @@ export default function BundlesAdminPage() {
                       <span className="text-sm text-cream-muted">{bundle.distanceKm} km</span>
                     </div>
                   )}
-                  {bundle.discountPercent > 0 && (
-                    <div className="flex items-center gap-2">
-                      <Percent className="w-4 h-4 text-green-400" />
-                      <span className="text-sm text-green-400">{bundle.discountPercent}% off</span>
-                    </div>
-                  )}
                 </div>
 
                 {(bundle.totalTravelCost || bundle.perPersonTravelFee) && (
                   <div className="bg-navy/50 rounded-lg p-3 mb-4">
-                    <p className="text-xs text-cream-muted mb-1">Travel Cost</p>
+                    <p className="text-xs text-cream-muted mb-1">Travel Cost (Shared)</p>
                     {bundle.perPersonTravelFee ? (
                       <p className="text-gold font-semibold">€{bundle.perPersonTravelFee} / person</p>
                     ) : bundle.totalTravelCost ? (
-                      <p className="text-cream">
-                        €{bundle.totalTravelCost} total
-                        <span className="text-cream-muted text-sm ml-2">
-                          (~€{(bundle.totalTravelCost / Math.max(bundle.currentCount, 1)).toFixed(2)} each)
-                        </span>
-                      </p>
+                      <div>
+                        <p className="text-cream">
+                          €{bundle.totalTravelCost} total
+                        </p>
+                        <p className="text-gold font-semibold mt-1">
+                          ~€{(bundle.totalTravelCost / Math.max(bundle.currentCount, bundle.maxParticipants)).toFixed(2)} per person
+                          <span className="text-cream-muted text-xs ml-1">
+                            (with {Math.max(bundle.currentCount, 1)} participant{bundle.currentCount !== 1 ? 's' : ''})
+                          </span>
+                        </p>
+                      </div>
                     ) : null}
                   </div>
                 )}
@@ -473,12 +584,6 @@ export default function BundlesAdminPage() {
                 {bundle.description && (
                   <p className="text-sm text-cream-muted mb-4 line-clamp-2">
                     {bundle.description}
-                  </p>
-                )}
-
-                {bundle.registrationDeadline && (
-                  <p className="text-xs text-cream-muted mb-4">
-                    Registration deadline: {formatDate(bundle.registrationDeadline)}
                   </p>
                 )}
 

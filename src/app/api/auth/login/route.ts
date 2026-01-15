@@ -91,6 +91,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      authenticated: true,
+      accessToken: token,
       admin: {
         id: admin.id,
         email: admin.email,

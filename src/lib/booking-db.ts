@@ -723,22 +723,36 @@ export function calculateQuote(params: {
   let bundleName: string | null = null
 
   if (params.bundleId) {
-    // If joining a bundle, use bundle pricing
+    // If joining a bundle, use bundle pricing - significantly lower travel costs
     const bundle = travelBundles.findUnique(params.bundleId)
     if (bundle) {
       bundleName = bundle.name
-      travelFee = bundle.perPersonTravelFee || 0
+      // Calculate per-person travel fee based on total cost split among participants
+      if (bundle.perPersonTravelFee) {
+        travelFee = bundle.perPersonTravelFee
+      } else if (bundle.totalTravelCost && bundle.maxParticipants > 0) {
+        // Split total travel cost among expected participants (use max for lower estimate)
+        travelFee = bundle.totalTravelCost / bundle.maxParticipants
+      } else if (bundle.distanceKm) {
+        // Fallback: Calculate minimal travel fee for bundles (much lower than individual)
+        // Bundle rate: 0.15€/km (vs individual 0.50€/km) - shared cost benefit
+        const bundleKmRate = 0.15
+        travelFee = bundle.distanceKm * bundleKmRate
+      }
+      // Apply bundle discount on service price
       bundleDiscount = params.pricingPlanPrice * (bundle.discountPercent / 100)
     }
   } else if (params.distanceKm !== null && params.distanceKm !== undefined) {
-    // Calculate based on travel zone
+    // Calculate based on travel zone for individual bookings
     const zone = travelZones.findByDistance(params.distanceKm)
     if (zone) {
       travelZoneName = zone.name
       if (!zone.isIncluded) {
         travelFee = zone.flatFee || 0
         if (zone.perKmRate) {
-          const chargeableKm = Math.max(0, params.distanceKm - zone.minDistanceKm)
+          // Apply free distance from settings
+          const freeKm = settings?.freeDistanceKm || 15
+          const chargeableKm = Math.max(0, params.distanceKm - freeKm)
           travelFee += chargeableKm * zone.perKmRate
         }
         // Double for return trip if configured
@@ -746,8 +760,22 @@ export function calculateQuote(params: {
           travelFee *= 2
         }
       }
+    } else {
+      // Fallback calculation if no zone matches
+      const freeKm = settings?.freeDistanceKm || 15
+      if (params.distanceKm > freeKm) {
+        const chargeableKm = params.distanceKm - freeKm
+        const defaultKmRate = 0.40 // Reduced default rate
+        travelFee = chargeableKm * defaultKmRate
+        if (settings?.includeReturnTrip) {
+          travelFee *= 2
+        }
+      }
     }
   }
+
+  // Round travel fee to 2 decimal places
+  travelFee = Math.round(travelFee * 100) / 100
 
   // Calculate totals
   const subtotal = params.pricingPlanPrice + urgencySurchargeAmount - bundleDiscount
@@ -758,7 +786,7 @@ export function calculateQuote(params: {
   let depositPercent: number | null = null
   if (settings?.requireDeposit) {
     depositPercent = settings.depositPercent
-    depositAmount = total * (settings.depositPercent / 100)
+    depositAmount = Math.round(total * (settings.depositPercent / 100) * 100) / 100
   }
 
   return {
