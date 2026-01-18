@@ -111,7 +111,9 @@ export default function ContactPage() {
     pricingPlanId: '',
     urgencyTierId: '',
     preferredDate: '',
+    preferredTime: '',
     alternateDate: '',
+    alternateTime: '',
     deadlineDate: '',
     isUrgent: false,
     bundleId: '',
@@ -321,7 +323,9 @@ export default function ContactPage() {
           pricingPlanId: formData.pricingPlanId || null,
           urgencyTierId: formData.urgencyTierId || null,
           preferredDate: formData.preferredDate || null,
+          preferredTime: formData.preferredTime || null,
           alternateDate: formData.alternateDate || null,
+          alternateTime: formData.alternateTime || null,
           deadlineDate: formData.isUrgent ? formData.deadlineDate : null,
           travelBundleId: formData.bundleId || null,
           projectDescription: formData.message,
@@ -580,7 +584,9 @@ export default function ContactPage() {
                           pricingPlanId: '',
                           urgencyTierId: '',
                           preferredDate: '',
+                          preferredTime: '',
                           alternateDate: '',
+                          alternateTime: '',
                           deadlineDate: '',
                           isUrgent: false,
                           bundleId: '',
@@ -742,29 +748,47 @@ export default function ContactPage() {
                         </div>
                       </div>
 
-                      {/* Dates */}
+                      {/* Dates and Times */}
                       <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
                             {t('form.preferredDate')}
                           </label>
-                          <Input
-                            type="date"
-                            name="preferredDate"
-                            value={formData.preferredDate}
-                            onChange={handleChange}
-                          />
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input
+                              type="date"
+                              name="preferredDate"
+                              value={formData.preferredDate}
+                              onChange={handleChange}
+                            />
+                            <Input
+                              type="time"
+                              name="preferredTime"
+                              value={formData.preferredTime}
+                              onChange={handleChange}
+                              placeholder={t('form.time', { defaultValue: 'Time' })}
+                            />
+                          </div>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-cream mb-2">
                             {t('form.alternateDate')}
                           </label>
-                          <Input
-                            type="date"
-                            name="alternateDate"
-                            value={formData.alternateDate}
-                            onChange={handleChange}
-                          />
+                          <div className="grid grid-cols-2 gap-2">
+                            <Input
+                              type="date"
+                              name="alternateDate"
+                              value={formData.alternateDate}
+                              onChange={handleChange}
+                            />
+                            <Input
+                              type="time"
+                              name="alternateTime"
+                              value={formData.alternateTime}
+                              onChange={handleChange}
+                              placeholder={t('form.time', { defaultValue: 'Time' })}
+                            />
+                          </div>
                         </div>
                       </div>
 

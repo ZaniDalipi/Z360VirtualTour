@@ -53,8 +53,8 @@ const urgencyTiers = [
   },
 ];
 
-// Default Travel Zones - Realistic pricing based on actual fuel/travel costs
-// For 200km round trip, costs are approximately 30-50 EUR
+// Default Travel Zones - Affordable pricing to encourage bookings
+// Prices are kept low to remain competitive
 const travelZones = [
   {
     id: generateId(),
@@ -74,7 +74,7 @@ const travelZones = [
     description: 'Skopje region (15-40km)',
     minDistanceKm: 15,
     maxDistanceKm: 40,
-    flatFee: 10,
+    flatFee: 5,
     perKmRate: null,
     isIncluded: 0,
     isActive: 1,
@@ -86,7 +86,7 @@ const travelZones = [
     description: 'Within 40-80km (Tetovo, Kumanovo, Veles area)',
     minDistanceKm: 40,
     maxDistanceKm: 80,
-    flatFee: 15,
+    flatFee: 8,
     perKmRate: null,
     isIncluded: 0,
     isActive: 1,
@@ -98,7 +98,7 @@ const travelZones = [
     description: 'Within 80-150km (Shtip, Prilep, Gostivar area)',
     minDistanceKm: 80,
     maxDistanceKm: 150,
-    flatFee: 25,
+    flatFee: 12,
     perKmRate: null,
     isIncluded: 0,
     isActive: 1,
@@ -110,8 +110,8 @@ const travelZones = [
     description: 'Over 150km (Bitola, Ohrid, Struga, Strumica)',
     minDistanceKm: 150,
     maxDistanceKm: null,
-    flatFee: 35,
-    perKmRate: 0.10,
+    flatFee: 15,
+    perKmRate: 0.05,
     isIncluded: 0,
     isActive: 1,
     order: 4,

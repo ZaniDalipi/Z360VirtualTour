@@ -81,12 +81,13 @@ export const DEFAULT_SAME_CITY_DISCOUNT_PERCENT = 15
 export const DEFAULT_SAME_CITY_MAX_DISTANCE_KM = 40
 
 // Travel cost calculation constants
-// Based on 7L/100km fuel consumption and ~1.45€/L fuel price
-export const FUEL_CONSUMPTION_L_PER_100KM = 7
-export const FUEL_PRICE_EUR_PER_L = 1.45
-export const COST_PER_KM = (FUEL_CONSUMPTION_L_PER_100KM / 100) * FUEL_PRICE_EUR_PER_L // ~0.10€/km one way
+// Based on 5L/100km fuel consumption (efficient vehicle) and ~1.20€/L fuel price
+// Kept low to be competitive and encourage bookings
+export const FUEL_CONSUMPTION_L_PER_100KM = 5
+export const FUEL_PRICE_EUR_PER_L = 1.20
+export const COST_PER_KM = (FUEL_CONSUMPTION_L_PER_100KM / 100) * FUEL_PRICE_EUR_PER_L // ~0.06€/km one way
 export const ROUND_TRIP_MULTIPLIER = 2 // For return trip
-export const TRAVEL_COST_PER_KM = COST_PER_KM * ROUND_TRIP_MULTIPLIER // ~0.20€/km round trip
+export const TRAVEL_COST_PER_KM = COST_PER_KM * ROUND_TRIP_MULTIPLIER // ~0.12€/km round trip
 
 /**
  * Get distance from Skopje to a city
