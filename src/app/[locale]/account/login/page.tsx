@@ -13,7 +13,7 @@ import { useAuth } from '@/context/AuthContext'
 export default function LoginPage() {
   const router = useRouter()
   const t = useTranslations('auth')
-  const { login, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { login, isAuthenticated, isInitialized } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,10 +23,23 @@ export default function LoginPage() {
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
+    if (isInitialized && isAuthenticated) {
       router.replace('/account')
     }
-  }, [isAuthenticated, authLoading, router])
+  }, [isAuthenticated, isInitialized, router])
+
+  // Show loading while checking auth to prevent flicker
+  if (!isInitialized || isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-navy">
+        <PublicHeader />
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+        </div>
+        <Footer />
+      </div>
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

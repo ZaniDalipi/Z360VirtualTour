@@ -49,7 +49,7 @@ type BookingCategory = 'active' | 'completed' | 'cancelled'
 export default function AccountPage() {
   const router = useRouter()
   const t = useTranslations('account')
-  const { user: authUser, isAuthenticated, isLoading: authLoading, logout } = useAuth()
+  const { isAuthenticated, isInitialized, logout } = useAuth()
 
   const [user, setUser] = useState<UserData | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -80,14 +80,14 @@ export default function AccountPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
+    if (isInitialized && !isAuthenticated) {
       router.replace('/account/login')
     }
-  }, [isAuthenticated, authLoading, router])
+  }, [isAuthenticated, isInitialized, router])
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!isAuthenticated) return
+      if (!isInitialized || !isAuthenticated) return
 
       try {
         // Fetch user data (with additional fields like createdAt)
@@ -113,10 +113,8 @@ export default function AccountPage() {
       }
     }
 
-    if (isAuthenticated) {
-      fetchData()
-    }
-  }, [router, isAuthenticated])
+    fetchData()
+  }, [router, isAuthenticated, isInitialized])
 
   const handleLogout = async () => {
     await logout()
@@ -157,7 +155,8 @@ export default function AccountPage() {
     return labels[status] || status
   }
 
-  if (isLoading || authLoading) {
+  // Show loading while checking auth or fetching data to prevent flicker
+  if (!isInitialized || isLoading || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-navy">
         <PublicHeader />
@@ -169,7 +168,7 @@ export default function AccountPage() {
     )
   }
 
-  if (!user || !isAuthenticated) {
+  if (!user) {
     return null
   }
 
