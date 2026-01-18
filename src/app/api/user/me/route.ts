@@ -40,6 +40,7 @@ export async function GET() {
         name: true,
         phone: true,
         company: true,
+        city: true,
         isActive: true,
         createdAt: true,
       },

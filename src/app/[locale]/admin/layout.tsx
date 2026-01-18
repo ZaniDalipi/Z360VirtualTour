@@ -26,6 +26,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { RealTimeClock } from '@/components/ui'
 
 // Valid locales for the app
 const validLocales = ['en', 'sq', 'mk']
@@ -230,6 +231,15 @@ export default function AdminLayout({
             </button>
 
             <div className="flex items-center gap-4 ml-auto">
+              {/* Real-time clock */}
+              <div className="hidden md:block">
+                <RealTimeClock
+                  className="text-cream-muted"
+                  showDate={true}
+                  format="24h"
+                />
+              </div>
+
               {user && (
                 <div className="hidden sm:flex items-center gap-2 text-sm text-cream-muted">
                   <div className="w-8 h-8 rounded-full bg-gold/20 flex items-center justify-center">

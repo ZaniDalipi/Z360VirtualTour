@@ -14,12 +14,12 @@ import {
   CheckCircle,
   XCircle,
   Hourglass,
-  AlertCircle,
 } from 'lucide-react'
 import { Button, Card } from '@/components/ui'
 import { PublicHeader, Footer } from '@/components/layout'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslations } from 'next-intl'
+import { useAuth } from '@/context/AuthContext'
 
 interface UserData {
   id: string
@@ -49,6 +49,7 @@ type BookingCategory = 'active' | 'completed' | 'cancelled'
 export default function AccountPage() {
   const router = useRouter()
   const t = useTranslations('account')
+  const { user: authUser, isAuthenticated, isLoading: authLoading, logout } = useAuth()
 
   const [user, setUser] = useState<UserData | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
@@ -77,13 +78,21 @@ export default function AccountPage() {
 
   const filteredBookings = categorizedBookings[activeCategory]
 
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.replace('/account/login')
+    }
+  }, [isAuthenticated, authLoading, router])
+
   useEffect(() => {
     const fetchData = async () => {
+      if (!isAuthenticated) return
+
       try {
-        // Fetch user data
+        // Fetch user data (with additional fields like createdAt)
         const userRes = await fetch('/api/user/me')
         if (!userRes.ok) {
-          // Use i18n router which handles locale automatically
           router.replace('/account/login')
           return
         }
@@ -104,11 +113,13 @@ export default function AccountPage() {
       }
     }
 
-    fetchData()
-  }, [router])
+    if (isAuthenticated) {
+      fetchData()
+    }
+  }, [router, isAuthenticated])
 
   const handleLogout = async () => {
-    await fetch('/api/user/logout', { method: 'POST' })
+    await logout()
     router.replace('/')
   }
 
@@ -146,7 +157,7 @@ export default function AccountPage() {
     return labels[status] || status
   }
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <div className="min-h-screen bg-navy">
         <PublicHeader />
@@ -158,7 +169,7 @@ export default function AccountPage() {
     )
   }
 
-  if (!user) {
+  if (!user || !isAuthenticated) {
     return null
   }
 

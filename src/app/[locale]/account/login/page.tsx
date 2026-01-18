@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/routing'
 import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react'
@@ -8,10 +8,12 @@ import { Button, Card, Input } from '@/components/ui'
 import { PublicHeader, Footer } from '@/components/layout'
 import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
+import { useAuth } from '@/context/AuthContext'
 
 export default function LoginPage() {
   const router = useRouter()
   const t = useTranslations('auth')
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -19,25 +21,26 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace('/account')
+    }
+  }, [isAuthenticated, authLoading, router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
 
     try {
-      const res = await fetch('/api/user/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      })
+      const result = await login(email, password)
 
-      const data = await res.json()
-
-      if (res.ok) {
+      if (result.success) {
         // Use i18n router which handles locale automatically
         router.replace('/account')
       } else {
-        setError(data.error || t('invalidCredentials'))
+        setError(result.error || t('invalidCredentials'))
       }
     } catch {
       setError(t('somethingWentWrong'))
