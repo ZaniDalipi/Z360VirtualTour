@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Calendar, Users, AlertCircle, ChevronRight } from 'lucide-react'
+import { useState, useEffect, useCallback } from 'react'
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Calendar, Users, AlertCircle, ChevronRight, Info } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card, Input } from '@/components/ui'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 
 interface PricingPlan {
   id: string
@@ -27,10 +28,21 @@ interface Bundle {
   id: string
   name: string
   city: string
+  startDate: string
+  endDate: string
   scheduledDate: string
   spotsRemaining: number
   perPersonTravelFee: number | null
   discountPercent: number
+}
+
+interface UserData {
+  id: string
+  email: string
+  name: string
+  phone: string | null
+  company: string | null
+  city: string | null
 }
 
 interface QuoteResult {
@@ -42,18 +54,25 @@ interface QuoteResult {
   travelFee: number
   bundleName: string | null
   bundleDiscount: number
+  sameCityDiscount: number
+  sameCityDiscountPercent: number
+  matchedScheduledCity: string | null
+  subtotal: number
   total: number
   depositAmount: number | null
 }
 
 export default function ContactPage() {
   const t = useTranslations('contact')
+  const searchParams = useSearchParams()
   const [step, setStep] = useState(1)
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([])
   const [urgencyTiers, setUrgencyTiers] = useState<UrgencyTier[]>([])
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [quote, setQuote] = useState<QuoteResult | null>(null)
   const [isCalculating, setIsCalculating] = useState(false)
+  const [currentUser, setCurrentUser] = useState<UserData | null>(null)
+  const [isUserLoaded, setIsUserLoaded] = useState(false)
 
   const contactInfo = [
     {
@@ -100,6 +119,54 @@ export default function ContactPage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+
+  // Fetch logged-in user data to pre-fill the form
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch('/api/user/me')
+        if (res.ok) {
+          const data = await res.json()
+          if (data.user) {
+            setCurrentUser(data.user)
+            // Pre-fill form with user data
+            setFormData(prev => ({
+              ...prev,
+              name: data.user.name || prev.name,
+              email: data.user.email || prev.email,
+              phone: data.user.phone || prev.phone,
+              company: data.user.company || prev.company,
+              propertyCity: data.user.city || prev.propertyCity,
+            }))
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch user:', error)
+      } finally {
+        setIsUserLoaded(true)
+      }
+    }
+
+    fetchUser()
+  }, [])
+
+  // Handle URL parameters for auto-fill from schedule selection
+  useEffect(() => {
+    if (!isUserLoaded) return  // Wait for user data to load first
+
+    const bundleId = searchParams.get('bundleId')
+    const city = searchParams.get('city')
+    const date = searchParams.get('date')
+
+    if (bundleId || city || date) {
+      setFormData(prev => ({
+        ...prev,
+        bundleId: bundleId || prev.bundleId,
+        propertyCity: city || prev.propertyCity,
+        preferredDate: date || prev.preferredDate,
+      }))
+    }
+  }, [searchParams, isUserLoaded])
 
   // Fetch initial data
   useEffect(() => {
@@ -151,6 +218,7 @@ export default function ContactPage() {
             urgencyTierId: formData.urgencyTierId,
             city: formData.propertyCity,
             bundleId: formData.bundleId,
+            preferredDate: formData.preferredDate,  // For bundle date validation
           }),
         })
 
@@ -166,7 +234,51 @@ export default function ContactPage() {
 
     const debounce = setTimeout(calculateQuote, 500)
     return () => clearTimeout(debounce)
-  }, [formData.pricingPlanId, formData.urgencyTierId, formData.propertyCity, formData.bundleId])
+  }, [formData.pricingPlanId, formData.urgencyTierId, formData.propertyCity, formData.bundleId, formData.preferredDate])
+
+  // Auto-fill city and date when bundle is selected
+  const handleBundleSelect = (bundle: Bundle) => {
+    const isSelected = formData.bundleId === bundle.id
+    if (isSelected) {
+      // Deselect bundle
+      setFormData(prev => ({ ...prev, bundleId: '' }))
+    } else {
+      // Select bundle and auto-fill city + date
+      const bundleDate = bundle.startDate || bundle.scheduledDate
+      setFormData(prev => ({
+        ...prev,
+        bundleId: bundle.id,
+        propertyCity: prev.propertyCity || bundle.city,  // Only fill if empty
+        preferredDate: prev.preferredDate || bundleDate.split('T')[0],  // Only fill if empty
+      }))
+    }
+  }
+
+  // Check if bundle discount is valid based on city and date
+  const isBundleDiscountValid = useCallback((bundle: Bundle) => {
+    if (!formData.bundleId || formData.bundleId !== bundle.id) return true
+
+    // Check city match
+    const userCity = formData.propertyCity.toLowerCase().trim()
+    const bundleCity = bundle.city.toLowerCase().trim()
+    const isCityMatch = userCity === bundleCity ||
+      userCity.includes(bundleCity) ||
+      bundleCity.includes(userCity)
+
+    // Check date match
+    let isDateMatch = true
+    if (formData.preferredDate) {
+      const preferred = new Date(formData.preferredDate)
+      const start = new Date(bundle.startDate || bundle.scheduledDate)
+      const end = new Date(bundle.endDate || bundle.scheduledDate)
+      preferred.setHours(0, 0, 0, 0)
+      start.setHours(0, 0, 0, 0)
+      end.setHours(23, 59, 59, 999)
+      isDateMatch = preferred >= start && preferred <= end
+    }
+
+    return isCityMatch && isDateMatch
+  }, [formData.bundleId, formData.propertyCity, formData.preferredDate])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -178,8 +290,21 @@ export default function ContactPage() {
     }))
   }
 
+  // Email validation helper
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate email
+    if (!isValidEmail(formData.email)) {
+      alert(t('form.invalidEmail', { defaultValue: 'Please enter a valid email address' }))
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -292,6 +417,22 @@ export default function ContactPage() {
                       </div>
                     )}
 
+                    {quote.sameCityDiscount > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-cream-muted">
+                          {t('quote.sameCityDiscount', { defaultValue: 'Same City Discount' })} ({quote.sameCityDiscountPercent}%)
+                        </span>
+                        <span className="text-green-400">-€{quote.sameCityDiscount.toFixed(2)}</span>
+                      </div>
+                    )}
+
+                    {quote.travelZoneName === 'Same City (Free)' && (
+                      <div className="flex justify-between">
+                        <span className="text-cream-muted">{t('quote.travel', { defaultValue: 'Travel' })}</span>
+                        <span className="text-green-400">{t('quote.free', { defaultValue: 'Free' })}</span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between pt-3 border-t border-gold/20">
                       <span className="text-cream font-medium">{t('quote.estimatedTotal')}</span>
                       <span className="text-gold text-xl font-bold">€{quote.total.toFixed(2)}</span>
@@ -321,36 +462,55 @@ export default function ContactPage() {
                     {t('bundles.description')}
                   </p>
                   <div className="space-y-3">
-                    {availableBundles.slice(0, 3).map((bundle) => (
-                      <button
-                        key={bundle.id}
-                        type="button"
-                        onClick={() => setFormData({ ...formData, bundleId: formData.bundleId === bundle.id ? '' : bundle.id })}
-                        className={`w-full p-3 rounded-lg text-left transition-all ${
-                          formData.bundleId === bundle.id
-                            ? 'bg-gold/20 border border-gold'
-                            : 'bg-navy-medium border border-gold/10 hover:border-gold/30'
-                        }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <p className="font-medium text-cream text-sm">{bundle.name}</p>
-                            <p className="text-xs text-cream-muted">{bundle.city}</p>
-                          </div>
-                          <span className="text-green-400 text-xs font-medium">
-                            {bundle.discountPercent}% {t('bundles.off')}
-                          </span>
+                    {availableBundles.slice(0, 3).map((bundle) => {
+                      const isSelected = formData.bundleId === bundle.id
+                      const isValid = isBundleDiscountValid(bundle)
+                      return (
+                        <div key={bundle.id}>
+                          <button
+                            type="button"
+                            onClick={() => handleBundleSelect(bundle)}
+                            className={`w-full p-3 rounded-lg text-left transition-all ${
+                              isSelected
+                                ? isValid
+                                  ? 'bg-gold/20 border border-gold'
+                                  : 'bg-orange-500/10 border border-orange-500/50'
+                                : 'bg-navy-medium border border-gold/10 hover:border-gold/30'
+                            }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-medium text-cream text-sm">{bundle.name}</p>
+                                <p className="text-xs text-cream-muted">{bundle.city}</p>
+                              </div>
+                              <span className={`text-xs font-medium ${isSelected && !isValid ? 'text-orange-400 line-through' : 'text-green-400'}`}>
+                                {bundle.discountPercent}% {t('bundles.off')}
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center mt-2">
+                              <span className="text-xs text-cream-muted">
+                                {new Date(bundle.startDate || bundle.scheduledDate).toLocaleDateString()}
+                                {bundle.endDate && bundle.endDate !== bundle.startDate && (
+                                  <> - {new Date(bundle.endDate).toLocaleDateString()}</>
+                                )}
+                              </span>
+                              <span className="text-xs text-cream-muted">
+                                {bundle.spotsRemaining} {t('bundles.spotsLeft')}
+                              </span>
+                            </div>
+                          </button>
+                          {/* Validation warning for selected bundle */}
+                          {isSelected && !isValid && (
+                            <div className="mt-2 p-2 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-start gap-2">
+                              <Info className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
+                              <p className="text-xs text-orange-400">
+                                {t('bundles.discountNotValid', { defaultValue: 'Discount not applicable: City or date doesn\'t match the bundle. You still get shared travel pricing.' })}
+                              </p>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex justify-between items-center mt-2">
-                          <span className="text-xs text-cream-muted">
-                            {new Date(bundle.scheduledDate).toLocaleDateString()}
-                          </span>
-                          <span className="text-xs text-cream-muted">
-                            {bundle.spotsRemaining} {t('bundles.spotsLeft')}
-                          </span>
-                        </div>
-                      </button>
-                    ))}
+                      )
+                    })}
                   </div>
                 </Card>
               )}

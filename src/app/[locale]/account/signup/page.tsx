@@ -29,9 +29,21 @@ export default function SignupPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  // Email validation helper
+  const isValidEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    // Validate email format
+    if (!isValidEmail(formData.email)) {
+      setError(t('invalidEmail', { defaultValue: 'Please enter a valid email address' }))
+      return
+    }
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {

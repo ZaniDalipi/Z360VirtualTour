@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link, useRouter } from '@/i18n/routing'
 import {
   User,
@@ -10,12 +10,15 @@ import {
   FileText,
   LogOut,
   Plus,
-  Eye,
   ChevronRight,
+  CheckCircle,
+  XCircle,
+  Hourglass,
+  AlertCircle,
 } from 'lucide-react'
 import { Button, Card } from '@/components/ui'
 import { PublicHeader, Footer } from '@/components/layout'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 
 interface UserData {
@@ -41,6 +44,8 @@ interface Booking {
   }
 }
 
+type BookingCategory = 'active' | 'completed' | 'cancelled'
+
 export default function AccountPage() {
   const router = useRouter()
   const t = useTranslations('account')
@@ -48,6 +53,29 @@ export default function AccountPage() {
   const [user, setUser] = useState<UserData | null>(null)
   const [bookings, setBookings] = useState<Booking[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [activeCategory, setActiveCategory] = useState<BookingCategory>('active')
+
+  // Categorize bookings
+  const categorizedBookings = useMemo(() => {
+    const active: Booking[] = []
+    const completed: Booking[] = []
+    const cancelled: Booking[] = []
+
+    bookings.forEach(booking => {
+      if (booking.status === 'completed') {
+        completed.push(booking)
+      } else if (booking.status === 'cancelled') {
+        cancelled.push(booking)
+      } else {
+        // All other statuses (quote_requested, quote_sent, confirmed, scheduled, in_progress)
+        active.push(booking)
+      }
+    })
+
+    return { active, completed, cancelled }
+  }, [bookings])
+
+  const filteredBookings = categorizedBookings[activeCategory]
 
   useEffect(() => {
     const fetchData = async () => {
@@ -214,10 +242,62 @@ export default function AccountPage() {
             className="lg:col-span-2"
           >
             <Card className="p-6">
-              <h2 className="text-xl font-semibold text-cream mb-6 flex items-center gap-2">
+              <h2 className="text-xl font-semibold text-cream mb-4 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-gold" />
                 {t('yourBookings')}
               </h2>
+
+              {/* Category Tabs */}
+              <div className="flex gap-2 mb-6 border-b border-gold/10 pb-3">
+                <button
+                  onClick={() => setActiveCategory('active')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeCategory === 'active'
+                      ? 'bg-gold/20 text-gold'
+                      : 'text-cream-muted hover:text-cream hover:bg-gold/10'
+                  }`}
+                >
+                  <Hourglass className="w-4 h-4" />
+                  {t('categoryActive', { defaultValue: 'Active' })}
+                  {categorizedBookings.active.length > 0 && (
+                    <span className="bg-gold/30 text-gold text-xs px-1.5 py-0.5 rounded-full">
+                      {categorizedBookings.active.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveCategory('completed')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeCategory === 'completed'
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'text-cream-muted hover:text-cream hover:bg-gold/10'
+                  }`}
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {t('categoryCompleted', { defaultValue: 'Completed' })}
+                  {categorizedBookings.completed.length > 0 && (
+                    <span className="bg-green-500/30 text-green-400 text-xs px-1.5 py-0.5 rounded-full">
+                      {categorizedBookings.completed.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveCategory('cancelled')}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeCategory === 'cancelled'
+                      ? 'bg-red-500/20 text-red-400'
+                      : 'text-cream-muted hover:text-cream hover:bg-gold/10'
+                  }`}
+                >
+                  <XCircle className="w-4 h-4" />
+                  {t('categoryCancelled', { defaultValue: 'Cancelled' })}
+                  {categorizedBookings.cancelled.length > 0 && (
+                    <span className="bg-red-500/30 text-red-400 text-xs px-1.5 py-0.5 rounded-full">
+                      {categorizedBookings.cancelled.length}
+                    </span>
+                  )}
+                </button>
+              </div>
 
               {bookings.length === 0 ? (
                 <div className="text-center py-12">
@@ -235,69 +315,98 @@ export default function AccountPage() {
                     </Button>
                   </Link>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {bookings.map((booking) => (
-                    <div
-                      key={booking.id}
-                      className="p-4 rounded-xl border border-gold/10 hover:border-gold/30 transition-colors"
+              ) : filteredBookings.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 rounded-full bg-cream-muted/10 flex items-center justify-center mx-auto mb-4">
+                    {activeCategory === 'active' && <Hourglass className="w-6 h-6 text-cream-muted" />}
+                    {activeCategory === 'completed' && <CheckCircle className="w-6 h-6 text-cream-muted" />}
+                    {activeCategory === 'cancelled' && <XCircle className="w-6 h-6 text-cream-muted" />}
+                  </div>
+                  <p className="text-cream-muted">
+                    {activeCategory === 'active' && t('noActiveBookings', { defaultValue: 'No active bookings' })}
+                    {activeCategory === 'completed' && t('noCompletedBookings', { defaultValue: 'No completed bookings yet' })}
+                    {activeCategory === 'cancelled' && t('noCancelledBookings', { defaultValue: 'No cancelled bookings' })}
+                  </p>
+                  {activeCategory !== 'active' && (
+                    <button
+                      onClick={() => setActiveCategory('active')}
+                      className="text-gold text-sm mt-2 hover:underline"
                     >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span
-                              className={`px-2 py-0.5 text-xs font-medium rounded-full border ${getStatusColor(
-                                booking.status
-                              )}`}
+                      {t('viewActiveBookings', { defaultValue: 'View active bookings' })}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeCategory}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="space-y-4"
+                  >
+                    {filteredBookings.map((booking) => (
+                      <div
+                        key={booking.id}
+                        className="p-4 rounded-xl border border-gold/10 hover:border-gold/30 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span
+                                className={`px-2 py-0.5 text-xs font-medium rounded-full border ${getStatusColor(
+                                  booking.status
+                                )}`}
+                              >
+                                {getStatusLabel(booking.status)}
+                              </span>
+                              {booking.pricingPlan && (
+                                <span className="text-xs text-cream-muted">
+                                  {booking.pricingPlan.name}
+                                </span>
+                              )}
+                            </div>
+                            <h3 className="font-medium text-cream truncate">
+                              {booking.propertyAddress}
+                            </h3>
+                            <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-cream-muted">
+                              {booking.propertyCity && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="w-3.5 h-3.5" />
+                                  {booking.propertyCity}
+                                </span>
+                              )}
+                              {booking.preferredDate && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3.5 h-3.5" />
+                                  {new Date(booking.preferredDate).toLocaleDateString()}
+                                </span>
+                              )}
+                              <span className="flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5" />
+                                {new Date(booking.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {booking.totalQuote && (
+                              <p className="text-lg font-semibold text-gold">
+                                €{booking.totalQuote.toFixed(2)}
+                              </p>
+                            )}
+                            <Link
+                              href={`/account/bookings/${booking.id}`}
+                              className="inline-flex items-center gap-1 text-sm text-cream-muted hover:text-cream mt-2"
                             >
-                              {getStatusLabel(booking.status)}
-                            </span>
-                            {booking.pricingPlan && (
-                              <span className="text-xs text-cream-muted">
-                                {booking.pricingPlan.name}
-                              </span>
-                            )}
+                              {t('viewDetails')}
+                              <ChevronRight className="w-4 h-4" />
+                            </Link>
                           </div>
-                          <h3 className="font-medium text-cream truncate">
-                            {booking.propertyAddress}
-                          </h3>
-                          <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-cream-muted">
-                            {booking.propertyCity && (
-                              <span className="flex items-center gap-1">
-                                <MapPin className="w-3.5 h-3.5" />
-                                {booking.propertyCity}
-                              </span>
-                            )}
-                            {booking.preferredDate && (
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-3.5 h-3.5" />
-                                {new Date(booking.preferredDate).toLocaleDateString()}
-                              </span>
-                            )}
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5" />
-                              {new Date(booking.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          {booking.totalQuote && (
-                            <p className="text-lg font-semibold text-gold">
-                              €{booking.totalQuote.toFixed(2)}
-                            </p>
-                          )}
-                          <Link
-                            href={`/account/bookings/${booking.id}`}
-                            className="inline-flex items-center gap-1 text-sm text-cream-muted hover:text-cream mt-2"
-                          >
-                            {t('viewDetails')}
-                            <ChevronRight className="w-4 h-4" />
-                          </Link>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
               )}
             </Card>
           </motion.div>

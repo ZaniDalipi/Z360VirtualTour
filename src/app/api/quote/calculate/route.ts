@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
       bundleId: data.bundleId,
       userCity: data.city,  // Pass user's city for bundle eligibility check
       scheduledCities: data.scheduledCities,  // Cities where photographer is already scheduled (for same-city discount)
+      preferredDate: data.preferredDate,  // For bundle date validation
     })
 
     return NextResponse.json({

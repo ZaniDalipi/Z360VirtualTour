@@ -80,6 +80,14 @@ export const BUNDLE_MAX_DISTANCE_KM = 50
 export const DEFAULT_SAME_CITY_DISCOUNT_PERCENT = 15
 export const DEFAULT_SAME_CITY_MAX_DISTANCE_KM = 40
 
+// Travel cost calculation constants
+// Based on 7L/100km fuel consumption and ~1.45€/L fuel price
+export const FUEL_CONSUMPTION_L_PER_100KM = 7
+export const FUEL_PRICE_EUR_PER_L = 1.45
+export const COST_PER_KM = (FUEL_CONSUMPTION_L_PER_100KM / 100) * FUEL_PRICE_EUR_PER_L // ~0.10€/km one way
+export const ROUND_TRIP_MULTIPLIER = 2 // For return trip
+export const TRAVEL_COST_PER_KM = COST_PER_KM * ROUND_TRIP_MULTIPLIER // ~0.20€/km round trip
+
 /**
  * Get distance from Skopje to a city
  */
@@ -176,6 +184,7 @@ export async function calculateQuote(params: {
   bundleId?: string | null
   userCity?: string | null  // User's property city for bundle eligibility check
   scheduledCities?: string[] | null  // Cities where photographer is already scheduled (for same-city discount)
+  preferredDate?: string | null  // User's preferred date for bundle date validation
 }): Promise<QuoteCalculation> {
   // Get booking settings
   const settings = await prisma.bookingSettings.findUnique({
@@ -233,48 +242,78 @@ export async function calculateQuote(params: {
       bundleName = bundle.name
       travelFee = bundle.perPersonTravelFee || 0
 
-      // Only apply bundle discount if user's city is within the bundle's geographic range
-      // If user's city is too far from bundle city, they don't qualify for the discount
+      // Only apply bundle discount if:
+      // 1. User's city is within the bundle's geographic range
+      // 2. User's preferred date falls within the bundle's date range
       const userCity = params.userCity
       const bundleCity = bundle.city
 
+      let isCityEligible = true
+      let isDateEligible = true
+
+      // Check city eligibility
       if (userCity && bundleCity) {
-        const isEligible = isCityWithinBundleRange(userCity, bundleCity)
-        if (isEligible) {
-          bundleDiscount = params.pricingPlanPrice * (bundle.discountPercent / 100)
-        }
-        // If not eligible, bundleDiscount stays 0 - they still get shared travel but no discount
-      } else {
-        // If we don't have city info, apply discount as before (backwards compatibility)
+        isCityEligible = isCityWithinBundleRange(userCity, bundleCity)
+      }
+
+      // Check date eligibility
+      if (params.preferredDate && (bundle.startDate || bundle.scheduledDate)) {
+        const preferredDate = new Date(params.preferredDate)
+        const bundleStart = new Date(bundle.startDate || bundle.scheduledDate)
+        const bundleEnd = new Date(bundle.endDate || bundle.scheduledDate)
+
+        // Set to start of day for fair comparison
+        preferredDate.setHours(0, 0, 0, 0)
+        bundleStart.setHours(0, 0, 0, 0)
+        bundleEnd.setHours(23, 59, 59, 999)
+
+        // Date must be within bundle date range
+        isDateEligible = preferredDate >= bundleStart && preferredDate <= bundleEnd
+      }
+
+      // Apply discount only if both city and date are eligible
+      if (isCityEligible && isDateEligible) {
         bundleDiscount = params.pricingPlanPrice * (bundle.discountPercent / 100)
       }
+      // If not eligible, bundleDiscount stays 0 - they still get shared travel but no discount
     }
   } else if (params.distanceKm !== null && params.distanceKm !== undefined) {
-    // Calculate based on travel zone
-    const zone = await prisma.travelZone.findFirst({
-      where: {
-        isActive: true,
-        minDistanceKm: { lte: params.distanceKm },
-        OR: [
-          { maxDistanceKm: null },
-          { maxDistanceKm: { gte: params.distanceKm } },
-        ],
-      },
-      orderBy: { minDistanceKm: 'desc' },
-    })
+    // Same city (0 km) = FREE travel
+    if (params.distanceKm === 0) {
+      travelFee = 0
+      travelZoneName = 'Same City (Free)'
+    } else {
+      // Calculate based on travel zone
+      const zone = await prisma.travelZone.findFirst({
+        where: {
+          isActive: true,
+          minDistanceKm: { lte: params.distanceKm },
+          OR: [
+            { maxDistanceKm: null },
+            { maxDistanceKm: { gte: params.distanceKm } },
+          ],
+        },
+        orderBy: { minDistanceKm: 'desc' },
+      })
 
-    if (zone) {
-      travelZoneName = zone.name
-      if (!zone.isIncluded) {
-        travelFee = zone.flatFee || 0
-        if (zone.perKmRate) {
-          // Calculate from distance 0, not zone minimum
-          travelFee += params.distanceKm * zone.perKmRate
+      if (zone) {
+        travelZoneName = zone.name
+        if (!zone.isIncluded) {
+          travelFee = zone.flatFee || 0
+          if (zone.perKmRate) {
+            // Calculate from distance 0, not zone minimum
+            travelFee += params.distanceKm * zone.perKmRate
+          }
+          // Double for return trip if configured
+          if (settings?.includeReturnTrip) {
+            travelFee *= 2
+          }
         }
-        // Double for return trip if configured
-        if (settings?.includeReturnTrip) {
-          travelFee *= 2
-        }
+      } else {
+        // No zone found - use fuel consumption based calculation
+        // This is a reasonable fallback based on actual driving costs
+        travelFee = params.distanceKm * TRAVEL_COST_PER_KM  // Already includes round trip
+        travelZoneName = 'Travel Fee'
       }
     }
   }
