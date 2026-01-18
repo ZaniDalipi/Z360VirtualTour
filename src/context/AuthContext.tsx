@@ -8,7 +8,6 @@ interface User {
   name: string
   phone: string | null
   company: string | null
-  city: string | null
 }
 
 interface AuthContextType {
