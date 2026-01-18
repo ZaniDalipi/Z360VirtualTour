@@ -7,17 +7,11 @@ import { ArrowLeft, Loader2, Save, Eye, EyeOff } from 'lucide-react'
 import { Navbar } from '@/components/layout'
 import { Card, Button, Input } from '@/components/ui'
 import { motion } from 'framer-motion'
-
-interface User {
-  id: string
-  email: string
-  name: string
-  phone?: string
-  company?: string
-}
+import { useAuth } from '@/context/AuthContext'
 
 export default function EditProfilePage() {
   const router = useRouter()
+  const { user, isAuthenticated, isInitialized } = useAuth()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -34,33 +28,26 @@ export default function EditProfilePage() {
     confirmPassword: '',
   })
 
+  // Redirect if not authenticated
   useEffect(() => {
-    async function loadProfile() {
-      try {
-        const res = await fetch('/api/user/auth/me')
-        if (!res.ok) {
-          router.push('/login')
-          return
-        }
-
-        const data = await res.json()
-        setFormData(prev => ({
-          ...prev,
-          name: data.user.name || '',
-          email: data.user.email || '',
-          phone: data.user.phone || '',
-          company: data.user.company || '',
-        }))
-      } catch (error) {
-        console.error('Failed to load profile:', error)
-        router.push('/login')
-      } finally {
-        setLoading(false)
-      }
+    if (isInitialized && !isAuthenticated) {
+      router.push('/account/login')
     }
+  }, [isInitialized, isAuthenticated, router])
 
-    loadProfile()
-  }, [router])
+  // Load user data into form
+  useEffect(() => {
+    if (isInitialized && user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        company: user.company || '',
+      }))
+      setLoading(false)
+    }
+  }, [isInitialized, user])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -131,7 +118,7 @@ export default function EditProfilePage() {
     }
   }
 
-  if (loading) {
+  if (!isInitialized || loading || !isAuthenticated) {
     return (
       <div className="min-h-screen bg-navy flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-gold animate-spin" />

@@ -11,15 +11,7 @@ import {
 import { Navbar } from '@/components/layout'
 import { Card, Button } from '@/components/ui'
 import { motion } from 'framer-motion'
-
-interface User {
-  id: string
-  email: string
-  name: string
-  phone?: string
-  company?: string
-  avatar?: string
-}
+import { useAuth } from '@/context/AuthContext'
 
 interface Stats {
   total: number
@@ -39,24 +31,23 @@ const menuItems = [
 
 export default function ProfilePage() {
   const router = useRouter()
-  const [user, setUser] = useState<User | null>(null)
+  const { user, isAuthenticated, isInitialized, logout } = useAuth()
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [loggingOut, setLoggingOut] = useState(false)
 
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (isInitialized && !isAuthenticated) {
+      router.push('/account/login')
+    }
+  }, [isInitialized, isAuthenticated, router])
+
   useEffect(() => {
     async function loadProfile() {
+      if (!isInitialized || !isAuthenticated) return
+
       try {
-        // Check authentication
-        const authRes = await fetch('/api/user/auth/me')
-        if (!authRes.ok) {
-          router.push('/login')
-          return
-        }
-
-        const authData = await authRes.json()
-        setUser(authData.user)
-
         // Fetch booking stats
         const bookingsRes = await fetch('/api/user/bookings')
         if (bookingsRes.ok) {
@@ -65,19 +56,18 @@ export default function ProfilePage() {
         }
       } catch (error) {
         console.error('Failed to load profile:', error)
-        router.push('/login')
       } finally {
         setLoading(false)
       }
     }
 
     loadProfile()
-  }, [router])
+  }, [isInitialized, isAuthenticated])
 
   const handleLogout = async () => {
     setLoggingOut(true)
     try {
-      await fetch('/api/user/auth/logout', { method: 'POST' })
+      await logout()
       router.push('/')
     } catch (error) {
       console.error('Logout failed:', error)
@@ -86,7 +76,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (loading) {
+  if (!isInitialized || loading) {
     return (
       <div className="min-h-screen bg-navy flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-gold animate-spin" />
@@ -94,7 +84,7 @@ export default function ProfilePage() {
     )
   }
 
-  if (!user) {
+  if (!isAuthenticated || !user) {
     return null
   }
 

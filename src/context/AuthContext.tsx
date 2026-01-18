@@ -27,27 +27,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isInitialized, setIsInitialized] = useState(false)
-  const initRef = useRef(false)
+  const hasCheckedSession = useRef(false)
 
-  // Check session on mount
-  const checkSession = useCallback(async () => {
-    if (initRef.current) return
-    initRef.current = true
+  // Check session on mount - only once
+  useEffect(() => {
+    // Prevent double execution in strict mode
+    if (hasCheckedSession.current) return
+    hasCheckedSession.current = true
 
-    try {
-      const res = await fetch('/api/user/me')
-      if (res.ok) {
-        const data = await res.json()
-        setUser(data.user)
-      } else {
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/user/me')
+        if (res.ok) {
+          const data = await res.json()
+          setUser(data.user)
+        } else {
+          setUser(null)
+        }
+      } catch {
         setUser(null)
+      } finally {
+        setIsLoading(false)
+        setIsInitialized(true)
       }
-    } catch {
-      setUser(null)
-    } finally {
-      setIsLoading(false)
-      setIsInitialized(true)
     }
+
+    checkSession()
   }, [])
 
   // Refresh session - extends the token if still valid
@@ -100,11 +105,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false)
     }
   }, [])
-
-  // Check session on mount - only once
-  useEffect(() => {
-    checkSession()
-  }, [checkSession])
 
   // Refresh session periodically (every 30 minutes) to keep it alive
   useEffect(() => {

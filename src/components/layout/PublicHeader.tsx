@@ -7,18 +7,14 @@ import { Menu, X, LogIn, UserPlus, Phone, User } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/ui'
 import { cn } from '@/lib/utils'
-
-interface UserData {
-  name: string
-  email: string
-}
+import { useAuth } from '@/context/AuthContext'
 
 export function PublicHeader() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
-  const [user, setUser] = useState<UserData | null>(null)
   const [isMounted, setIsMounted] = useState(false)
+  const { user, isInitialized } = useAuth()
 
   const t = useTranslations('nav')
   const tContact = useTranslations('contact')
@@ -33,21 +29,9 @@ export function PublicHeader() {
     { href: '/contact', label: t('contact') },
   ]
 
-  // Mark as mounted and check auth
+  // Mark as mounted
   useEffect(() => {
     setIsMounted(true)
-    const checkAuth = async () => {
-      try {
-        const res = await fetch('/api/user/auth/me')
-        if (res.ok) {
-          const data = await res.json()
-          setUser(data.user)
-        }
-      } catch {
-        // Not logged in
-      }
-    }
-    checkAuth()
   }, [])
 
   // Handle scroll for header background
@@ -116,15 +100,15 @@ export function PublicHeader() {
               </div>
 
               {/* Login/Profile Button - Desktop */}
-              {isMounted && (
+              {isMounted && isInitialized && (
                 <div className="hidden lg:block">
                   {user ? (
                     <Link
-                      href="/profile"
+                      href="/account"
                       className="flex items-center gap-2 px-4 py-2 rounded-lg text-cream-soft hover:text-cream hover:bg-cream/5 transition-colors"
                     >
                       <User className="w-4 h-4" />
-                      <span className="text-sm font-medium">{user.name.split(' ')[0]}</span>
+                      <span className="text-sm font-medium">{user.name?.split(' ')[0] || 'Account'}</span>
                     </Link>
                   ) : (
                     <div className="flex items-center gap-2">
@@ -184,7 +168,7 @@ export function PublicHeader() {
               <div className="px-4 py-3">
                 <LanguageSwitcher />
               </div>
-              {!user && (
+              {isInitialized && !user && (
                 <>
                   <Link
                     href="/account/login"
@@ -204,14 +188,14 @@ export function PublicHeader() {
                   </Link>
                 </>
               )}
-              {user && (
+              {isInitialized && user && (
                 <Link
-                  href="/profile"
+                  href="/account"
                   className="flex items-center gap-2 text-cream font-medium px-4 py-3 rounded-lg hover:bg-cream/5 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <User className="w-4 h-4" />
-                  {user.name}
+                  {user.name || 'Account'}
                 </Link>
               )}
               <div className="pt-2 px-4">
