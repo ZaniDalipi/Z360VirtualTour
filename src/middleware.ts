@@ -7,11 +7,17 @@ const intlMiddleware = createMiddleware(routing);
 export default function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Skip middleware for API routes, static files, and Next.js internals
+  // Skip middleware for API routes, static files, Next.js internals, and special routes
   if (
     pathname.startsWith('/api') ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/_vercel') ||
+    pathname.startsWith('/embed') ||      // Embed pages (no locale needed)
+    pathname.startsWith('/booking') ||    // Booking status pages
+    pathname.startsWith('/payment') ||    // Payment pages
+    pathname.startsWith('/bundles') ||    // Bundles page
+    pathname.startsWith('/login') ||      // Legacy login
+    pathname.startsWith('/register') ||   // Legacy register
     pathname.includes('.') // Static files like .ico, .png, etc.
   ) {
     return;
