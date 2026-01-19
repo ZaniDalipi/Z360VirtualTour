@@ -14,6 +14,15 @@ import {
   CheckCircle,
   XCircle,
   Hourglass,
+  Mail,
+  Phone,
+  Building2,
+  Edit3,
+  Eye,
+  CreditCard,
+  TrendingUp,
+  Star,
+  Camera,
 } from 'lucide-react'
 import { Button, Card } from '@/components/ui'
 import { PublicHeader, Footer } from '@/components/layout'
@@ -77,6 +86,36 @@ export default function AccountPage() {
   }, [bookings])
 
   const filteredBookings = categorizedBookings[activeCategory]
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    const totalSpent = bookings
+      .filter(b => b.status === 'completed' && b.totalQuote)
+      .reduce((sum, b) => sum + (b.totalQuote || 0), 0)
+
+    const pendingQuotes = bookings.filter(b =>
+      b.status === 'quote_requested' || b.status === 'quote_sent'
+    ).length
+
+    return {
+      totalBookings: bookings.length,
+      completedProjects: categorizedBookings.completed.length,
+      activeProjects: categorizedBookings.active.length,
+      pendingQuotes,
+      totalSpent,
+    }
+  }, [bookings, categorizedBookings])
+
+  // Calculate profile completion
+  const profileCompletion = useMemo(() => {
+    if (!user) return 0
+    let completed = 0
+    const fields = ['name', 'email', 'phone', 'company']
+    fields.forEach(field => {
+      if (user[field as keyof UserData]) completed++
+    })
+    return Math.round((completed / fields.length) * 100)
+  }, [user])
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -181,7 +220,7 @@ export default function AccountPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -205,41 +244,170 @@ export default function AccountPage() {
           </div>
         </motion.div>
 
+        {/* Stats Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6"
+        >
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gold/20 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-gold" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-cream">{stats.totalBookings}</p>
+                <p className="text-xs text-cream-muted">{t('totalBookings', { defaultValue: 'Total Bookings' })}</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-green-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-cream">{stats.completedProjects}</p>
+                <p className="text-xs text-cream-muted">{t('completedProjects', { defaultValue: 'Completed' })}</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <Hourglass className="w-5 h-5 text-blue-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-cream">{stats.activeProjects}</p>
+                <p className="text-xs text-cream-muted">{t('activeProjects', { defaultValue: 'In Progress' })}</p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-purple-400" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-gold">€{stats.totalSpent.toFixed(0)}</p>
+                <p className="text-xs text-cream-muted">{t('totalSpent', { defaultValue: 'Total Spent' })}</p>
+              </div>
+            </div>
+          </Card>
+        </motion.div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Profile Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
+            className="space-y-4"
           >
             <Card className="p-6">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-gold/20 flex items-center justify-center">
-                  <User className="w-8 h-8 text-gold" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-cream">{user.name}</h2>
-                  <p className="text-sm text-cream-muted">{user.email}</p>
+              {/* Avatar and Name */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold to-gold-soft flex items-center justify-center text-navy text-xl font-bold">
+                      {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-green-500 border-2 border-navy flex items-center justify-center">
+                      <CheckCircle className="w-3 h-3 text-white" />
+                    </div>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-cream">{user.name}</h2>
+                    <p className="text-sm text-cream-muted">{t('memberSince', { defaultValue: 'Member since' })} {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-3 text-sm">
-                {user.phone && (
-                  <div className="flex items-center gap-2 text-cream-muted">
-                    <span className="font-medium text-cream">{t('phone')}:</span>
-                    {user.phone}
-                  </div>
-                )}
-                {user.company && (
-                  <div className="flex items-center gap-2 text-cream-muted">
-                    <span className="font-medium text-cream">{t('company')}:</span>
-                    {user.company}
-                  </div>
-                )}
-                <div className="flex items-center gap-2 text-cream-muted">
-                  <span className="font-medium text-cream">{t('memberSince')}:</span>
-                  {new Date(user.createdAt).toLocaleDateString()}
+              {/* Profile Completion */}
+              <div className="mb-4 p-3 rounded-lg bg-navy-medium border border-gold/10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs text-cream-muted">{t('profileCompletion', { defaultValue: 'Profile Completion' })}</span>
+                  <span className="text-xs font-medium text-gold">{profileCompletion}%</span>
                 </div>
+                <div className="w-full h-2 bg-navy rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-gold to-gold-soft transition-all duration-500"
+                    style={{ width: `${profileCompletion}%` }}
+                  />
+                </div>
+                {profileCompletion < 100 && (
+                  <p className="text-[10px] text-cream-muted mt-1.5">
+                    {!user.phone && t('addPhone', { defaultValue: 'Add phone number' })}
+                    {!user.phone && !user.company && ' • '}
+                    {!user.company && t('addCompany', { defaultValue: 'Add company name' })}
+                  </p>
+                )}
+              </div>
+
+              {/* Contact Info */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
+                    <Mail className="w-4 h-4 text-gold" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] text-cream-muted uppercase tracking-wide">{t('email', { defaultValue: 'Email' })}</p>
+                    <p className="text-cream truncate">{user.email}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
+                    <Phone className="w-4 h-4 text-gold" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] text-cream-muted uppercase tracking-wide">{t('phone', { defaultValue: 'Phone' })}</p>
+                    <p className={user.phone ? 'text-cream' : 'text-cream-muted italic'}>
+                      {user.phone || t('notProvided', { defaultValue: 'Not provided' })}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 text-sm">
+                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-4 h-4 text-gold" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[10px] text-cream-muted uppercase tracking-wide">{t('company', { defaultValue: 'Company' })}</p>
+                    <p className={user.company ? 'text-cream' : 'text-cream-muted italic'}>
+                      {user.company || t('notProvided', { defaultValue: 'Not provided' })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Quick Actions */}
+            <Card className="p-4">
+              <h3 className="text-sm font-medium text-cream mb-3">{t('quickActions', { defaultValue: 'Quick Actions' })}</h3>
+              <div className="space-y-2">
+                <Link href="/contact" className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gold/10 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+                    <Plus className="w-4 h-4 text-gold" />
+                  </div>
+                  <span className="text-sm text-cream group-hover:text-gold transition-colors">{t('requestNewQuote', { defaultValue: 'Request New Quote' })}</span>
+                  <ChevronRight className="w-4 h-4 text-cream-muted ml-auto" />
+                </Link>
+                <Link href="/tours" className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gold/10 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+                    <Eye className="w-4 h-4 text-gold" />
+                  </div>
+                  <span className="text-sm text-cream group-hover:text-gold transition-colors">{t('browseTours', { defaultValue: 'Browse Tours' })}</span>
+                  <ChevronRight className="w-4 h-4 text-cream-muted ml-auto" />
+                </Link>
+                <Link href="/schedule" className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gold/10 transition-colors group">
+                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+                    <Calendar className="w-4 h-4 text-gold" />
+                  </div>
+                  <span className="text-sm text-cream group-hover:text-gold transition-colors">{t('viewSchedule', { defaultValue: 'View Schedule' })}</span>
+                  <ChevronRight className="w-4 h-4 text-cream-muted ml-auto" />
+                </Link>
               </div>
             </Card>
           </motion.div>
