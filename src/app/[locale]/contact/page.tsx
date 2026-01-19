@@ -382,12 +382,12 @@ function ContactForm() {
       {/* Booking Form & Info */}
       <section className="py-4 landscape:py-2 sm:py-6 pb-8 landscape:pb-4 sm:pb-12 md:pb-20">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="grid landscape:grid-cols-2 md:grid-cols-1 lg:grid-cols-5 gap-4 landscape:gap-3 sm:gap-6 lg:gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 landscape:gap-3 sm:gap-6 lg:gap-12">
             {/* Contact Info & Quote Preview */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="lg:col-span-2 space-y-4 landscape:space-y-2 sm:space-y-6 landscape:max-h-[calc(100vh-120px)] landscape:overflow-y-auto landscape:pr-2"
+              className="md:col-span-2 space-y-4 landscape:space-y-2 sm:space-y-6 order-2 md:order-1"
             >
               {/* Quote Preview */}
               {quote && (
@@ -520,22 +520,21 @@ function ContactForm() {
                 </Card>
               )}
 
-              {/* Contact Info - Hidden in landscape on small screens to save space */}
-              <div className="space-y-2 sm:space-y-3 landscape:hidden sm:landscape:block">
-                <h3 className="text-sm sm:text-base font-semibold text-cream">{t('contactInfo')}</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-1 gap-2 sm:gap-3">
+              {/* Contact Info - Compact 2x2 grid */}
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-cream">{t('contactInfo')}</h3>
+                <div className="grid grid-cols-2 gap-2">
                   {contactInfo.map((info) => {
                     const Icon = info.icon
                     return (
-                      <Card key={info.label} className="p-2.5 sm:p-3 md:p-4">
-                        <div className="flex items-start gap-2 sm:gap-3">
-                          <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
-                            <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold" />
+                      <Card key={info.label} className="p-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-4 h-4 text-gold" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-[9px] sm:text-[10px] text-cream-muted">{info.label}</p>
-                            <p className="text-[10px] sm:text-xs font-semibold text-cream break-words leading-tight">{info.value}</p>
-                            <p className="text-[9px] sm:text-[10px] text-cream-muted hidden sm:block">{info.subtext}</p>
+                            <p className="text-[10px] text-cream-muted">{info.label}</p>
+                            <p className="text-xs font-semibold text-cream truncate">{info.value}</p>
                           </div>
                         </div>
                       </Card>
@@ -550,7 +549,7 @@ function ContactForm() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="lg:col-span-3 landscape:max-h-[calc(100vh-120px)] landscape:overflow-y-auto"
+              className="md:col-span-3 order-1 md:order-2"
             >
               <Card className="p-3 landscape:p-3 sm:p-5 md:p-6 lg:p-8">
                 {isSubmitted ? (
