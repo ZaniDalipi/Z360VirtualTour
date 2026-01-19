@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle, Calendar, Users, AlertCircle, ChevronRight, Info } from 'lucide-react'
 import { PublicHeader, Footer } from '@/components/layout'
 import { Button, Card, Input } from '@/components/ui'
@@ -62,7 +62,7 @@ interface QuoteResult {
   depositAmount: number | null
 }
 
-export default function ContactPage() {
+function ContactForm() {
   const t = useTranslations('contact')
   const searchParams = useSearchParams()
   const [step, setStep] = useState(1)
@@ -903,5 +903,17 @@ export default function ContactPage() {
 
       <Footer />
     </div>
+  )
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-navy flex items-center justify-center">
+        <div className="w-10 h-10 border-3 border-gold border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <ContactForm />
+    </Suspense>
   )
 }
