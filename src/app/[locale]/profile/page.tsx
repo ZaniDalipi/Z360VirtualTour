@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 import Link from 'next/link'
 import {
   ClipboardList, Calendar, HelpCircle,
@@ -123,20 +122,11 @@ export default function ProfilePage() {
           className="text-center mb-8"
         >
           <div className="relative w-24 h-24 mx-auto mb-4">
-            {user.avatar ? (
-              <Image
-                src={user.avatar}
-                alt="Profile"
-                fill
-                className="object-cover rounded-full border-2 border-gold"
-              />
-            ) : (
-              <div className="w-full h-full rounded-full border-2 border-gold bg-navy-light flex items-center justify-center">
-                <span className="text-3xl font-bold text-gold">
-                  {user.name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
+            <div className="w-full h-full rounded-full border-2 border-gold bg-navy-light flex items-center justify-center">
+              <span className="text-3xl font-bold text-gold">
+                {user.name.charAt(0).toUpperCase()}
+              </span>
+            </div>
           </div>
           <h2 className="text-h2 font-bold text-cream">{user.name}</h2>
           <p className="text-body text-cream-muted">{user.email}</p>
