@@ -544,84 +544,86 @@ export default function TourDetailPage() {
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
               onClick={() => setShowShareModal(false)}
             />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="fixed inset-x-4 top-1/2 -translate-y-1/2 z-50 mx-auto max-w-md"
-            >
-              <Card className="p-4 sm:p-6">
-                <div className="flex items-center justify-between mb-4 sm:mb-6">
-                  <h3 className="text-lg sm:text-h4 font-semibold text-cream">
-                    {t('shareThisTour')}
-                  </h3>
-                  <button
-                    onClick={() => setShowShareModal(false)}
-                    className="p-2 rounded-lg text-cream-muted hover:text-cream hover:bg-gold/10 transition-colors"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
-                  {shareLinks.map((link) => {
-                    const Icon = link.icon
-                    return (
-                      <a
-                        key={link.name}
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-4 rounded-xl border border-gold/20 ${link.color} transition-colors`}
-                      >
-                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                        <span className="text-xs sm:text-sm text-cream-muted">{link.name}</span>
-                      </a>
-                    )
-                  })}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm text-cream-muted">{t('orCopyLink')}</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={shareUrl}
-                      readOnly
-                      className="flex-1 min-w-0 px-3 sm:px-4 py-2 rounded-xl bg-navy border border-gold/20 text-cream text-xs sm:text-sm truncate"
-                    />
-                    <Button variant="secondary" onClick={handleCopyLink} className="flex-shrink-0">
-                      {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2 pt-4 mt-4 border-t border-gold/10">
-                  <label className="text-sm text-cream-muted flex items-center gap-2">
-                    <ExternalLink className="w-4 h-4" />
-                    Embed URL for Property Listings
-                  </label>
-                  <p className="text-xs text-cream-muted/70 mb-2">
-                    Use this URL to embed this tour in BalkanEstateAI or other property websites
-                  </p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={`${baseUrl}/embed/${slug}`}
-                      readOnly
-                      className="flex-1 min-w-0 px-3 sm:px-4 py-2 rounded-xl bg-navy border border-purple-500/30 text-cream text-xs sm:text-sm truncate font-mono"
-                    />
-                    <Button
-                      variant="secondary"
-                      onClick={handleCopyEmbedUrl}
-                      className="flex-shrink-0 border-purple-500/30 hover:bg-purple-500/20"
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="w-full max-w-md max-h-[90vh] overflow-y-auto pointer-events-auto"
+              >
+                <Card className="p-4 sm:p-6">
+                  <div className="flex items-center justify-between mb-4 sm:mb-6">
+                    <h3 className="text-lg sm:text-h4 font-semibold text-cream">
+                      {t('shareThisTour')}
+                    </h3>
+                    <button
+                      onClick={() => setShowShareModal(false)}
+                      className="p-2 rounded-lg text-cream-muted hover:text-cream hover:bg-gold/10 transition-colors"
                     >
-                      {copiedEmbed ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
-                    </Button>
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
-                </div>
-              </Card>
-            </motion.div>
+
+                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-6">
+                    {shareLinks.map((link) => {
+                      const Icon = link.icon
+                      return (
+                        <a
+                          key={link.name}
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-4 rounded-xl border border-gold/20 ${link.color} transition-colors`}
+                        >
+                          <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                          <span className="text-xs sm:text-sm text-cream-muted">{link.name}</span>
+                        </a>
+                      )
+                    })}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm text-cream-muted">{t('orCopyLink')}</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={shareUrl}
+                        readOnly
+                        className="flex-1 min-w-0 px-3 sm:px-4 py-2 rounded-xl bg-navy border border-gold/20 text-cream text-xs sm:text-sm truncate"
+                      />
+                      <Button variant="secondary" onClick={handleCopyLink} className="flex-shrink-0">
+                        {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2 pt-4 mt-4 border-t border-gold/10">
+                    <label className="text-sm text-cream-muted flex items-center gap-2">
+                      <ExternalLink className="w-4 h-4" />
+                      Embed URL for Property Listings
+                    </label>
+                    <p className="text-xs text-cream-muted/70 mb-2">
+                      Use this URL to embed this tour in BalkanEstateAI or other property websites
+                    </p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={`${baseUrl}/embed/${slug}`}
+                        readOnly
+                        className="flex-1 min-w-0 px-3 sm:px-4 py-2 rounded-xl bg-navy border border-purple-500/30 text-cream text-xs sm:text-sm truncate font-mono"
+                      />
+                      <Button
+                        variant="secondary"
+                        onClick={handleCopyEmbedUrl}
+                        className="flex-shrink-0 border-purple-500/30 hover:bg-purple-500/20"
+                      >
+                        {copiedEmbed ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            </div>
           </>
         )}
       </AnimatePresence>
