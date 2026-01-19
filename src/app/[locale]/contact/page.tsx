@@ -763,21 +763,20 @@ function ContactForm() {
                           <label className="block text-xs landscape:text-[10px] sm:text-sm font-medium text-cream mb-1 sm:mb-1.5">
                             {t('form.preferredDate')}
                           </label>
-                          <div className="flex flex-col landscape:flex-row sm:flex-row gap-1.5 sm:gap-2">
+                          <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2">
                             <Input
                               type="date"
                               name="preferredDate"
                               value={formData.preferredDate}
                               onChange={handleChange}
-                              className="text-xs sm:text-sm h-9 landscape:h-8 sm:h-10 flex-1"
+                              className="text-xs sm:text-sm h-10 sm:h-11 flex-1"
                             />
                             <Input
                               type="time"
                               name="preferredTime"
                               value={formData.preferredTime}
                               onChange={handleChange}
-                              placeholder={t('form.time', { defaultValue: 'Time' })}
-                              className="text-xs sm:text-sm h-9 landscape:h-8 sm:h-10 landscape:w-20 sm:w-auto"
+                              className="text-xs sm:text-sm h-10 sm:h-11 w-full sm:w-28"
                             />
                           </div>
                         </div>
@@ -785,21 +784,20 @@ function ContactForm() {
                           <label className="block text-xs landscape:text-[10px] sm:text-sm font-medium text-cream mb-1 sm:mb-1.5">
                             {t('form.alternateDate')}
                           </label>
-                          <div className="flex flex-col landscape:flex-row sm:flex-row gap-1.5 sm:gap-2">
+                          <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2">
                             <Input
                               type="date"
                               name="alternateDate"
                               value={formData.alternateDate}
                               onChange={handleChange}
-                              className="text-xs sm:text-sm h-9 landscape:h-8 sm:h-10 flex-1"
+                              className="text-xs sm:text-sm h-10 sm:h-11 flex-1"
                             />
                             <Input
                               type="time"
                               name="alternateTime"
                               value={formData.alternateTime}
                               onChange={handleChange}
-                              placeholder={t('form.time', { defaultValue: 'Time' })}
-                              className="text-xs sm:text-sm h-9 landscape:h-8 sm:h-10 landscape:w-20 sm:w-auto"
+                              className="text-xs sm:text-sm h-10 sm:h-11 w-full sm:w-28"
                             />
                           </div>
                         </div>
