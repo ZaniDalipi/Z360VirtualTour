@@ -44,7 +44,6 @@ export async function POST() {
         name: true,
         phone: true,
         company: true,
-        city: true,
         isActive: true,
       },
     })
@@ -80,7 +79,6 @@ export async function POST() {
         name: user.name,
         phone: user.phone,
         company: user.company,
-        city: user.city,
       },
       refreshed: true,
     })
