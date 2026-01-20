@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { Link, useRouter } from '@/i18n/routing'
 import { Lock, AlertCircle, CheckCircle, Eye, EyeOff, ArrowLeft } from 'lucide-react'
@@ -10,7 +11,20 @@ import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 
+const DynamicResetPasswordForm = dynamic(() => Promise.resolve(ResetPasswordFormContent), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-screen bg-navy flex items-center justify-center">
+      <div className="w-10 h-10 border-3 border-gold border-t-transparent rounded-full animate-spin" />
+    </div>
+  ),
+})
+
 export default function ResetPasswordPage() {
+  return <DynamicResetPasswordForm />
+}
+
+function ResetPasswordFormContent() {
   const router = useRouter()
   const t = useTranslations('auth')
   const searchParams = useSearchParams()

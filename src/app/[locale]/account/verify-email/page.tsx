@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import Image from 'next/image'
 import { Link } from '@/i18n/routing'
 import { AlertCircle, CheckCircle, Mail } from 'lucide-react'
@@ -10,7 +11,20 @@ import { motion } from 'framer-motion'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 
+const DynamicVerifyEmailForm = dynamic(() => Promise.resolve(VerifyEmailFormContent), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-screen bg-navy flex items-center justify-center">
+      <div className="w-10 h-10 border-3 border-gold border-t-transparent rounded-full animate-spin" />
+    </div>
+  ),
+})
+
 export default function VerifyEmailPage() {
+  return <DynamicVerifyEmailForm />
+}
+
+function VerifyEmailFormContent() {
   const t = useTranslations('auth')
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
