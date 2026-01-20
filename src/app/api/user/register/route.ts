@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 import { cookies } from 'next/headers'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
@@ -33,6 +34,10 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
+    // Generate email verification token
+    const verifyToken = crypto.randomBytes(32).toString('hex')
+    const verifyTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -41,8 +46,15 @@ export async function POST(request: NextRequest) {
         name,
         phone: phone || null,
         company: company || null,
+        emailVerified: false,
+        verifyToken,
+        verifyTokenExpiry,
       },
     })
+
+    // In production, send verification email here
+    const verifyUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/en/account/verify-email?token=${verifyToken}`
+    console.log('Email verification link:', verifyUrl)
 
     // Create JWT token
     const token = jwt.sign(
@@ -67,7 +79,9 @@ export async function POST(request: NextRequest) {
         name: user.name,
         phone: user.phone,
         company: user.company,
+        emailVerified: user.emailVerified,
       },
+      message: 'Account created. Please check your email to verify your account.',
     })
   } catch (error) {
     console.error('Registration error:', error)

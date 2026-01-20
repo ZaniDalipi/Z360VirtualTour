@@ -123,9 +123,14 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-cream mb-2">
-                  {t('password')}
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-cream">
+                    {t('password')}
+                  </label>
+                  <Link href="/account/forgot-password" className="text-sm text-gold hover:text-gold/80">
+                    {t('forgotPassword', { defaultValue: 'Forgot password?' })}
+                  </Link>
+                </div>
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-cream-muted" />
                   <Input

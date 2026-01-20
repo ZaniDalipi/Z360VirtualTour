@@ -22,17 +22,22 @@ model Admin {
 
 // Regular user (customer) for authentication
 model User {
-  id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  email     String    @unique
-  password  String
-  name      String
-  phone     String?
-  company   String?
-  avatar    String?   // User profile picture URL
-  isActive  Boolean   @default(true)
-  bookings  Booking[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  email             String    @unique
+  password          String
+  name              String
+  phone             String?
+  company           String?
+  avatar            String?   // User profile picture URL
+  isActive          Boolean   @default(true)
+  emailVerified     Boolean   @default(false)
+  verifyToken       String?   // Email verification token
+  verifyTokenExpiry DateTime? // Token expiry time
+  resetToken        String?   // Password reset token
+  resetTokenExpiry  DateTime? // Reset token expiry time
+  bookings          Booking[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
 // Tour categories (Real Estate, Business, Hospitality, etc.)
