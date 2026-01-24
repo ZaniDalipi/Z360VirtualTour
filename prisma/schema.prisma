@@ -11,12 +11,115 @@ datasource db {
 
 // Admin user for authentication
 model Admin {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  password            String
+  name                String
+  phone               String?
+  isEmailVerified     Boolean   @default(false)
+  emailVerifyToken    String?   @unique
+  emailVerifyExpires  DateTime?
+  passwordResetToken  String?   @unique
+  passwordResetExpires DateTime?
+  lastLoginAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// Client accounts (for tracking quotes and bookings)
+model Client {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  password            String?   // Optional - can be set later
+  name                String
+  phone               String?
+  company             String?
+  isEmailVerified     Boolean   @default(false)
+  emailVerifyToken    String?   @unique
+  emailVerifyExpires  DateTime?
+  passwordResetToken  String?   @unique
+  passwordResetExpires DateTime?
+  lastLoginAt         DateTime?
+  notificationPrefs   String?   // JSON for notification preferences
+  quotes              Quote[]
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// Quote requests with phone callback flow
+model Quote {
+  id                  String    @id @default(cuid())
+  quoteNumber         String    @unique // Q-2024-001 format
+
+  // Client (linked or guest)
+  clientId            String?
+  client              Client?   @relation(fields: [clientId], references: [id])
+
+  // Guest info (if no client account)
+  guestName           String?
+  guestEmail          String?
+  guestPhone          String
+  guestCompany        String?
+
+  // Project Details
+  propertyAddress     String
+  propertyCity        String?
+  propertyType        String?   // residential, commercial, hospitality
+  propertySize        String?   // small, medium, large, xlarge
+  projectDescription  String?
+  specialRequests     String?
+
+  // Pricing
+  pricingPlanId       String?
+  estimatedPrice      Float?
+  finalPrice          Float?
+
+  // Phone Callback Flow
+  preferredCallTime   String?   // "morning", "afternoon", "evening"
+  preferredCallDate   DateTime?
+  callbackScheduled   DateTime?
+  callbackCompleted   DateTime?
+  callNotes           String?   // Notes from the phone call
+
+  // Status Tracking
+  status              String    @default("pending")
+  // Status: pending, callback_scheduled, quoted, accepted, declined, expired
+
+  // Quote Details (filled after callback)
+  quotedAt            DateTime?
+  quoteValidUntil     DateTime?
+  quoteDocument       String?   // URL to PDF quote
+
+  // Admin
+  assignedTo          String?   // Admin who handles this quote
+  internalNotes       String?
+  isRead              Boolean   @default(false)
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+// Quote status history for tracking
+model QuoteStatusHistory {
+  id          String   @id @default(cuid())
+  quoteId     String
+  status      String
+  note        String?
+  changedBy   String?  // admin id or "system"
+  createdAt   DateTime @default(now())
+}
+
+// Notification log for clients
+model ClientNotification {
+  id          String   @id @default(cuid())
+  clientId    String?
+  email       String   // For guest notifications
+  type        String   // quote_received, callback_scheduled, quote_ready, etc.
+  subject     String
+  message     String
+  isRead      Boolean  @default(false)
+  sentAt      DateTime @default(now())
+  readAt      DateTime?
 }
 
 // Tour categories (Real Estate, Business, Hospitality, etc.)
