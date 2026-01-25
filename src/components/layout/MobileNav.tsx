@@ -2,12 +2,12 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Home, Images, CreditCard, Phone, FileText } from 'lucide-react'
+import { Home, Image, CreditCard, Phone, FileText } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/tours', label: 'Tours', icon: Images },
+  { href: '/tours', label: 'Tours', icon: Image },
   { href: '/quote', label: 'Quote', icon: FileText, highlight: true },
   { href: '/pricing', label: 'Pricing', icon: CreditCard },
   { href: '/contact', label: 'Contact', icon: Phone },

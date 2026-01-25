@@ -3,12 +3,12 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Home, Images, MessageSquare, CreditCard, Phone, FileText } from 'lucide-react'
+import { Menu, X, Home, Image, MessageSquare, CreditCard, Phone, FileText } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const navLinks = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/tours', label: 'Portfolio', icon: Images },
+  { href: '/tours', label: 'Portfolio', icon: Image },
   { href: '/testimonials', label: 'Testimonials', icon: MessageSquare },
   { href: '/pricing', label: 'Pricing', icon: CreditCard },
   { href: '/contact', label: 'Contact', icon: Phone },
