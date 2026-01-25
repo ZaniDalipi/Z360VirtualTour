@@ -21,8 +21,7 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useToast } from '@/components/ui/Toast'
-import PublicHeader from '@/components/layout/PublicHeader'
-import Footer from '@/components/layout/Footer'
+import { PublicHeader, Footer } from '@/components/layout'
 
 const propertyTypes = [
   { id: 'residential', label: 'Residential', icon: Home, description: 'Homes, apartments, condos' },

@@ -21,7 +21,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Header from '@/components/layout/Header'
+import { Header } from '@/components/layout'
 import { useToast } from '@/components/ui/Toast'
 
 interface Quote {
