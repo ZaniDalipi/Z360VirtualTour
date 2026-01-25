@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Category, Tour } from '@/lib/models'
 import { getAdminFromCookies } from '@/lib/auth'
 
 export async function GET() {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -10,16 +13,24 @@ export async function GET() {
   }
 
   try {
-    const categories = await prisma.category.findMany({
-      orderBy: { order: 'asc' },
-      include: {
-        _count: {
-          select: { tours: true },
-        },
-      },
-    })
+    const categories = await Category.find().sort({ order: 1 })
 
-    return NextResponse.json(categories)
+    // Get tour counts for all categories
+    const tourCounts = await Tour.aggregate([
+      { $group: { _id: '$categoryId', count: { $sum: 1 } } },
+    ])
+    const tourCountMap = tourCounts.reduce(
+      (acc, item) => ({ ...acc, [item._id.toString()]: item.count }),
+      {} as Record<string, number>
+    )
+
+    return NextResponse.json(
+      categories.map((cat) => ({
+        ...cat.toObject(),
+        id: cat._id,
+        _count: { tours: tourCountMap[cat._id.toString()] || 0 },
+      }))
+    )
   } catch (error) {
     console.error('Failed to fetch categories:', error)
     return NextResponse.json(
@@ -30,6 +41,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -39,18 +52,16 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
-    const category = await prisma.category.create({
-      data: {
-        name: data.name,
-        slug: data.slug,
-        description: data.description || null,
-        icon: data.icon || null,
-        order: data.order || 0,
-        isActive: data.isActive ?? true,
-      },
+    const category = await Category.create({
+      name: data.name,
+      slug: data.slug,
+      description: data.description || null,
+      icon: data.icon || null,
+      order: data.order || 0,
+      isActive: data.isActive ?? true,
     })
 
-    return NextResponse.json(category)
+    return NextResponse.json({ ...category.toObject(), id: category._id })
   } catch (error) {
     console.error('Failed to create category:', error)
     return NextResponse.json(

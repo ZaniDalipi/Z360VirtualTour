@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { urgencyTiers } from '@/lib/booking-db'
+import connectDB from '@/lib/mongodb'
+import { UrgencyTier } from '@/lib/models'
 
 export async function GET() {
   const admin = await getAdminFromCookies()
@@ -10,7 +11,8 @@ export async function GET() {
   }
 
   try {
-    const tiers = urgencyTiers.findMany()
+    await connectDB()
+    const tiers = await UrgencyTier.find().sort({ order: 1 })
     return NextResponse.json(tiers)
   } catch (error) {
     console.error('Failed to fetch urgency tiers:', error)
@@ -29,9 +31,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    await connectDB()
     const data = await request.json()
 
-    const tier = urgencyTiers.create({
+    const tier = await UrgencyTier.create({
       name: data.name,
       displayName: data.displayName,
       description: data.description,

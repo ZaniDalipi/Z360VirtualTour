@@ -1,32 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { travelBundles } from '@/lib/booking-db'
+import connectDB from '@/lib/mongodb'
+import { TravelBundle } from '@/lib/models'
 
 // Public endpoint to get open bundles
 export async function GET(request: NextRequest) {
   try {
+    await connectDB()
+
     const { searchParams } = new URL(request.url)
     const city = searchParams.get('city')
 
-    let bundles = travelBundles.findMany({
-      where: { isActive: true, status: 'open' },
-    })
-
-    // Filter by city if provided
+    const query: Record<string, unknown> = { isActive: true, status: 'open' }
     if (city) {
-      bundles = bundles.filter(b =>
-        b.city.toLowerCase().includes(city.toLowerCase())
-      )
+      query.city = { $regex: city, $options: 'i' }
     }
 
+    const now = new Date()
     // Filter out bundles past registration deadline
-    const now = new Date().toISOString()
-    bundles = bundles.filter(b =>
-      !b.registrationDeadline || b.registrationDeadline > now
-    )
+    query.$or = [
+      { registrationDeadline: null },
+      { registrationDeadline: { $gt: now } }
+    ]
+
+    const bundles = await TravelBundle.find(query).sort({ scheduledDate: 1 })
 
     // Only return public-facing data
     return NextResponse.json(bundles.map(b => ({
-      id: b.id,
+      id: b._id,
       name: b.name,
       city: b.city,
       region: b.region,

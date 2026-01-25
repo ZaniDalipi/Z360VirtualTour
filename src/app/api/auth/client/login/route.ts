@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Client } from '@/lib/models'
 import bcrypt from 'bcryptjs'
 import { SignJWT } from 'jose'
 import { cookies } from 'next/headers'
@@ -8,6 +9,7 @@ const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET || 'your-secr
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
     const { email, password } = await request.json()
 
     if (!email || !password) {
@@ -18,9 +20,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find client by email
-    const client = await prisma.client.findUnique({
-      where: { email: email.toLowerCase() },
-    })
+    const client = await Client.findOne({ email: email.toLowerCase() })
 
     if (!client) {
       return NextResponse.json(
@@ -55,14 +55,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Update last login
-    await prisma.client.update({
-      where: { id: client.id },
-      data: { lastLoginAt: new Date() },
-    })
+    await Client.findByIdAndUpdate(client._id, { lastLoginAt: new Date() })
 
     // Generate JWT token
     const token = await new SignJWT({
-      id: client.id,
+      id: client._id.toString(),
       email: client.email,
       name: client.name,
       type: 'client',
@@ -85,7 +82,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       user: {
-        id: client.id,
+        id: client._id,
         email: client.email,
         name: client.name,
         company: client.company,

@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Admin } from '@/lib/models'
 import { signToken, checkRateLimit, recordLoginAttempt } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
+
     const { email, password } = await request.json()
 
     if (!email || !password) {
@@ -35,13 +38,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Find admin by email (case-insensitive)
-    const admin = await prisma.admin.findFirst({
-      where: {
-        email: {
-          equals: email,
-          mode: 'insensitive'
-        }
-      },
+    const admin = await Admin.findOne({
+      email: email.toLowerCase()
     })
 
     if (!admin) {
@@ -72,9 +70,12 @@ export async function POST(request: NextRequest) {
     // Record successful login
     recordLoginAttempt(rateLimitKey, true)
 
+    // Update last login time
+    await Admin.findByIdAndUpdate(admin._id, { lastLoginAt: new Date() })
+
     // Create JWT token
     const token = await signToken({
-      id: admin.id,
+      id: admin._id.toString(),
       email: admin.email,
       name: admin.name || undefined,
     })
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
     cookieStore.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict', // More secure than 'lax'
+      sameSite: 'strict',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     })
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       admin: {
-        id: admin.id,
+        id: admin._id.toString(),
         email: admin.email,
         name: admin.name,
       },

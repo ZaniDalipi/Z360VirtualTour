@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Quote } from '@/lib/models'
 import { getAdminFromCookies } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
+    await connectDB()
+
     // Check authentication
     const admin = await getAdminFromCookies()
     if (!admin) {
@@ -19,81 +22,70 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
 
     // Build filter
-    const where: Record<string, unknown> = {}
+    const filter: Record<string, unknown> = {}
 
     if (status && status !== 'all') {
-      where.status = status
+      filter.status = status
     }
 
     if (isRead === 'true') {
-      where.isRead = true
+      filter.isRead = true
     } else if (isRead === 'false') {
-      where.isRead = false
+      filter.isRead = false
     }
 
     if (search) {
-      where.OR = [
-        { quoteNumber: { contains: search } },
-        { guestName: { contains: search } },
-        { guestEmail: { contains: search } },
-        { propertyAddress: { contains: search } },
-        { propertyCity: { contains: search } },
+      filter.$or = [
+        { quoteNumber: { $regex: search, $options: 'i' } },
+        { guestName: { $regex: search, $options: 'i' } },
+        { guestEmail: { $regex: search, $options: 'i' } },
+        { propertyAddress: { $regex: search, $options: 'i' } },
+        { propertyCity: { $regex: search, $options: 'i' } },
       ]
     }
 
     // Get quotes with pagination
     const [quotes, total] = await Promise.all([
-      prisma.quote.findMany({
-        where,
-        include: {
-          client: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true,
-            },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      prisma.quote.count({ where }),
+      Quote.find(filter)
+        .populate('clientId', 'name email phone')
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit),
+      Quote.countDocuments(filter),
     ])
 
-    // Get status counts
-    const statusCounts = await prisma.quote.groupBy({
-      by: ['status'],
-      _count: { status: true },
-    })
+    // Get status counts using aggregation
+    const statusCounts = await Quote.aggregate([
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ])
 
-    const unreadCount = await prisma.quote.count({
-      where: { isRead: false },
-    })
+    const unreadCount = await Quote.countDocuments({ isRead: false })
 
     return NextResponse.json({
-      quotes: quotes.map((q) => ({
-        id: q.id,
-        quoteNumber: q.quoteNumber,
-        clientName: q.client?.name || q.guestName,
-        clientEmail: q.client?.email || q.guestEmail,
-        clientPhone: q.client?.phone || q.guestPhone,
-        company: q.client ? null : q.guestCompany,
-        propertyAddress: q.propertyAddress,
-        propertyCity: q.propertyCity,
-        propertyType: q.propertyType,
-        propertySize: q.propertySize,
-        preferredCallTime: q.preferredCallTime,
-        preferredCallDate: q.preferredCallDate,
-        callbackScheduled: q.callbackScheduled,
-        status: q.status,
-        estimatedPrice: q.estimatedPrice,
-        finalPrice: q.finalPrice,
-        isRead: q.isRead,
-        createdAt: q.createdAt,
-        hasAccount: !!q.client,
-      })),
+      quotes: quotes.map((q) => {
+        const client = q.clientId as { name?: string; email?: string; phone?: string } | null
+        return {
+          id: q._id,
+          quoteNumber: q.quoteNumber,
+          clientName: client?.name || q.guestName,
+          clientEmail: client?.email || q.guestEmail,
+          clientPhone: client?.phone || q.guestPhone,
+          company: client ? null : q.guestCompany,
+          propertyAddress: q.propertyAddress,
+          propertyCity: q.propertyCity,
+          propertyType: q.propertyType,
+          propertySize: q.propertySize,
+          preferredCallTime: q.preferredCallTime,
+          preferredCallDate: q.preferredCallDate,
+          callbackScheduled: q.callbackScheduled,
+          status: q.status,
+          estimatedPrice: q.estimatedPrice,
+          finalPrice: q.finalPrice,
+          isRead: q.isRead,
+          createdAt: q.createdAt,
+          hasAccount: !!client,
+        }
+      }),
       pagination: {
         page,
         limit,
@@ -104,7 +96,7 @@ export async function GET(request: NextRequest) {
         total,
         unread: unreadCount,
         byStatus: statusCounts.reduce(
-          (acc, s) => ({ ...acc, [s.status]: s._count.status }),
+          (acc, s) => ({ ...acc, [s._id]: s.count }),
           {} as Record<string, number>
         ),
       },

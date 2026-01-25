@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { ContactSubmission } from '@/lib/models'
 import { getAdminFromCookies } from '@/lib/auth'
 
 export async function GET() {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -10,11 +13,11 @@ export async function GET() {
   }
 
   try {
-    const messages = await prisma.contactSubmission.findMany({
-      orderBy: { createdAt: 'desc' },
-    })
+    const messages = await ContactSubmission.find().sort({ createdAt: -1 })
 
-    return NextResponse.json(messages)
+    return NextResponse.json(
+      messages.map((msg) => ({ ...msg.toObject(), id: msg._id }))
+    )
   } catch (error) {
     console.error('Failed to fetch messages:', error)
     return NextResponse.json(

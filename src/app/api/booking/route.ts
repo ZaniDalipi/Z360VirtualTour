@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { bookings, travelBundles, calculateQuote, getDistanceByCity } from '@/lib/booking-db'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Booking, TravelBundle, PricingPlan } from '@/lib/models'
+import { calculateQuote, getDistanceByCity } from '@/lib/quote-utils'
 
 // Send email notification for new booking
 async function sendBookingNotification(booking: {
@@ -155,6 +156,7 @@ async function sendBookingNotification(booking: {
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
     const data = await request.json()
 
     // Validate required fields
@@ -169,9 +171,7 @@ export async function POST(request: NextRequest) {
     let basePrice = 0
     let planName = ''
     if (data.pricingPlanId) {
-      const plan = await prisma.pricingPlan.findUnique({
-        where: { id: data.pricingPlanId },
-      })
+      const plan = await PricingPlan.findById(data.pricingPlanId)
       if (plan) {
         basePrice = plan.price
         planName = plan.name
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate quote
-    const quote = calculateQuote({
+    const quote = await calculateQuote({
       pricingPlanPrice: basePrice,
       urgencyTierId: data.urgencyTierId,
       distanceKm,
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
 
     // If joining a bundle, validate it
     if (data.travelBundleId) {
-      const bundle = travelBundles.findUnique(data.travelBundleId)
+      const bundle = await TravelBundle.findById(data.travelBundleId)
       if (!bundle) {
         return NextResponse.json(
           { error: 'Selected bundle not found' },
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create booking
-    const booking = bookings.create({
+    const booking = await Booking.create({
       clientName: data.clientName,
       clientEmail: data.clientEmail,
       clientPhone: data.clientPhone,
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
 
     // Send notification email (async, don't block the response)
     sendBookingNotification({
-      id: booking.id,
+      id: booking._id.toString(),
       clientName: data.clientName,
       clientEmail: data.clientEmail,
       clientPhone: data.clientPhone || null,
@@ -267,7 +267,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      bookingId: booking.id,
+      bookingId: booking._id,
       quote: {
         basePrice: quote.basePrice,
         urgencySurcharge: quote.urgencySurchargeAmount,

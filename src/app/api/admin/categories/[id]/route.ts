@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Category, Tour } from '@/lib/models'
 import { getAdminFromCookies } from '@/lib/auth'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -14,20 +17,20 @@ export async function GET(
 
   try {
     const { id } = await params
-    const category = await prisma.category.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { tours: true },
-        },
-      },
-    })
+    const category = await Category.findById(id)
 
     if (!category) {
       return NextResponse.json({ error: 'Category not found' }, { status: 404 })
     }
 
-    return NextResponse.json(category)
+    // Get tour count for this category
+    const tourCount = await Tour.countDocuments({ categoryId: id })
+
+    return NextResponse.json({
+      ...category.toObject(),
+      id: category._id,
+      _count: { tours: tourCount },
+    })
   } catch (error) {
     console.error('Failed to fetch category:', error)
     return NextResponse.json(
@@ -41,6 +44,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -53,11 +58,9 @@ export async function PUT(
 
     // Check if slug is unique (excluding current category)
     if (data.slug) {
-      const existingCategory = await prisma.category.findFirst({
-        where: {
-          slug: data.slug,
-          NOT: { id },
-        },
+      const existingCategory = await Category.findOne({
+        slug: data.slug,
+        _id: { $ne: id },
       })
 
       if (existingCategory) {
@@ -68,9 +71,9 @@ export async function PUT(
       }
     }
 
-    const category = await prisma.category.update({
-      where: { id },
-      data: {
+    const category = await Category.findByIdAndUpdate(
+      id,
+      {
         name: data.name,
         slug: data.slug,
         description: data.description || null,
@@ -78,9 +81,10 @@ export async function PUT(
         order: data.order || 0,
         isActive: data.isActive ?? true,
       },
-    })
+      { new: true }
+    )
 
-    return NextResponse.json(category)
+    return NextResponse.json({ ...category?.toObject(), id: category?._id })
   } catch (error) {
     console.error('Failed to update category:', error)
     return NextResponse.json(
@@ -94,6 +98,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -104,25 +110,16 @@ export async function DELETE(
     const { id } = await params
 
     // Check if category has tours
-    const category = await prisma.category.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { tours: true },
-        },
-      },
-    })
+    const tourCount = await Tour.countDocuments({ categoryId: id })
 
-    if (category?._count.tours > 0) {
+    if (tourCount > 0) {
       return NextResponse.json(
         { error: 'Cannot delete category with existing tours. Move or delete the tours first.' },
         { status: 400 }
       )
     }
 
-    await prisma.category.delete({
-      where: { id },
-    })
+    await Category.findByIdAndDelete(id)
 
     return NextResponse.json({ success: true })
   } catch (error) {

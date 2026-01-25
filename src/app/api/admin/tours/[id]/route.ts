@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Tour } from '@/lib/models'
 import { getAdminFromCookies } from '@/lib/auth'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -14,16 +17,17 @@ export async function GET(
 
   try {
     const { id } = await params
-    const tour = await prisma.tour.findUnique({
-      where: { id },
-      include: { category: true },
-    })
+    const tour = await Tour.findById(id).populate('categoryId')
 
     if (!tour) {
       return NextResponse.json({ error: 'Tour not found' }, { status: 404 })
     }
 
-    return NextResponse.json(tour)
+    return NextResponse.json({
+      ...tour.toObject(),
+      id: tour._id,
+      category: tour.categoryId,
+    })
   } catch (error) {
     console.error('Failed to fetch tour:', error)
     return NextResponse.json(
@@ -37,6 +41,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -48,11 +54,9 @@ export async function PUT(
     const data = await request.json()
 
     // Check if slug is unique (excluding current tour)
-    const existingTour = await prisma.tour.findFirst({
-      where: {
-        slug: data.slug,
-        NOT: { id },
-      },
+    const existingTour = await Tour.findOne({
+      slug: data.slug,
+      _id: { $ne: id },
     })
 
     if (existingTour) {
@@ -62,19 +66,23 @@ export async function PUT(
       )
     }
 
-    // Convert images array to JSON string if it's an array
-    let imagesJson = null
+    // Convert images array - MongoDB stores as array directly
+    let images: string[] | null = null
     if (data.images) {
       if (Array.isArray(data.images)) {
-        imagesJson = data.images.length > 0 ? JSON.stringify(data.images) : null
+        images = data.images.length > 0 ? data.images : null
       } else if (typeof data.images === 'string') {
-        imagesJson = data.images
+        try {
+          images = JSON.parse(data.images)
+        } catch {
+          images = null
+        }
       }
     }
 
-    const tour = await prisma.tour.update({
-      where: { id },
-      data: {
+    const tour = await Tour.findByIdAndUpdate(
+      id,
+      {
         title: data.title,
         slug: data.slug,
         description: data.description || null,
@@ -82,17 +90,21 @@ export async function PUT(
         clientName: data.clientName || null,
         location: data.location || null,
         coverImage: data.coverImage,
-        images: imagesJson,
+        images: images,
         tourUrl: data.tourUrl || null,
         tourEmbed: data.tourEmbed || null,
         categoryId: data.categoryId,
         featured: data.featured || false,
         isActive: data.isActive ?? true,
       },
-      include: { category: true },
-    })
+      { new: true }
+    ).populate('categoryId')
 
-    return NextResponse.json(tour)
+    return NextResponse.json({
+      ...tour?.toObject(),
+      id: tour?._id,
+      category: tour?.categoryId,
+    })
   } catch (error) {
     console.error('Failed to update tour:', error)
     return NextResponse.json(
@@ -106,6 +118,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -114,9 +128,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    await prisma.tour.delete({
-      where: { id },
-    })
+    await Tour.findByIdAndDelete(id)
 
     return NextResponse.json({ success: true })
   } catch (error) {

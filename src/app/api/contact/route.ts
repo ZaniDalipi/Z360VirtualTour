@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { ContactSubmission } from '@/lib/models'
 
 // Lazy load nodemailer to avoid issues
 async function sendEmailNotification(submission: {
@@ -94,6 +95,8 @@ async function sendEmailNotification(submission: {
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
+
     const data = await request.json()
 
     if (!data.name || !data.email || !data.message) {
@@ -104,15 +107,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Save to database
-    const submission = await prisma.contactSubmission.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        phone: data.phone || null,
-        company: data.company || null,
-        service: data.service || null,
-        message: data.message,
-      },
+    const submission = await ContactSubmission.create({
+      name: data.name,
+      email: data.email,
+      phone: data.phone || null,
+      company: data.company || null,
+      service: data.service || null,
+      message: data.message,
     })
 
     // Send email notification (async, don't block the response)
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      id: submission.id,
+      id: submission._id,
     })
   } catch (error) {
     console.error('Failed to submit contact form:', error)

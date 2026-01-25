@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Client } from '@/lib/models'
 import bcrypt from 'bcryptjs'
 import { resetPasswordSchema, validateInput, formatZodErrors, getFirstError } from '@/lib/validations'
 
 // Verify reset token
 export async function GET(request: NextRequest) {
   try {
+    await connectDB()
     const token = request.nextUrl.searchParams.get('token')
 
     if (!token) {
@@ -16,19 +18,10 @@ export async function GET(request: NextRequest) {
     }
 
     // Find client with valid token
-    const client = await prisma.client.findFirst({
-      where: {
-        passwordResetToken: token,
-        passwordResetExpires: {
-          gt: new Date(),
-        },
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-      },
-    })
+    const client = await Client.findOne({
+      passwordResetToken: token,
+      passwordResetExpires: { $gt: new Date() },
+    }).select('email name')
 
     if (!client) {
       return NextResponse.json(
@@ -53,6 +46,7 @@ export async function GET(request: NextRequest) {
 // Reset password
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
     const body = await request.json()
 
     // Validate input
@@ -70,13 +64,9 @@ export async function POST(request: NextRequest) {
     const { token, password } = validation.data
 
     // Find client with valid token
-    const client = await prisma.client.findFirst({
-      where: {
-        passwordResetToken: token,
-        passwordResetExpires: {
-          gt: new Date(),
-        },
-      },
+    const client = await Client.findOne({
+      passwordResetToken: token,
+      passwordResetExpires: { $gt: new Date() },
     })
 
     if (!client) {
@@ -90,13 +80,10 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Update password and clear reset token
-    await prisma.client.update({
-      where: { id: client.id },
-      data: {
-        password: hashedPassword,
-        passwordResetToken: null,
-        passwordResetExpires: null,
-      },
+    await Client.findByIdAndUpdate(client._id, {
+      password: hashedPassword,
+      passwordResetToken: null,
+      passwordResetExpires: null,
     })
 
     return NextResponse.json({

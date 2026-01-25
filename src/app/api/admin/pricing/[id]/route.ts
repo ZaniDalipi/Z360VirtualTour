@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { PricingPlan } from '@/lib/models'
 import { getAdminFromCookies } from '@/lib/auth'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -14,15 +17,13 @@ export async function GET(
 
   try {
     const { id } = await params
-    const plan = await prisma.pricingPlan.findUnique({
-      where: { id },
-    })
+    const plan = await PricingPlan.findById(id)
 
     if (!plan) {
       return NextResponse.json({ error: 'Plan not found' }, { status: 404 })
     }
 
-    return NextResponse.json(plan)
+    return NextResponse.json({ ...plan.toObject(), id: plan._id })
   } catch (error) {
     console.error('Failed to fetch pricing plan:', error)
     return NextResponse.json(
@@ -36,6 +37,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -46,14 +49,16 @@ export async function PUT(
     const { id } = await params
     const data = await request.json()
 
-    // Convert features array to JSON string
+    // Convert features - MongoDB stores as array, no need for JSON.stringify
     const features = Array.isArray(data.features)
-      ? JSON.stringify(data.features)
-      : data.features || '[]'
+      ? data.features
+      : typeof data.features === 'string'
+      ? JSON.parse(data.features)
+      : []
 
-    const plan = await prisma.pricingPlan.update({
-      where: { id },
-      data: {
+    const plan = await PricingPlan.findByIdAndUpdate(
+      id,
+      {
         name: data.name,
         description: data.description || '',
         price: parseFloat(data.price) || 0,
@@ -63,9 +68,10 @@ export async function PUT(
         isActive: data.isActive ?? true,
         order: data.order || 0,
       },
-    })
+      { new: true }
+    )
 
-    return NextResponse.json(plan)
+    return NextResponse.json({ ...plan?.toObject(), id: plan?._id })
   } catch (error) {
     console.error('Failed to update pricing plan:', error)
     return NextResponse.json(
@@ -79,6 +85,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -87,9 +95,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    await prisma.pricingPlan.delete({
-      where: { id },
-    })
+    await PricingPlan.findByIdAndDelete(id)
 
     return NextResponse.json({ success: true })
   } catch (error) {

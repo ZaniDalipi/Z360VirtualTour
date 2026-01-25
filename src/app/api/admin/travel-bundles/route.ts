@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { travelBundles } from '@/lib/booking-db'
+import connectDB from '@/lib/mongodb'
+import { TravelBundle } from '@/lib/models'
 
 export async function GET() {
   const admin = await getAdminFromCookies()
@@ -10,7 +11,8 @@ export async function GET() {
   }
 
   try {
-    const bundles = travelBundles.findMany()
+    await connectDB()
+    const bundles = await TravelBundle.find().sort({ scheduledDate: 1 })
     return NextResponse.json(bundles)
   } catch (error) {
     console.error('Failed to fetch travel bundles:', error)
@@ -29,9 +31,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    await connectDB()
     const data = await request.json()
 
-    const bundle = travelBundles.create({
+    const bundle = await TravelBundle.create({
       name: data.name,
       city: data.city,
       region: data.region,

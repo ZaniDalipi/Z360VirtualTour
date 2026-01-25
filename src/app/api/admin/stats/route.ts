@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Tour, Testimonial, ContactSubmission } from '@/lib/models'
 import { getAdminFromCookies } from '@/lib/auth'
 
 export async function GET() {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -16,29 +19,31 @@ export async function GET() {
       unreadMessages,
       tours,
     ] = await Promise.all([
-      prisma.tour.count(),
-      prisma.testimonial.count(),
-      prisma.contactSubmission.count({ where: { isRead: false } }),
-      prisma.tour.findMany({
-        take: 5,
-        orderBy: { createdAt: 'desc' },
-        include: { category: true },
-      }),
+      Tour.countDocuments(),
+      Testimonial.countDocuments(),
+      ContactSubmission.countDocuments({ isRead: false }),
+      Tour.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate('categoryId'),
     ])
 
-    const totalViews = tours.reduce((sum, tour) => sum + tour.views, 0)
+    const totalViews = tours.reduce((sum, tour) => sum + (tour.views || 0), 0)
 
     return NextResponse.json({
       totalTours,
       totalViews,
       totalTestimonials,
       unreadMessages,
-      recentTours: tours.map((tour) => ({
-        id: tour.id,
-        title: tour.title,
-        views: tour.views,
-        category: tour.category.name,
-      })),
+      recentTours: tours.map((tour) => {
+        const category = tour.categoryId as { name?: string } | null
+        return {
+          id: tour._id,
+          title: tour.title,
+          views: tour.views,
+          category: category?.name || 'Uncategorized',
+        }
+      }),
     })
   } catch (error) {
     console.error('Failed to fetch stats:', error)

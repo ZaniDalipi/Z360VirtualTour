@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { travelZones } from '@/lib/booking-db'
+import connectDB from '@/lib/mongodb'
+import { TravelZone } from '@/lib/models'
 
 export async function GET() {
   const admin = await getAdminFromCookies()
@@ -10,7 +11,8 @@ export async function GET() {
   }
 
   try {
-    const zones = travelZones.findMany()
+    await connectDB()
+    const zones = await TravelZone.find().sort({ order: 1 })
     return NextResponse.json(zones)
   } catch (error) {
     console.error('Failed to fetch travel zones:', error)
@@ -29,9 +31,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    await connectDB()
     const data = await request.json()
 
-    const zone = travelZones.create({
+    const zone = await TravelZone.create({
       name: data.name,
       description: data.description,
       minDistanceKm: parseFloat(data.minDistanceKm) || 0,

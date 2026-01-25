@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Testimonial } from '@/lib/models'
 import { getAdminFromCookies } from '@/lib/auth'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -14,15 +17,13 @@ export async function GET(
 
   try {
     const { id } = await params
-    const testimonial = await prisma.testimonial.findUnique({
-      where: { id },
-    })
+    const testimonial = await Testimonial.findById(id)
 
     if (!testimonial) {
       return NextResponse.json({ error: 'Testimonial not found' }, { status: 404 })
     }
 
-    return NextResponse.json(testimonial)
+    return NextResponse.json({ ...testimonial.toObject(), id: testimonial._id })
   } catch (error) {
     console.error('Failed to fetch testimonial:', error)
     return NextResponse.json(
@@ -36,6 +37,8 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -58,12 +61,9 @@ export async function PUT(
     if (data.featured !== undefined) updateData.featured = data.featured
     if (data.isActive !== undefined) updateData.isActive = data.isActive
 
-    const testimonial = await prisma.testimonial.update({
-      where: { id },
-      data: updateData,
-    })
+    const testimonial = await Testimonial.findByIdAndUpdate(id, updateData, { new: true })
 
-    return NextResponse.json(testimonial)
+    return NextResponse.json({ ...testimonial?.toObject(), id: testimonial?._id })
   } catch (error) {
     console.error('Failed to update testimonial:', error)
     return NextResponse.json(
@@ -77,6 +77,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  await connectDB()
+
   const admin = await getAdminFromCookies()
 
   if (!admin) {
@@ -85,9 +87,7 @@ export async function DELETE(
 
   try {
     const { id } = await params
-    await prisma.testimonial.delete({
-      where: { id },
-    })
+    await Testimonial.findByIdAndDelete(id)
 
     return NextResponse.json({ success: true })
   } catch (error) {

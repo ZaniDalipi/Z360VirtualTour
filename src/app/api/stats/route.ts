@@ -1,24 +1,23 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Tour, Category } from '@/lib/models'
 
 export async function GET() {
   try {
+    await connectDB()
+
     // Get total tours count
-    const totalTours = await prisma.tour.count({
-      where: { isActive: true },
-    })
+    const totalTours = await Tour.countDocuments({ isActive: true })
 
     // Get total categories count
-    const totalCategories = await prisma.category.count({
-      where: { isActive: true },
-    })
+    const totalCategories = await Category.countDocuments({ isActive: true })
 
-    // Get total views
-    const viewsResult = await prisma.tour.aggregate({
-      _sum: { views: true },
-      where: { isActive: true },
-    })
-    const totalViews = viewsResult._sum.views || 0
+    // Get total views using aggregation
+    const viewsResult = await Tour.aggregate([
+      { $match: { isActive: true } },
+      { $group: { _id: null, totalViews: { $sum: '$views' } } },
+    ])
+    const totalViews = viewsResult[0]?.totalViews || 0
 
     return NextResponse.json({
       totalTours,

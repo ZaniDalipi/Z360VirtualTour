@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAdminFromCookies } from '@/lib/auth'
-import { blockedDates } from '@/lib/booking-db'
+import connectDB from '@/lib/mongodb'
+import { BlockedDate } from '@/lib/models'
 
 export async function DELETE(
   request: NextRequest,
@@ -13,8 +14,9 @@ export async function DELETE(
   }
 
   try {
+    await connectDB()
     const { id } = await params
-    blockedDates.delete(id)
+    await BlockedDate.findByIdAndDelete(id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to delete blocked date:', error)

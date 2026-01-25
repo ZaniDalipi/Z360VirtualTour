@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Testimonial } from '@/lib/models'
 
 export async function GET() {
   try {
-    const testimonials = await prisma.testimonial.findMany({
-      where: { isActive: true },
-      orderBy: [
-        { featured: 'desc' },
-        { createdAt: 'desc' },
-      ],
-      take: 6,
-    })
+    await connectDB()
 
-    return NextResponse.json(testimonials)
+    const testimonials = await Testimonial.find({ isActive: true })
+      .sort({ featured: -1, createdAt: -1 })
+      .limit(6)
+
+    return NextResponse.json(
+      testimonials.map((t) => ({ ...t.toObject(), id: t._id }))
+    )
   } catch (error) {
     console.error('Failed to fetch testimonials:', error)
     return NextResponse.json([])
@@ -22,6 +22,8 @@ export async function GET() {
 // Public testimonial submission - requires admin approval
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
+
     const data = await request.json()
 
     // Basic validation
@@ -35,11 +37,9 @@ export async function POST(request: NextRequest) {
     // Rate limiting check - max 3 testimonials per email per day
     if (data.email) {
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
-      const recentSubmissions = await prisma.testimonial.count({
-        where: {
-          clientTitle: { contains: data.email },
-          createdAt: { gte: oneDayAgo },
-        },
+      const recentSubmissions = await Testimonial.countDocuments({
+        clientTitle: { $regex: data.email, $options: 'i' },
+        createdAt: { $gte: oneDayAgo },
       })
 
       if (recentSubmissions >= 3) {
@@ -51,21 +51,19 @@ export async function POST(request: NextRequest) {
     }
 
     // Create testimonial with isActive: false (requires admin approval)
-    const testimonial = await prisma.testimonial.create({
-      data: {
-        clientName: data.clientName,
-        clientTitle: data.clientTitle || (data.email ? `Email: ${data.email}` : null),
-        content: data.content,
-        rating: Math.min(5, Math.max(1, data.rating || 5)),
-        featured: false,
-        isActive: false, // Requires admin approval
-      },
+    const testimonial = await Testimonial.create({
+      clientName: data.clientName,
+      clientTitle: data.clientTitle || (data.email ? `Email: ${data.email}` : null),
+      content: data.content,
+      rating: Math.min(5, Math.max(1, data.rating || 5)),
+      featured: false,
+      isActive: false, // Requires admin approval
     })
 
     return NextResponse.json({
       success: true,
       message: 'Thank you! Your testimonial has been submitted and is pending approval.',
-      id: testimonial.id,
+      id: testimonial._id,
     })
   } catch (error) {
     console.error('Failed to submit testimonial:', error)

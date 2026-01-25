@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Client } from '@/lib/models'
 import bcrypt from 'bcryptjs'
 import { registerSchema, validateInput, formatZodErrors, getFirstError } from '@/lib/validations'
 import { generateToken, sendVerificationEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
     const body = await request.json()
 
     // Validate input
@@ -23,9 +25,7 @@ export async function POST(request: NextRequest) {
     const { name, email, password, phone, company } = validation.data
 
     // Check if client already exists
-    const existingClient = await prisma.client.findUnique({
-      where: { email: email.toLowerCase() },
-    })
+    const existingClient = await Client.findOne({ email: email.toLowerCase() })
 
     if (existingClient) {
       if (existingClient.isEmailVerified) {
@@ -40,16 +40,13 @@ export async function POST(request: NextRequest) {
       const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
       const hashedPassword = await bcrypt.hash(password, 12)
 
-      await prisma.client.update({
-        where: { id: existingClient.id },
-        data: {
-          name,
-          password: hashedPassword,
-          phone,
-          company,
-          emailVerifyToken: verifyToken,
-          emailVerifyExpires: verifyExpires,
-        },
+      await Client.findByIdAndUpdate(existingClient._id, {
+        name,
+        password: hashedPassword,
+        phone,
+        company,
+        emailVerifyToken: verifyToken,
+        emailVerifyExpires: verifyExpires,
       })
 
       // Send verification email
@@ -70,17 +67,15 @@ export async function POST(request: NextRequest) {
     const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
     // Create new client
-    await prisma.client.create({
-      data: {
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        name,
-        phone,
-        company,
-        emailVerifyToken: verifyToken,
-        emailVerifyExpires: verifyExpires,
-        isEmailVerified: false,
-      },
+    await Client.create({
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      name,
+      phone,
+      company,
+      emailVerifyToken: verifyToken,
+      emailVerifyExpires: verifyExpires,
+      isEmailVerified: false,
     })
 
     // Send verification email

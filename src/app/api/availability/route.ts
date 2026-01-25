@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { blockedDates, bookings, bookingSettings, urgencyTiers, travelBundles } from '@/lib/booking-db'
+import connectDB from '@/lib/mongodb'
+import { BlockedDate, Booking, BookingSettings, UrgencyTier, TravelBundle } from '@/lib/models'
 
 export async function GET(request: NextRequest) {
   try {
+    await connectDB()
+
     const { searchParams } = new URL(request.url)
     const month = searchParams.get('month') // Format: YYYY-MM
     const city = searchParams.get('city') // Optional: filter bundles by city
 
     // Get settings
-    const settings = bookingSettings.get()
+    const settings = await BookingSettings.findOne()
 
     // Calculate date range for the month
     let startDate: string
@@ -29,30 +32,25 @@ export async function GET(request: NextRequest) {
     }
 
     // Get blocked dates
-    const blocked = blockedDates.findMany({ startDate, endDate })
+    const blocked = await BlockedDate.find({
+      date: { $gte: startDate, $lte: endDate }
+    }).sort({ date: 1 })
 
     // Get confirmed bookings
-    const confirmedBookings = bookings.findMany({
-      where: { status: 'confirmed' },
-    }).filter(b => {
-      if (!b.confirmedDate) return false
-      return b.confirmedDate >= startDate && b.confirmedDate <= endDate
+    const confirmedBookings = await Booking.find({
+      status: 'confirmed',
+      confirmedDate: { $gte: startDate, $lte: endDate }
     })
 
     // Get urgency tiers for display
-    const tiers = urgencyTiers.findMany({ where: { isActive: true } })
+    const tiers = await UrgencyTier.find({ isActive: true }).sort({ order: 1 })
 
     // Get open bundles
-    let openBundles = travelBundles.findMany({
-      where: { isActive: true, status: 'open' },
-    })
-
-    // Filter by city if provided
+    const bundleQuery: Record<string, unknown> = { isActive: true, status: 'open' }
     if (city) {
-      openBundles = openBundles.filter(b =>
-        b.city.toLowerCase().includes(city.toLowerCase())
-      )
+      bundleQuery.city = { $regex: city, $options: 'i' }
     }
+    const openBundles = await TravelBundle.find(bundleQuery).sort({ scheduledDate: 1 })
 
     // Calculate minimum booking date based on settings
     const today = new Date()
@@ -64,11 +62,18 @@ export async function GET(request: NextRequest) {
     maxDate.setDate(maxDate.getDate() + (settings?.maxAdvanceBookingDays || 90))
 
     return NextResponse.json({
-      blockedDates: blocked.map(d => d.date.split('T')[0]),
-      bookedDates: confirmedBookings.map(b => b.confirmedDate?.split('T')[0]).filter(Boolean),
+      blockedDates: blocked.map(d => {
+        const dateStr = d.date instanceof Date ? d.date.toISOString() : String(d.date)
+        return dateStr.split('T')[0]
+      }),
+      bookedDates: confirmedBookings.map(b => {
+        if (!b.confirmedDate) return null
+        const dateStr = b.confirmedDate instanceof Date ? b.confirmedDate.toISOString() : String(b.confirmedDate)
+        return dateStr.split('T')[0]
+      }).filter(Boolean),
       urgencyTiers: tiers,
       bundles: openBundles.map(b => ({
-        id: b.id,
+        id: b._id,
         name: b.name,
         city: b.city,
         scheduledDate: b.scheduledDate,

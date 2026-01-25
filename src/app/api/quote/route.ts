@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Quote, QuoteStatusHistory, Client } from '@/lib/models'
 import { quoteRequestSchema, validateInput, formatZodErrors, getFirstError } from '@/lib/validations'
 import {
   sendQuoteReceivedEmail,
@@ -12,16 +13,9 @@ async function generateQuoteNumber(): Promise<string> {
   const prefix = `Q-${year}-`
 
   // Get the latest quote number for this year
-  const lastQuote = await prisma.quote.findFirst({
-    where: {
-      quoteNumber: {
-        startsWith: prefix,
-      },
-    },
-    orderBy: {
-      quoteNumber: 'desc',
-    },
-  })
+  const lastQuote = await Quote.findOne({
+    quoteNumber: { $regex: `^${prefix}` },
+  }).sort({ quoteNumber: -1 })
 
   let nextNumber = 1
   if (lastQuote) {
@@ -35,6 +29,8 @@ async function generateQuoteNumber(): Promise<string> {
 // Create new quote request
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
+
     const body = await request.json()
 
     // Validate input
@@ -53,12 +49,12 @@ export async function POST(request: NextRequest) {
 
     // Check if client exists (optional account linking)
     let clientId: string | null = null
-    const existingClient = await prisma.client.findUnique({
-      where: { email: data.email.toLowerCase() },
+    const existingClient = await Client.findOne({
+      email: data.email.toLowerCase(),
     })
 
     if (existingClient) {
-      clientId = existingClient.id
+      clientId = existingClient._id.toString()
     }
 
     // Generate quote number
@@ -71,35 +67,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Create quote
-    const quote = await prisma.quote.create({
-      data: {
-        quoteNumber,
-        clientId,
-        guestName: clientId ? null : data.name,
-        guestEmail: clientId ? null : data.email.toLowerCase(),
-        guestPhone: data.phone,
-        guestCompany: data.company,
-        propertyAddress: data.propertyAddress,
-        propertyCity: data.propertyCity,
-        propertyType: data.propertyType,
-        propertySize: data.propertySize,
-        projectDescription: data.projectDescription,
-        specialRequests: data.specialRequests,
-        pricingPlanId: data.pricingPlanId,
-        preferredCallTime: data.preferredCallTime,
-        preferredCallDate,
-        status: 'pending',
-      },
+    const quote = await Quote.create({
+      quoteNumber,
+      clientId: clientId || undefined,
+      guestName: clientId ? null : data.name,
+      guestEmail: clientId ? null : data.email.toLowerCase(),
+      guestPhone: data.phone,
+      guestCompany: data.company,
+      propertyAddress: data.propertyAddress,
+      propertyCity: data.propertyCity,
+      propertyType: data.propertyType,
+      propertySize: data.propertySize,
+      projectDescription: data.projectDescription,
+      specialRequests: data.specialRequests,
+      pricingPlanId: data.pricingPlanId || undefined,
+      preferredCallTime: data.preferredCallTime,
+      preferredCallDate,
+      status: 'pending',
     })
 
     // Create status history entry
-    await prisma.quoteStatusHistory.create({
-      data: {
-        quoteId: quote.id,
-        status: 'pending',
-        note: 'Quote request submitted',
-        changedBy: 'system',
-      },
+    await QuoteStatusHistory.create({
+      quoteId: quote._id,
+      status: 'pending',
+      note: 'Quote request submitted',
+      changedBy: 'system',
     })
 
     // Send confirmation email to client
@@ -141,6 +133,8 @@ export async function POST(request: NextRequest) {
 // Get quote by number (for tracking)
 export async function GET(request: NextRequest) {
   try {
+    await connectDB()
+
     const quoteNumber = request.nextUrl.searchParams.get('number')
     const email = request.nextUrl.searchParams.get('email')
 
@@ -152,17 +146,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Find quote
-    const quote = await prisma.quote.findUnique({
-      where: { quoteNumber },
-      include: {
-        client: {
-          select: {
-            email: true,
-            name: true,
-          },
-        },
-      },
-    })
+    const quote = await Quote.findOne({ quoteNumber }).populate('clientId', 'email name')
 
     if (!quote) {
       return NextResponse.json(
@@ -172,7 +156,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify email matches
-    const quoteEmail = quote.client?.email || quote.guestEmail
+    const client = quote.clientId as unknown as { email: string; name: string } | null
+    const quoteEmail = client?.email || quote.guestEmail
     if (quoteEmail?.toLowerCase() !== email.toLowerCase()) {
       return NextResponse.json(
         { error: 'Email does not match quote records' },
@@ -181,11 +166,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Get status history
-    const statusHistory = await prisma.quoteStatusHistory.findMany({
-      where: { quoteId: quote.id },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-    })
+    const statusHistory = await QuoteStatusHistory.find({ quoteId: quote._id })
+      .sort({ createdAt: -1 })
+      .limit(10)
 
     return NextResponse.json({
       quote: {

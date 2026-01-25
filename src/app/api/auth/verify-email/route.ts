@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Client } from '@/lib/models'
 import { sendWelcomeEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
     const { token } = await request.json()
 
     if (!token) {
@@ -14,13 +16,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Find client with this token
-    const client = await prisma.client.findFirst({
-      where: {
-        emailVerifyToken: token,
-        emailVerifyExpires: {
-          gt: new Date(),
-        },
-      },
+    const client = await Client.findOne({
+      emailVerifyToken: token,
+      emailVerifyExpires: { $gt: new Date() },
     })
 
     if (!client) {
@@ -31,13 +29,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Update client as verified
-    await prisma.client.update({
-      where: { id: client.id },
-      data: {
-        isEmailVerified: true,
-        emailVerifyToken: null,
-        emailVerifyExpires: null,
-      },
+    await Client.findByIdAndUpdate(client._id, {
+      isEmailVerified: true,
+      emailVerifyToken: null,
+      emailVerifyExpires: null,
     })
 
     // Send welcome email
@@ -59,6 +54,7 @@ export async function POST(request: NextRequest) {
 // Resend verification email
 export async function PUT(request: NextRequest) {
   try {
+    await connectDB()
     const { email } = await request.json()
 
     if (!email) {
@@ -68,9 +64,7 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    const client = await prisma.client.findUnique({
-      where: { email: email.toLowerCase() },
-    })
+    const client = await Client.findOne({ email: email.toLowerCase() })
 
     if (!client) {
       // Don't reveal if email exists
@@ -92,12 +86,9 @@ export async function PUT(request: NextRequest) {
     const verifyToken = generateToken(32)
     const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
-    await prisma.client.update({
-      where: { id: client.id },
-      data: {
-        emailVerifyToken: verifyToken,
-        emailVerifyExpires: verifyExpires,
-      },
+    await Client.findByIdAndUpdate(client._id, {
+      emailVerifyToken: verifyToken,
+      emailVerifyExpires: verifyExpires,
     })
 
     await sendVerificationEmail(client.email, client.name, verifyToken)

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Quote, QuoteStatusHistory } from '@/lib/models'
 import { getAdminFromCookies } from '@/lib/auth'
 import {
   sendCallbackScheduledEmail,
@@ -14,6 +15,8 @@ interface RouteParams {
 // Get single quote details
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    await connectDB()
+
     const admin = await getAdminFromCookies()
     if (!admin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -21,20 +24,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params
 
-    const quote = await prisma.quote.findUnique({
-      where: { id },
-      include: {
-        client: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            company: true,
-          },
-        },
-      },
-    })
+    const quote = await Quote.findById(id).populate('clientId', 'name email phone company')
 
     if (!quote) {
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 })
@@ -42,25 +32,22 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     // Mark as read
     if (!quote.isRead) {
-      await prisma.quote.update({
-        where: { id },
-        data: { isRead: true },
-      })
+      await Quote.findByIdAndUpdate(id, { isRead: true })
     }
 
     // Get status history
-    const statusHistory = await prisma.quoteStatusHistory.findMany({
-      where: { quoteId: id },
-      orderBy: { createdAt: 'desc' },
-    })
+    const statusHistory = await QuoteStatusHistory.find({ quoteId: id }).sort({ createdAt: -1 })
+
+    const client = quote.clientId as { name?: string; email?: string; phone?: string; company?: string } | null
 
     return NextResponse.json({
       quote: {
-        ...quote,
-        clientName: quote.client?.name || quote.guestName,
-        clientEmail: quote.client?.email || quote.guestEmail,
-        clientPhone: quote.client?.phone || quote.guestPhone,
-        clientCompany: quote.client?.company || quote.guestCompany,
+        ...quote.toObject(),
+        id: quote._id,
+        clientName: client?.name || quote.guestName,
+        clientEmail: client?.email || quote.guestEmail,
+        clientPhone: client?.phone || quote.guestPhone,
+        clientCompany: client?.company || quote.guestCompany,
       },
       statusHistory,
     })
@@ -76,6 +63,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // Update quote
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
+    await connectDB()
+
     const admin = await getAdminFromCookies()
     if (!admin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -84,35 +73,24 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const { id } = await params
     const body = await request.json()
 
-    const quote = await prisma.quote.findUnique({
-      where: { id },
-      include: {
-        client: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
-      },
-    })
+    const quote = await Quote.findById(id).populate('clientId', 'name email')
 
     if (!quote) {
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 })
     }
 
-    const clientName = quote.client?.name || quote.guestName || 'Client'
-    const clientEmail = quote.client?.email || quote.guestEmail
+    const client = quote.clientId as { name?: string; email?: string } | null
+    const clientName = client?.name || quote.guestName || 'Client'
+    const clientEmail = client?.email || quote.guestEmail
 
     // Handle status change
     if (body.status && body.status !== quote.status) {
       // Create status history entry
-      await prisma.quoteStatusHistory.create({
-        data: {
-          quoteId: id,
-          status: body.status,
-          note: body.statusNote || null,
-          changedBy: admin.id,
-        },
+      await QuoteStatusHistory.create({
+        quoteId: id,
+        status: body.status,
+        note: body.statusNote || null,
+        changedBy: admin.id,
       })
 
       // Send appropriate notification
@@ -176,10 +154,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (body.assignedTo !== undefined) updateData.assignedTo = body.assignedTo
 
     // Update quote
-    const updatedQuote = await prisma.quote.update({
-      where: { id },
-      data: updateData,
-    })
+    const updatedQuote = await Quote.findByIdAndUpdate(id, updateData, { new: true })
 
     return NextResponse.json({
       success: true,
@@ -197,6 +172,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 // Delete quote
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    await connectDB()
+
     const admin = await getAdminFromCookies()
     if (!admin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -205,14 +182,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const { id } = await params
 
     // Delete status history first
-    await prisma.quoteStatusHistory.deleteMany({
-      where: { quoteId: id },
-    })
+    await QuoteStatusHistory.deleteMany({ quoteId: id })
 
     // Delete quote
-    await prisma.quote.delete({
-      where: { id },
-    })
+    await Quote.findByIdAndDelete(id)
 
     return NextResponse.json({ success: true })
   } catch (error) {

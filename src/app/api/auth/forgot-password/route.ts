@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import connectDB from '@/lib/mongodb'
+import { Client } from '@/lib/models'
 import { forgotPasswordSchema, validateInput, getFirstError } from '@/lib/validations'
 import { generateToken, sendPasswordResetEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
+    await connectDB()
     const body = await request.json()
 
     // Validate input
@@ -19,9 +21,7 @@ export async function POST(request: NextRequest) {
     const { email } = validation.data
 
     // Find client by email
-    const client = await prisma.client.findUnique({
-      where: { email: email.toLowerCase() },
-    })
+    const client = await Client.findOne({ email: email.toLowerCase() })
 
     // Always return success to prevent email enumeration
     if (!client) {
@@ -36,12 +36,9 @@ export async function POST(request: NextRequest) {
     const resetExpires = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
 
     // Save token
-    await prisma.client.update({
-      where: { id: client.id },
-      data: {
-        passwordResetToken: resetToken,
-        passwordResetExpires: resetExpires,
-      },
+    await Client.findByIdAndUpdate(client._id, {
+      passwordResetToken: resetToken,
+      passwordResetExpires: resetExpires,
     })
 
     // Send reset email
