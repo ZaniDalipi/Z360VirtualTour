@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
-import { Menu, X, Home, Image, MessageSquare, CreditCard, Phone, FileText } from 'lucide-react'
+import { Menu, X, Home, Image, MessageSquare, CreditCard, Phone, FileText, User, LogIn } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const navLinks = [
@@ -86,8 +86,22 @@ export function PublicHeader() {
               })}
             </nav>
 
-            {/* CTA Button - Desktop */}
+            {/* CTA Buttons - Desktop */}
             <div className="hidden lg:flex items-center gap-3">
+              <Link
+                href="/login"
+                className="flex items-center gap-2 px-4 py-2 text-cream hover:text-gold text-sm font-medium transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="flex items-center gap-2 px-4 py-2 border border-cream/20 text-cream hover:border-gold hover:text-gold rounded-lg text-sm font-medium transition-all"
+              >
+                <User className="w-4 h-4" />
+                Register
+              </Link>
               <Link
                 href="/quote"
                 className="flex items-center gap-2 px-5 py-2.5 bg-gold text-navy-dark rounded-lg font-semibold text-sm hover:bg-gold-soft transition-all hover:shadow-lg hover:shadow-gold/20"
@@ -195,12 +209,46 @@ export function PublicHeader() {
                 })}
               </nav>
 
+              {/* Auth Links */}
+              <div className="p-4 border-t border-cream/10">
+                <div className="flex gap-3">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25 }}
+                    className="flex-1"
+                  >
+                    <Link
+                      href="/login"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-3 border border-cream/20 text-cream rounded-xl font-medium hover:border-gold hover:text-gold transition-all"
+                    >
+                      <LogIn className="w-5 h-5" />
+                      Login
+                    </Link>
+                  </motion.div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="flex-1"
+                  >
+                    <Link
+                      href="/register"
+                      className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-navy-light text-cream rounded-xl font-medium hover:bg-navy-medium transition-all"
+                    >
+                      <User className="w-5 h-5" />
+                      Register
+                    </Link>
+                  </motion.div>
+                </div>
+              </div>
+
               {/* CTA */}
-              <div className="p-4 mt-4">
+              <div className="p-4">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
+                  transition={{ delay: 0.35 }}
                 >
                   <Link
                     href="/quote"
