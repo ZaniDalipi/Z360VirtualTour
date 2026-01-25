@@ -386,9 +386,12 @@ export interface IBooking extends Document {
   pricingPlanId?: mongoose.Types.ObjectId
   urgencyTierId?: mongoose.Types.ObjectId
   preferredDate?: Date
+  preferredTime?: string
   alternateDate?: Date
+  alternateTime?: string
   deadlineDate?: Date
   confirmedDate?: Date
+  confirmedTime?: string
   isFlexible: boolean
   travelZoneId?: mongoose.Types.ObjectId
   travelBundleId?: mongoose.Types.ObjectId
@@ -400,11 +403,15 @@ export interface IBooking extends Document {
   depositAmount?: number
   depositPaid: boolean
   internalNotes?: string
+  workNotes?: string
   status: string
   isRead: boolean
   quoteSentAt?: Date
   confirmedAt?: Date
   completedAt?: Date
+  workStartedAt?: Date
+  workEndedAt?: Date
+  workDurationMinutes?: number
   createdAt: Date
   updatedAt: Date
 }
@@ -424,9 +431,12 @@ const BookingSchema = new Schema<IBooking>(
     pricingPlanId: { type: Schema.Types.ObjectId, ref: 'PricingPlan' },
     urgencyTierId: { type: Schema.Types.ObjectId, ref: 'UrgencyTier' },
     preferredDate: { type: Date },
+    preferredTime: { type: String },
     alternateDate: { type: Date },
+    alternateTime: { type: String },
     deadlineDate: { type: Date },
     confirmedDate: { type: Date },
+    confirmedTime: { type: String },
     isFlexible: { type: Boolean, default: true },
     travelZoneId: { type: Schema.Types.ObjectId, ref: 'TravelZone' },
     travelBundleId: { type: Schema.Types.ObjectId, ref: 'TravelBundle' },
@@ -438,11 +448,15 @@ const BookingSchema = new Schema<IBooking>(
     depositAmount: { type: Number },
     depositPaid: { type: Boolean, default: false },
     internalNotes: { type: String },
+    workNotes: { type: String },
     status: { type: String, default: 'quote_requested' },
     isRead: { type: Boolean, default: false },
     quoteSentAt: { type: Date },
     confirmedAt: { type: Date },
     completedAt: { type: Date },
+    workStartedAt: { type: Date },
+    workEndedAt: { type: Date },
+    workDurationMinutes: { type: Number },
   },
   { timestamps: true }
 )

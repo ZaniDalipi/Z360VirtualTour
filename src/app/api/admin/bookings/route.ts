@@ -28,12 +28,19 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .skip(offset ? parseInt(offset) : 0)
       .limit(limit ? parseInt(limit) : 100)
+      .lean()
 
     const total = await Booking.countDocuments(query)
     const unreadCount = await Booking.countDocuments({ isRead: false })
 
+    // Map MongoDB _id to id for frontend compatibility
+    const bookingsWithId = allBookings.map(booking => ({
+      ...booking,
+      id: booking._id.toString(),
+    }))
+
     return NextResponse.json({
-      bookings: allBookings,
+      bookings: bookingsWithId,
       total,
       unreadCount,
     })

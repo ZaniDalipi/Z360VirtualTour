@@ -67,9 +67,11 @@ export async function PUT(
       'clientName', 'clientEmail', 'clientPhone', 'companyName',
       'propertyAddress', 'propertyCity', 'serviceType', 'projectDescription',
       'specialRequests', 'pricingPlanId', 'urgencyTierId', 'preferredDate',
-      'alternateDate', 'deadlineDate', 'confirmedDate', 'isFlexible',
-      'travelZoneId', 'travelBundleId', 'internalNotes', 'status',
-      'isRead', 'depositPaid', 'quoteSentAt', 'confirmedAt', 'completedAt'
+      'preferredTime', 'alternateDate', 'alternateTime', 'deadlineDate',
+      'confirmedDate', 'confirmedTime', 'isFlexible', 'travelZoneId',
+      'travelBundleId', 'internalNotes', 'workNotes', 'status',
+      'isRead', 'depositPaid', 'quoteSentAt', 'confirmedAt', 'completedAt',
+      'workStartedAt', 'workEndedAt'
     ]
 
     for (const field of fields) {
@@ -79,10 +81,29 @@ export async function PUT(
     }
 
     // Handle numeric fields
-    const numericFields = ['estimatedDistance', 'basePrice', 'urgencySurcharge', 'travelFee', 'bundleDiscount', 'totalQuote', 'depositAmount']
+    const numericFields = ['estimatedDistance', 'basePrice', 'urgencySurcharge', 'travelFee', 'bundleDiscount', 'totalQuote', 'depositAmount', 'workDurationMinutes']
     for (const field of numericFields) {
       if (data[field] !== undefined) {
         updateData[field] = data[field] !== null ? parseFloat(data[field]) : null
+      }
+    }
+
+    // Handle work timer status changes
+    if (data.status === 'in_progress' && existingBooking?.status !== 'in_progress') {
+      // Starting work - record start time
+      updateData.workStartedAt = new Date()
+    }
+
+    if (data.status === 'completed' && existingBooking?.status === 'in_progress') {
+      // Completing work - record end time and calculate duration
+      const workEndedAt = new Date()
+      updateData.workEndedAt = workEndedAt
+      updateData.completedAt = workEndedAt
+
+      if (existingBooking.workStartedAt) {
+        const startTime = new Date(existingBooking.workStartedAt).getTime()
+        const endTime = workEndedAt.getTime()
+        updateData.workDurationMinutes = Math.floor((endTime - startTime) / 60000)
       }
     }
 
