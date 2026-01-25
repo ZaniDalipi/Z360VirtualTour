@@ -16,8 +16,8 @@ const navItems = [
 export function MobileNav() {
   const pathname = usePathname()
 
-  // Don't show on admin pages
-  if (pathname.startsWith('/admin')) return null
+  // Don't show on admin pages or while pathname is loading
+  if (!pathname || pathname.startsWith('/admin')) return null
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-navy-dark/95 backdrop-blur-md border-t border-cream/10">
