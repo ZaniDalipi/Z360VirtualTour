@@ -229,7 +229,7 @@ export default function ContactPage() {
       <PublicHeader />
 
       {/* Hero */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
+      <section className="relative py-10 sm:py-16 md:py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-radial opacity-30" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -237,21 +237,21 @@ export default function ContactPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h1 className="text-display font-bold text-cream mb-6">
+            <h1 className="text-h1 sm:text-display font-bold text-cream mb-4 sm:mb-6">
               Book Your <span className="text-gold">Virtual Tour</span>
             </h1>
-            <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+            <p className="text-body sm:text-body-lg text-cream-muted max-w-2xl mx-auto">
               Get an instant quote and schedule your professional 360° virtual tour.
-              Fill in the details below and we'll get back to you within 24 hours.
+              Fill in the details below and we&apos;ll get back to you within 24 hours.
             </p>
           </motion.div>
         </div>
       </section>
 
       {/* Booking Form & Info */}
-      <section className="py-8 pb-20">
+      <section className="py-6 sm:py-8 pb-12 sm:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-5 gap-12">
+          <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
             {/* Contact Info & Quote Preview */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -355,25 +355,27 @@ export default function ContactPage() {
               )}
 
               {/* Contact Info */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-cream">Contact Information</h3>
-                {contactInfo.map((info) => {
-                  const Icon = info.icon
-                  return (
-                    <Card key={info.label} className="p-4">
-                      <div className="flex items-start gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center flex-shrink-0">
-                          <Icon className="w-5 h-5 text-gold" />
+              <div>
+                <h3 className="text-lg font-semibold text-cream mb-4">Contact Information</h3>
+                <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4">
+                  {contactInfo.map((info) => {
+                    const Icon = info.icon
+                    return (
+                      <Card key={info.label} className="p-3 sm:p-4">
+                        <div className="flex flex-col sm:flex-row items-start gap-2 sm:gap-4">
+                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gold/10 flex items-center justify-center flex-shrink-0">
+                            <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-gold" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs text-cream-muted">{info.label}</p>
+                            <p className="text-sm font-semibold text-cream break-words">{info.value}</p>
+                            <p className="text-xs text-cream-muted hidden sm:block">{info.subtext}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-xs text-cream-muted">{info.label}</p>
-                          <p className="text-sm font-semibold text-cream">{info.value}</p>
-                          <p className="text-xs text-cream-muted">{info.subtext}</p>
-                        </div>
-                      </div>
-                    </Card>
-                  )
-                })}
+                      </Card>
+                    )
+                  })}
+                </div>
               </div>
             </motion.div>
 
@@ -384,7 +386,7 @@ export default function ContactPage() {
               transition={{ delay: 0.1 }}
               className="lg:col-span-3"
             >
-              <Card className="p-8">
+              <Card className="p-4 sm:p-6 md:p-8">
                 {isSubmitted ? (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -668,9 +670,9 @@ export default function ContactPage() {
                         onChange={handleChange}
                         placeholder="Describe your space, number of rooms, any specific requirements..."
                         rows={4}
-                        className="w-full px-4 py-3 rounded-xl bg-navy border border-gold/20 text-cream
-                                   placeholder:text-cream-muted focus:outline-none focus:ring-2
-                                   focus:ring-gold/50 focus:border-gold/50 resize-none"
+                        className="w-full px-4 py-3 rounded-md bg-navy-medium border border-cream/15 text-cream
+                                   placeholder:text-cream-dim focus:outline-none focus:border-gold
+                                   focus:ring-1 focus:ring-gold/50 transition-all duration-200 resize-none"
                       />
                     </div>
 

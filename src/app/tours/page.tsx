@@ -182,17 +182,17 @@ export default function ToursPage() {
       <PublicHeader />
 
       {/* Hero */}
-      <section className="bg-navy-dark py-16 md:py-24">
+      <section className="bg-navy-dark py-10 sm:py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <h1 className="text-display font-bold text-cream mb-4">
+            <h1 className="text-h1 sm:text-display font-bold text-cream mb-3 sm:mb-4">
               Our Portfolio
             </h1>
-            <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+            <p className="text-body sm:text-body-lg text-cream-muted max-w-2xl mx-auto">
               Explore our collection of immersive 360° virtual tours across various industries
             </p>
           </motion.div>
@@ -200,9 +200,9 @@ export default function ToursPage() {
       </section>
 
       {/* Filters */}
-      <section className="sticky top-16 md:top-20 z-30 bg-navy border-b border-gold/10 py-4">
+      <section className="sticky top-16 z-30 bg-navy/95 backdrop-blur-md border-b border-gold/10 py-3 sm:py-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex flex-col md:flex-row md:items-center gap-3 sm:gap-4">
             {/* Search */}
             <div className="flex-1 max-w-md">
               <Input
@@ -213,46 +213,48 @@ export default function ToursPage() {
               />
             </div>
 
-            {/* Categories */}
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 md:pb-0">
-              {categories.map((category) => (
-                <Chip
-                  key={category.id}
-                  active={activeCategory === category.slug}
-                  onClick={() => handleCategoryChange(category.slug)}
-                >
-                  {category.name}
-                </Chip>
-              ))}
-            </div>
+            {/* Categories + View Toggle row */}
+            <div className="flex items-center gap-3">
+              <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1 md:pb-0 flex-1 min-w-0">
+                {categories.map((category) => (
+                  <Chip
+                    key={category.id}
+                    active={activeCategory === category.slug}
+                    onClick={() => handleCategoryChange(category.slug)}
+                  >
+                    {category.name}
+                  </Chip>
+                ))}
+              </div>
 
-            {/* View Toggle */}
-            <div className="hidden md:flex border border-cream/15 rounded-md overflow-hidden">
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-gold text-navy' : 'text-cream-muted hover:bg-cream/5'}`}
-              >
-                <Grid className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-gold text-navy' : 'text-cream-muted hover:bg-cream/5'}`}
-              >
-                <List className="w-5 h-5" />
-              </button>
+              {/* View Toggle */}
+              <div className="hidden md:flex border border-cream/15 rounded-md overflow-hidden flex-shrink-0">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-2 transition-colors ${viewMode === 'grid' ? 'bg-gold text-navy' : 'text-cream-muted hover:bg-cream/5'}`}
+                >
+                  <Grid className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-2 transition-colors ${viewMode === 'list' ? 'bg-gold text-navy' : 'text-cream-muted hover:bg-cream/5'}`}
+                >
+                  <List className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Tours Grid */}
-      <section className="py-12">
+      <section className="py-8 sm:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-body text-cream-muted mb-6">
+          <p className="text-body text-cream-muted mb-4 sm:mb-6">
             {filteredTours.length} tour{filteredTours.length !== 1 ? 's' : ''} found
           </p>
 
-          <div className={`grid gap-8 ${viewMode === 'grid' ? 'md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+          <div className={`grid gap-4 sm:gap-6 lg:gap-8 ${viewMode === 'grid' ? 'sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
             {filteredTours.map((tour, index) => (
               <motion.div
                 key={tour.id}
@@ -263,13 +265,13 @@ export default function ToursPage() {
                 className="group"
               >
                 <Link href={tour.slug === 'placeholder' ? '/admin' : `/tour/${tour.slug}`}>
-                  <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
+                  <div className={`relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-navy-medium to-navy-dark border border-gold/10
                                    group-hover:border-gold/40 transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-gold/10
-                                   ${viewMode === 'list' ? 'flex' : ''}`}>
+                                   ${viewMode === 'list' ? 'sm:flex' : ''}`}>
 
                     {/* Image Container */}
-                    <div className={`relative overflow-hidden ${viewMode === 'list' ? 'w-72 flex-shrink-0' : 'h-64'}`}>
-                      <div className={viewMode === 'list' ? 'h-full' : 'h-full'}>
+                    <div className={`relative overflow-hidden ${viewMode === 'list' ? 'h-48 sm:h-auto sm:w-48 md:w-64 lg:w-72 sm:flex-shrink-0' : 'h-48 sm:h-64'}`}>
+                      <div className="h-full">
                         <Image
                           src={tour.coverImage}
                           alt={tour.title}
@@ -389,16 +391,16 @@ export default function ToursPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-16 bg-navy-dark">
+      <section className="py-12 sm:py-16 bg-navy-dark">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-h1 font-bold text-cream mb-4">
+          <h2 className="text-h2 sm:text-h1 font-bold text-cream mb-3 sm:mb-4">
             Want Your Space Featured?
           </h2>
-          <p className="text-body-lg text-cream-muted mb-8">
-            Let's create an immersive virtual tour for your business
+          <p className="text-body sm:text-body-lg text-cream-muted mb-6 sm:mb-8">
+            Let&apos;s create an immersive virtual tour for your business
           </p>
-          <Link href="/contact">
-            <Button size="lg">Get a Free Quote</Button>
+          <Link href="/contact" className="inline-block w-full sm:w-auto">
+            <Button size="lg" className="w-full sm:w-auto">Get a Free Quote</Button>
           </Link>
         </div>
       </section>

@@ -117,7 +117,7 @@ export function TourViewer({ rooms, initialRoom, onRoomChange }: TourViewerProps
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full overflow-hidden bg-navy-dark cursor-grab active:cursor-grabbing select-none"
+      className="relative w-full h-full overflow-hidden bg-navy-dark cursor-grab active:cursor-grabbing select-none touch-none"
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
     >
@@ -191,25 +191,25 @@ export function TourViewer({ rooms, initialRoom, onRoomChange }: TourViewerProps
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className="absolute bottom-24 left-4 right-4 z-20"
+            className="absolute bottom-16 sm:bottom-24 left-2 right-2 sm:left-4 sm:right-4 z-20 max-w-lg mx-auto"
           >
-            <div className="bg-navy-dark/95 backdrop-blur-xl border border-gold/20 rounded-xl p-4">
+            <div className="bg-navy-dark/95 backdrop-blur-xl border border-gold/20 rounded-xl p-3 sm:p-4">
               <div className="flex items-start justify-between mb-2">
-                <h3 className="text-h4 font-semibold text-cream">{activeHotspot.label}</h3>
+                <h3 className="text-body-lg sm:text-h4 font-semibold text-cream">{activeHotspot.label}</h3>
                 <button
                   onClick={() => setActiveHotspot(null)}
-                  className="p-1 text-cream-muted hover:text-cream"
+                  className="p-1.5 text-cream-muted hover:text-cream -mr-1"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
               {activeHotspot.description && (
-                <p className="text-body text-cream-soft">{activeHotspot.description}</p>
+                <p className="text-caption sm:text-body text-cream-soft">{activeHotspot.description}</p>
               )}
               {activeHotspot.type === 'navigation' && activeHotspot.target && (
                 <button
                   onClick={() => navigateToRoom(activeHotspot.target!)}
-                  className="mt-3 w-full bg-gold text-navy font-medium py-2 rounded-lg hover:bg-gold-soft transition-colors"
+                  className="mt-3 w-full bg-gold text-navy font-medium py-2.5 rounded-lg hover:bg-gold-soft transition-colors text-sm"
                 >
                   Go to {activeHotspot.label}
                 </button>
@@ -220,16 +220,17 @@ export function TourViewer({ rooms, initialRoom, onRoomChange }: TourViewerProps
       </AnimatePresence>
 
       {/* Compass / Rotation Indicator */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-        <div className="bg-navy-dark/60 backdrop-blur-sm rounded-full px-4 py-2 text-cream text-caption">
+      <div className="absolute top-3 sm:top-4 left-1/2 -translate-x-1/2 z-10">
+        <div className="bg-navy-dark/60 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-cream text-caption">
           {Math.round(rotation.y % 360)}°
         </div>
       </div>
 
       {/* Instructions */}
-      <div className="absolute top-4 right-4 z-10">
-        <div className="bg-navy-dark/60 backdrop-blur-sm rounded-lg px-3 py-2 text-cream-muted text-caption">
-          Drag to look around
+      <div className="absolute top-3 sm:top-4 right-2 sm:right-4 z-10">
+        <div className="bg-navy-dark/60 backdrop-blur-sm rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-cream-muted text-overline sm:text-caption">
+          <span className="hidden sm:inline">Drag to look around</span>
+          <span className="sm:hidden">Swipe to explore</span>
         </div>
       </div>
     </div>

@@ -120,37 +120,37 @@ export default function HomePage() {
           }}
         />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-32">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24 lg:py-32">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-4 py-2 mb-6">
+              <div className="inline-flex items-center gap-2 bg-gold/10 border border-gold/30 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-4 sm:mb-6">
                 <Eye className="w-4 h-4 text-gold" />
                 <span className="text-caption text-gold">Professional 360° Virtual Tours</span>
               </div>
 
-              <h1 className="text-display-xl md:text-[64px] font-bold text-cream leading-tight mb-6">
+              <h1 className="text-[32px] sm:text-display-xl md:text-[56px] lg:text-[64px] font-bold text-cream leading-tight mb-4 sm:mb-6">
                 Bring Your Space
                 <span className="text-gold"> to Life</span>
               </h1>
 
-              <p className="text-body-lg text-cream-soft mb-8 max-w-xl">
+              <p className="text-body sm:text-body-lg text-cream-soft mb-6 sm:mb-8 max-w-xl">
                 Immersive 360° virtual tours for real estate, businesses, hospitality, and more.
                 Captivate your audience and showcase every detail of your space.
               </p>
 
-              <div className="flex flex-wrap gap-4">
-                <Link href="/tours">
-                  <Button size="lg" className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
+                <Link href="/tours" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto flex items-center justify-center gap-2">
                     <Play className="w-5 h-5" />
                     View Portfolio
                   </Button>
                 </Link>
-                <Link href="/contact">
-                  <Button variant="secondary" size="lg">
+                <Link href="/contact" className="w-full sm:w-auto">
+                  <Button variant="secondary" size="lg" className="w-full sm:w-auto">
                     Get a Free Quote
                   </Button>
                 </Link>
@@ -158,22 +158,22 @@ export default function HomePage() {
 
               {/* Dynamic Stats */}
               {(stats.totalTours > 0 || stats.totalViews > 0) && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 mt-12 pt-8 border-t border-gold/10">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-gold/10">
                   {stats.totalTours > 0 && (
                     <div>
-                      <p className="text-h2 font-bold text-gold">{stats.totalTours}</p>
+                      <p className="text-h3 sm:text-h2 font-bold text-gold">{stats.totalTours}</p>
                       <p className="text-caption text-cream-muted">Tours Created</p>
                     </div>
                   )}
                   {categories.length > 0 && (
                     <div>
-                      <p className="text-h2 font-bold text-gold">{categories.length}</p>
+                      <p className="text-h3 sm:text-h2 font-bold text-gold">{categories.length}</p>
                       <p className="text-caption text-cream-muted">Categories</p>
                     </div>
                   )}
                   {stats.totalViews > 0 && (
                     <div>
-                      <p className="text-h2 font-bold text-gold">{stats.totalViews.toLocaleString()}</p>
+                      <p className="text-h3 sm:text-h2 font-bold text-gold">{stats.totalViews.toLocaleString()}</p>
                       <p className="text-caption text-cream-muted">Total Views</p>
                     </div>
                   )}
@@ -181,12 +181,12 @@ export default function HomePage() {
               )}
             </motion.div>
 
-            {/* Hero Carousel */}
+            {/* Hero Carousel - visible on all screen sizes */}
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative hidden lg:block"
+              className="relative mt-4 lg:mt-0"
             >
               <FeaturedCarousel tours={tours} />
             </motion.div>
@@ -196,23 +196,23 @@ export default function HomePage() {
 
       {/* Categories Section - Only show if categories exist */}
       {categories.length > 0 && (
-        <section className="py-20 bg-navy-dark">
+        <section className="py-12 sm:py-16 md:py-20 bg-navy-dark">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-12"
+              className="text-center mb-8 sm:mb-12"
             >
-              <h2 className="text-display font-bold text-cream mb-4">
+              <h2 className="text-h1 sm:text-display font-bold text-cream mb-3 sm:mb-4">
                 Industries We Serve
               </h2>
-              <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
+              <p className="text-body sm:text-body-lg text-cream-muted max-w-2xl mx-auto">
                 From real estate to hospitality, we create stunning virtual experiences for every industry
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
               {categories.map((category, index) => {
                 const Icon = categoryIcons[category.slug] || Home
                 return (
@@ -242,28 +242,28 @@ export default function HomePage() {
 
       {/* Featured Tours Section - Only show if tours exist */}
       {tours.length > 0 && (
-        <section className="py-20">
+        <section className="py-12 sm:py-16 md:py-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="flex items-end justify-between mb-12"
+              className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8 sm:mb-12"
             >
               <div>
-                <h2 className="text-display font-bold text-cream mb-4">
+                <h2 className="text-h1 sm:text-display font-bold text-cream mb-3 sm:mb-4">
                   Featured Tours
                 </h2>
-                <p className="text-body-lg text-cream-muted max-w-xl">
+                <p className="text-body sm:text-body-lg text-cream-muted max-w-xl">
                   Explore some of our recent projects and see the quality we deliver
                 </p>
               </div>
-              <Link href="/tours" className="hidden md:flex items-center gap-2 text-gold hover:text-gold-soft transition-colors">
+              <Link href="/tours" className="hidden md:flex items-center gap-2 text-gold hover:text-gold-soft transition-colors flex-shrink-0">
                 View All <ArrowRight className="w-5 h-5" />
               </Link>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {tours.map((tour, index) => (
                 <motion.div
                   key={tour.id}
@@ -367,23 +367,23 @@ export default function HomePage() {
 
       {/* Testimonials Section - Only show if testimonials exist */}
       {testimonials.length > 0 && (
-        <section className="py-20 bg-navy-dark">
+        <section className="py-12 sm:py-16 md:py-20 bg-navy-dark">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-12"
+              className="text-center mb-8 sm:mb-12"
             >
-              <h2 className="text-display font-bold text-cream mb-4">
+              <h2 className="text-h1 sm:text-display font-bold text-cream mb-3 sm:mb-4">
                 What Our Clients Say
               </h2>
-              <p className="text-body-lg text-cream-muted max-w-2xl mx-auto">
-                Don't just take our word for it - hear from businesses we've helped
+              <p className="text-body sm:text-body-lg text-cream-muted max-w-2xl mx-auto">
+                Don&apos;t just take our word for it - hear from businesses we&apos;ve helped
               </p>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
               {testimonials.map((testimonial, index) => (
                 <motion.div
                   key={testimonial.id}
@@ -417,26 +417,26 @@ export default function HomePage() {
       )}
 
       {/* CTA Section */}
-      <section className="py-20">
+      <section className="py-12 sm:py-16 md:py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <Card className="p-8 md:p-12 text-center bg-gradient-to-br from-navy-medium to-navy-dark border-gold/20">
-              <h2 className="text-display font-bold text-cream mb-4">
+            <Card className="p-6 sm:p-8 md:p-12 text-center bg-gradient-to-br from-navy-medium to-navy-dark border-gold/20">
+              <h2 className="text-h1 sm:text-display font-bold text-cream mb-3 sm:mb-4">
                 Ready to Showcase Your Space?
               </h2>
-              <p className="text-body-lg text-cream-muted mb-8 max-w-xl mx-auto">
-                Let's create an immersive virtual tour that captivates your audience and drives results.
+              <p className="text-body sm:text-body-lg text-cream-muted mb-6 sm:mb-8 max-w-xl mx-auto">
+                Let&apos;s create an immersive virtual tour that captivates your audience and drives results.
               </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Link href="/contact">
-                  <Button size="lg">Get Started Today</Button>
+              <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-4">
+                <Link href="/contact" className="w-full sm:w-auto">
+                  <Button size="lg" className="w-full sm:w-auto">Get Started Today</Button>
                 </Link>
-                <Link href="/pricing">
-                  <Button variant="secondary" size="lg">View Pricing</Button>
+                <Link href="/pricing" className="w-full sm:w-auto">
+                  <Button variant="secondary" size="lg" className="w-full sm:w-auto">View Pricing</Button>
                 </Link>
               </div>
             </Card>
