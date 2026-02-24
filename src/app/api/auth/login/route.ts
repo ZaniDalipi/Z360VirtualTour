@@ -4,6 +4,8 @@ import { signToken, checkRateLimit, recordLoginAttempt } from '@/lib/auth'
 import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json()
@@ -34,13 +36,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Find admin by email (case-insensitive)
+    // Find admin by email (case-insensitive using lowercase comparison)
     const admin = await prisma.admin.findFirst({
       where: {
-        email: {
-          equals: email,
-          mode: 'insensitive'
-        }
+        email: email.toLowerCase()
       },
     })
 
@@ -91,6 +90,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      authenticated: true,
+      accessToken: token,
       admin: {
         id: admin.id,
         email: admin.email,

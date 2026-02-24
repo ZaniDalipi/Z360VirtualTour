@@ -53,7 +53,8 @@ const urgencyTiers = [
   },
 ];
 
-// Default Travel Zones
+// Default Travel Zones - Affordable pricing to encourage bookings
+// Prices are kept low to remain competitive
 const travelZones = [
   {
     id: generateId(),
@@ -70,11 +71,11 @@ const travelZones = [
   {
     id: generateId(),
     name: 'Nearby',
-    description: 'Skopje region (15-30km)',
+    description: 'Skopje region (15-40km)',
     minDistanceKm: 15,
-    maxDistanceKm: 30,
-    flatFee: 15,
-    perKmRate: 0.40,
+    maxDistanceKm: 40,
+    flatFee: 5,
+    perKmRate: null,
     isIncluded: 0,
     isActive: 1,
     order: 1,
@@ -82,11 +83,11 @@ const travelZones = [
   {
     id: generateId(),
     name: 'Regional',
-    description: 'Within 30-60km (Tetovo, Kumanovo, Veles area)',
-    minDistanceKm: 30,
-    maxDistanceKm: 60,
-    flatFee: 25,
-    perKmRate: 0.35,
+    description: 'Within 40-80km (Tetovo, Kumanovo, Veles area)',
+    minDistanceKm: 40,
+    maxDistanceKm: 80,
+    flatFee: 8,
+    perKmRate: null,
     isIncluded: 0,
     isActive: 1,
     order: 2,
@@ -94,11 +95,11 @@ const travelZones = [
   {
     id: generateId(),
     name: 'Extended',
-    description: 'Within 60-120km (Shtip, Prilep, Gostivar area)',
-    minDistanceKm: 60,
-    maxDistanceKm: 120,
-    flatFee: 40,
-    perKmRate: 0.30,
+    description: 'Within 80-150km (Shtip, Prilep, Gostivar area)',
+    minDistanceKm: 80,
+    maxDistanceKm: 150,
+    flatFee: 12,
+    perKmRate: null,
     isIncluded: 0,
     isActive: 1,
     order: 3,
@@ -106,11 +107,11 @@ const travelZones = [
   {
     id: generateId(),
     name: 'Distant',
-    description: 'Over 120km (Bitola, Ohrid, Struga, Strumica)',
-    minDistanceKm: 120,
+    description: 'Over 150km (Bitola, Ohrid, Struga, Strumica)',
+    minDistanceKm: 150,
     maxDistanceKm: null,
-    flatFee: 60,
-    perKmRate: 0.25,
+    flatFee: 15,
+    perKmRate: 0.05,
     isIncluded: 0,
     isActive: 1,
     order: 4,
@@ -126,7 +127,7 @@ const bookingSettings = {
   businessCity: 'Skopje',
   businessLatitude: 41.9981,
   businessLongitude: 21.4254,
-  includeReturnTrip: 1,
+  includeReturnTrip: 0,  // Travel fees already include round trip costs
   freeDistanceKm: 15,
   workOnWeekends: 0,
   workOnSunday: 0,

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a1628"/>
+      <stop offset="100%" stop-color="#1a2d4a"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#D4AF37"/>
+      <stop offset="100%" stop-color="#FFD700"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="100" cy="100" r="200" fill="#D4AF37" opacity="0.05"/>
+  <circle cx="1100" cy="530" r="250" fill="#D4AF37" opacity="0.05"/>
+
+  <!-- Logo icon -->
+  <g transform="translate(500, 180)">
+    <rect x="0" y="0" width="200" height="200" rx="40" fill="#D4AF37" opacity="0.2"/>
+    <text x="100" y="90" font-family="system-ui, sans-serif" font-size="72" font-weight="bold" fill="#F5F0E6" text-anchor="middle">Z</text>
+    <text x="100" y="160" font-family="system-ui, sans-serif" font-size="48" font-weight="bold" fill="#D4AF37" text-anchor="middle">360</text>
+  </g>
+
+  <!-- Title -->
+  <text x="600" y="450" font-family="system-ui, sans-serif" font-size="48" font-weight="bold" fill="#F5F0E6" text-anchor="middle">Z360 Virtual Tours</text>
+
+  <!-- Subtitle -->
+  <text x="600" y="510" font-family="system-ui, sans-serif" font-size="24" fill="#B8B0A0" text-anchor="middle">Professional 360° Virtual Tour Services</text>
+
+  <!-- Bottom accent line -->
+  <rect x="450" y="560" width="300" height="4" rx="2" fill="url(#gold)"/>
+</svg>

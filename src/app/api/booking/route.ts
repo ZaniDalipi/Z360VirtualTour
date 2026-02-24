@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { bookings, travelBundles, calculateQuote, getDistanceByCity } from '@/lib/booking-db'
+import { calculateQuote, getDistanceByCity } from '@/lib/quote-utils'
 import { prisma } from '@/lib/prisma'
+import { getUserFromCookies } from '@/lib/user-auth'
+
+export const dynamic = 'force-dynamic'
 
 // Send email notification for new booking
 async function sendBookingNotification(booking: {
@@ -18,6 +21,9 @@ async function sendBookingNotification(booking: {
     urgencySurchargeAmount: number
     travelFee: number
     bundleDiscount: number
+    sameCityDiscount: number
+    sameCityDiscountPercent: number
+    matchedScheduledCity: string | null
     total: number
     depositAmount: number | null
     depositPercent: number | null
@@ -119,6 +125,12 @@ async function sendBookingNotification(booking: {
                 <td style="padding: 5px 0; text-align: right; color: #27ae60;">-€${booking.quote.bundleDiscount.toFixed(2)}</td>
               </tr>
               ` : ''}
+              ${booking.quote.sameCityDiscount > 0 ? `
+              <tr>
+                <td style="padding: 5px 0; color: #27ae60;">Same-City Discount (${booking.quote.sameCityDiscountPercent}%)${booking.quote.matchedScheduledCity ? ` - ${booking.quote.matchedScheduledCity}` : ''}:</td>
+                <td style="padding: 5px 0; text-align: right; color: #27ae60;">-€${booking.quote.sameCityDiscount.toFixed(2)}</td>
+              </tr>
+              ` : ''}
               <tr style="border-top: 2px solid #C9A962;">
                 <td style="padding: 10px 0; font-weight: bold; font-size: 18px;">Total:</td>
                 <td style="padding: 10px 0; text-align: right; font-weight: bold; font-size: 18px; color: #C9A962;">€${booking.quote.total.toFixed(2)}</td>
@@ -157,6 +169,9 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
 
+    // Check if user is authenticated (optional - bookings can be made without account)
+    const user = await getUserFromCookies()
+
     // Validate required fields
     if (!data.clientName || !data.clientEmail || !data.propertyAddress) {
       return NextResponse.json(
@@ -185,65 +200,152 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate quote
-    const quote = calculateQuote({
+    const quote = await calculateQuote({
       pricingPlanPrice: basePrice,
       urgencyTierId: data.urgencyTierId,
       distanceKm,
       bundleId: data.travelBundleId,
+      userCity: data.propertyCity,  // Pass user's city for bundle eligibility check
+      scheduledCities: data.scheduledCities,  // For same-city discount
     })
 
-    // If joining a bundle, validate it
+    // If joining a bundle, validate it thoroughly
+    let validatedBundleId = data.travelBundleId
+    let bundleValidationWarning: string | null = null
+
     if (data.travelBundleId) {
-      const bundle = travelBundles.findUnique(data.travelBundleId)
+      const bundle = await prisma.travelBundle.findUnique({
+        where: { id: data.travelBundleId },
+      })
+
       if (!bundle) {
         return NextResponse.json(
           { error: 'Selected bundle not found' },
           { status: 400 }
         )
       }
+
       if (bundle.status !== 'open') {
         return NextResponse.json(
           { error: 'Selected bundle is no longer accepting participants' },
           { status: 400 }
         )
       }
+
       if (bundle.currentCount >= bundle.maxParticipants) {
         return NextResponse.json(
           { error: 'Selected bundle is full' },
           { status: 400 }
         )
       }
+
+      // Validate city matches bundle area (within 50km of bundle city)
+      if (data.propertyCity) {
+        const { isCityWithinBundleRange } = await import('@/lib/quote-utils')
+        const isEligible = isCityWithinBundleRange(data.propertyCity, bundle.city)
+        if (!isEligible) {
+          // City is too far from bundle - remove bundle and discount
+          validatedBundleId = null
+          bundleValidationWarning = `Your property in ${data.propertyCity} is outside the eligible area for the "${bundle.name}" bundle (${bundle.city} area). Bundle discount has been removed.`
+        }
+      }
+
+      // Validate preferred date falls within bundle dates
+      if (data.preferredDate && validatedBundleId) {
+        const preferredDate = new Date(data.preferredDate)
+        const bundleStart = bundle.startDate || bundle.scheduledDate
+        const bundleEnd = bundle.endDate || bundle.scheduledDate
+
+        // Reset hours for date comparison
+        preferredDate.setHours(0, 0, 0, 0)
+        const startDate = new Date(bundleStart)
+        startDate.setHours(0, 0, 0, 0)
+        const endDate = new Date(bundleEnd)
+        endDate.setHours(23, 59, 59, 999)
+
+        if (preferredDate < startDate || preferredDate > endDate) {
+          // Date is outside bundle period - remove bundle
+          validatedBundleId = null
+          bundleValidationWarning = `Your preferred date is outside the "${bundle.name}" bundle period (${String(startDate.getDate()).padStart(2, '0')}.${String(startDate.getMonth() + 1).padStart(2, '0')}.${startDate.getFullYear()} - ${String(endDate.getDate()).padStart(2, '0')}.${String(endDate.getMonth() + 1).padStart(2, '0')}.${endDate.getFullYear()}). Bundle discount has been removed.`
+        }
+      }
+
+      // Check registration deadline
+      if (bundle.registrationDeadline && validatedBundleId) {
+        const now = new Date()
+        const deadline = new Date(bundle.registrationDeadline)
+        if (now > deadline) {
+          return NextResponse.json(
+            { error: `Registration for "${bundle.name}" bundle has closed` },
+            { status: 400 }
+          )
+        }
+      }
     }
 
-    // Create booking
-    const booking = bookings.create({
-      clientName: data.clientName,
-      clientEmail: data.clientEmail,
-      clientPhone: data.clientPhone,
-      companyName: data.companyName,
-      propertyAddress: data.propertyAddress,
-      propertyCity: data.propertyCity,
-      estimatedDistance: distanceKm,
-      serviceType: data.serviceType || planName,
-      projectDescription: data.projectDescription,
-      specialRequests: data.specialRequests,
-      pricingPlanId: data.pricingPlanId,
-      urgencyTierId: data.urgencyTierId,
-      preferredDate: data.preferredDate,
-      alternateDate: data.alternateDate,
-      deadlineDate: data.deadlineDate,
-      isFlexible: data.isFlexible ?? true,
-      travelBundleId: data.travelBundleId,
-      basePrice: quote.basePrice,
-      urgencySurcharge: quote.urgencySurchargeAmount,
-      travelFee: quote.travelFee,
-      bundleDiscount: quote.bundleDiscount,
-      totalQuote: quote.total,
-      depositAmount: quote.depositAmount,
-      status: 'quote_requested',
+    // Recalculate quote if bundle was invalidated
+    let finalQuote = quote
+    if (data.travelBundleId && !validatedBundleId) {
+      // Bundle was removed due to validation - recalculate without bundle
+      finalQuote = await calculateQuote({
+        pricingPlanPrice: basePrice,
+        urgencyTierId: data.urgencyTierId,
+        distanceKm,
+        bundleId: null, // No bundle
+        userCity: data.propertyCity,
+        scheduledCities: data.scheduledCities,
+      })
+    }
+
+    // Get authenticated user if available (to link booking to user account)
+    // Note: userId linking is handled via clientEmail matching until Prisma is regenerated
+    // const userPayload = await getUserFromCookies()
+
+    // Create booking with relation connections (using validated bundle)
+    const booking = await prisma.booking.create({
+      data: {
+        // Note: userId linking temporarily disabled - use email matching instead
+        // After running 'npx prisma generate', you can re-enable:
+        // ...(userPayload?.id && { user: { connect: { id: userPayload.id } } }),
+        clientName: data.clientName,
+        clientEmail: data.clientEmail,
+        clientPhone: data.clientPhone || null,
+        companyName: data.companyName || null,
+        propertyAddress: data.propertyAddress,
+        propertyCity: data.propertyCity || null,
+        estimatedDistance: distanceKm || null,
+        serviceType: data.serviceType || planName || null,
+        projectDescription: data.projectDescription || null,
+        specialRequests: data.specialRequests || null,
+        preferredDate: data.preferredDate ? new Date(data.preferredDate) : null,
+        preferredTime: data.preferredTime || null,
+        alternateDate: data.alternateDate ? new Date(data.alternateDate) : null,
+        alternateTime: data.alternateTime || null,
+        deadlineDate: data.deadlineDate ? new Date(data.deadlineDate) : null,
+        isFlexible: data.isFlexible ?? true,
+        basePrice: finalQuote.basePrice,
+        urgencySurcharge: finalQuote.urgencySurchargeAmount,
+        travelFee: finalQuote.travelFee,
+        bundleDiscount: finalQuote.bundleDiscount,
+        sameCityDiscount: finalQuote.sameCityDiscount || null,
+        totalQuote: finalQuote.total,
+        depositAmount: finalQuote.depositAmount,
+        status: 'quote_requested',
+        // Use connect syntax for relations
+        ...(data.pricingPlanId && {
+          pricingPlan: { connect: { id: data.pricingPlanId } }
+        }),
+        ...(data.urgencyTierId && {
+          urgencyTier: { connect: { id: data.urgencyTierId } }
+        }),
+        // Only connect validated bundle
+        ...(validatedBundleId && {
+          travelBundle: { connect: { id: validatedBundleId } }
+        }),
+      },
     })
 
-    // Send notification email (async, don't block the response)
+    // Send notification emails (async, don't block the response)
     sendBookingNotification({
       id: booking.id,
       clientName: data.clientName,
@@ -254,28 +356,48 @@ export async function POST(request: NextRequest) {
       propertyCity: data.propertyCity || null,
       distanceKm,
       quote: {
-        basePrice: quote.basePrice,
-        urgencySurchargePercent: quote.urgencySurchargePercent,
-        urgencySurchargeAmount: quote.urgencySurchargeAmount,
-        travelFee: quote.travelFee,
-        bundleDiscount: quote.bundleDiscount,
-        total: quote.total,
-        depositAmount: quote.depositAmount,
-        depositPercent: quote.depositPercent,
+        basePrice: finalQuote.basePrice,
+        urgencySurchargePercent: finalQuote.urgencySurchargePercent,
+        urgencySurchargeAmount: finalQuote.urgencySurchargeAmount,
+        travelFee: finalQuote.travelFee,
+        bundleDiscount: finalQuote.bundleDiscount,
+        sameCityDiscount: finalQuote.sameCityDiscount,
+        sameCityDiscountPercent: finalQuote.sameCityDiscountPercent,
+        matchedScheduledCity: finalQuote.matchedScheduledCity,
+        total: finalQuote.total,
+        depositAmount: finalQuote.depositAmount,
+        depositPercent: finalQuote.depositPercent,
       },
-    }).catch(err => console.error('Email error:', err))
+    }).catch(err => console.error('Admin email error:', err))
+
+    // Send confirmation email to client
+    import('@/lib/email').then(({ sendEmail, emailTemplates }) => {
+      const template = emailTemplates.bookingConfirmation({
+        clientName: data.clientName,
+        bookingId: booking.id,
+        totalQuote: finalQuote.total,
+        depositAmount: finalQuote.depositAmount || 0,
+        propertyAddress: data.propertyAddress,
+        preferredDate: data.preferredDate,
+      })
+      sendEmail(data.clientEmail, template).catch(err => console.error('Client email error:', err))
+    }).catch(err => console.error('Email import error:', err))
 
     return NextResponse.json({
       success: true,
       bookingId: booking.id,
       quote: {
-        basePrice: quote.basePrice,
-        urgencySurcharge: quote.urgencySurchargeAmount,
-        travelFee: quote.travelFee,
-        bundleDiscount: quote.bundleDiscount,
-        total: quote.total,
-        depositAmount: quote.depositAmount,
+        basePrice: finalQuote.basePrice,
+        urgencySurcharge: finalQuote.urgencySurchargeAmount,
+        travelFee: finalQuote.travelFee,
+        bundleDiscount: finalQuote.bundleDiscount,
+        sameCityDiscount: finalQuote.sameCityDiscount,
+        total: finalQuote.total,
+        depositAmount: finalQuote.depositAmount,
       },
+      // Include warning if bundle was invalidated
+      ...(bundleValidationWarning && { warning: bundleValidationWarning }),
+      bundleApplied: !!validatedBundleId,
     }, { status: 201 })
   } catch (error) {
     console.error('Failed to create booking:', error)
