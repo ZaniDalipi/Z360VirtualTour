@@ -411,6 +411,11 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Safe area padding bottom utility */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+  }
+
   /* Focus visible for accessibility */
   .focus-ring {
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-navy;

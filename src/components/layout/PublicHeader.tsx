@@ -44,6 +44,18 @@ export function PublicHeader() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [mobileMenuOpen])
+
   const handleCloseMenu = useCallback(() => {
     setMobileMenuOpen(false)
   }, [])
@@ -60,14 +72,14 @@ export function PublicHeader() {
         )}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16 md:h-20">
+          <div className="flex items-center justify-between h-14 sm:h-16 md:h-20">
             {/* Logo */}
             <Link
               href="/"
-              className="flex items-center gap-1.5"
+              className="flex items-center gap-1.5 touch-manipulation"
             >
-              <span className="text-2xl font-bold text-cream">Z</span>
-              <span className="text-xl font-semibold text-gold">360</span>
+              <span className="text-xl sm:text-2xl font-bold text-cream">Z</span>
+              <span className="text-lg sm:text-xl font-semibold text-gold">360</span>
               <span className="text-sm text-cream-soft ml-0.5">Virtual Tours</span>
             </Link>
 
@@ -140,7 +152,7 @@ export function PublicHeader() {
 
               {/* Mobile Menu Button */}
               <button
-                className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg border border-cream/15 text-cream hover:border-gold/30 hover:text-gold transition-colors"
+                className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg border border-cream/15 text-cream hover:border-gold/30 hover:text-gold transition-colors touch-manipulation active:scale-95"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 aria-label="Toggle menu"
                 aria-expanded={mobileMenuOpen}
@@ -151,56 +163,72 @@ export function PublicHeader() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Full screen overlay */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-navy-dark border-t border-gold/20 p-4">
-            <nav className="flex flex-col gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="text-cream font-medium px-4 py-3 rounded-lg hover:bg-cream/5 transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="px-4 py-3">
+          <div className="lg:hidden fixed inset-0 top-14 sm:top-16 bg-navy-dark/98 backdrop-blur-sm z-[9989] overflow-y-auto overscroll-contain">
+            <nav className="flex flex-col p-4 pb-safe max-w-lg mx-auto">
+              {navLinks.map((link) => {
+                const isActive = pathname === link.href || pathname?.includes(link.href + '/')
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      'text-lg font-medium px-4 py-3.5 rounded-xl transition-colors touch-manipulation active:scale-[0.98]',
+                      isActive
+                        ? 'text-gold bg-gold/10'
+                        : 'text-cream hover:bg-cream/5'
+                    )}
+                    onClick={handleCloseMenu}
+                  >
+                    {link.label}
+                  </Link>
+                )
+              })}
+
+              {/* Divider */}
+              <div className="my-3 border-t border-cream/10" />
+
+              <div className="px-4 py-2">
                 <LanguageSwitcher />
               </div>
+
+              {/* Auth Links */}
               {isInitialized && !user && (
                 <>
                   <Link
                     href="/account/login"
-                    className="flex items-center gap-2 text-cream-muted font-medium px-4 py-3 rounded-lg hover:bg-cream/5 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 text-cream-muted font-medium px-4 py-3.5 rounded-xl hover:bg-cream/5 transition-colors touch-manipulation active:scale-[0.98]"
+                    onClick={handleCloseMenu}
                   >
-                    <LogIn className="w-4 h-4" />
-                    {tAuth('login')}
+                    <LogIn className="w-5 h-5" />
+                    <span className="text-base">{tAuth('login')}</span>
                   </Link>
                   <Link
                     href="/account/signup"
-                    className="flex items-center gap-2 text-cream font-medium px-4 py-3 rounded-lg hover:bg-cream/5 transition-colors"
-                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 text-cream font-medium px-4 py-3.5 rounded-xl hover:bg-cream/5 transition-colors touch-manipulation active:scale-[0.98]"
+                    onClick={handleCloseMenu}
                   >
-                    <UserPlus className="w-4 h-4" />
-                    {tAuth('signup')}
+                    <UserPlus className="w-5 h-5" />
+                    <span className="text-base">{tAuth('signup')}</span>
                   </Link>
                 </>
               )}
               {isInitialized && user && (
                 <Link
                   href="/account"
-                  className="flex items-center gap-2 text-cream font-medium px-4 py-3 rounded-lg hover:bg-cream/5 transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 text-cream font-medium px-4 py-3.5 rounded-xl hover:bg-cream/5 transition-colors touch-manipulation active:scale-[0.98]"
+                  onClick={handleCloseMenu}
                 >
-                  <User className="w-4 h-4" />
-                  {user.name || 'Account'}
+                  <User className="w-5 h-5" />
+                  <span className="text-base">{user.name || 'Account'}</span>
                 </Link>
               )}
-              <div className="pt-2 px-4">
-                <Link href="/contact" onClick={() => setMobileMenuOpen(false)}>
-                  <button className="w-full bg-gold hover:bg-gold-soft text-navy font-bold py-3 rounded-lg transition-all">
+
+              {/* CTA Button */}
+              <div className="pt-3 px-4">
+                <Link href="/contact" onClick={handleCloseMenu}>
+                  <button className="w-full bg-gold hover:bg-gold-soft text-navy font-bold py-3.5 rounded-xl transition-all text-base touch-manipulation active:scale-[0.98]">
                     {tContact('title')}
                   </button>
                 </Link>
@@ -211,7 +239,7 @@ export function PublicHeader() {
       </header>
 
       {/* Spacer to push content below fixed header */}
-      <div className="h-16 md:h-20" />
+      <div className="h-14 sm:h-16 md:h-20" />
     </>
   )
 }

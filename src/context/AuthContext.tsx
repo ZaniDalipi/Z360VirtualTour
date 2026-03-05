@@ -16,6 +16,7 @@ interface AuthContextType {
   isLoading: boolean
   isInitialized: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
+  loginWithGoogle: (credential: string) => Promise<{ success: boolean; error?: string }>
   logout: () => Promise<void>
   refreshSession: () => Promise<void>
 }
@@ -94,6 +95,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  // Login with Google
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/user/google-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setUser(data.user)
+        return { success: true }
+      } else {
+        return { success: false, error: data.error }
+      }
+    } catch {
+      return { success: false, error: 'Failed to login with Google' }
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
   // Logout
   const logout = useCallback(async () => {
     setIsLoading(true)
@@ -138,6 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isInitialized,
         login,
+        loginWithGoogle,
         logout,
         refreshSession,
       }}

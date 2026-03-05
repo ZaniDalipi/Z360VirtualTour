@@ -215,29 +215,29 @@ export default function AccountPage() {
     <div className="min-h-screen bg-navy">
       <PublicHeader />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 md:py-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
+          className="mb-5 sm:mb-6"
         >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-cream">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-cream">
                 {t('welcomeUser', { name: user.name.split(' ')[0] })}
               </h1>
-              <p className="text-cream-muted mt-1">{t('manageBookings')}</p>
+              <p className="text-sm sm:text-base text-cream-muted mt-1">{t('manageBookings')}</p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Link href="/contact">
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
+                <Button className="text-sm sm:text-base touch-manipulation">
+                  <Plus className="w-4 h-4 mr-1.5 sm:mr-2" />
                   {t('newBooking')}
                 </Button>
               </Link>
-              <Button variant="secondary" onClick={handleLogout}>
-                <LogOut className="w-4 h-4 mr-2" />
+              <Button variant="secondary" onClick={handleLogout} className="text-sm sm:text-base touch-manipulation">
+                <LogOut className="w-4 h-4 mr-1.5 sm:mr-2" />
                 {t('logout')}
               </Button>
             </div>
@@ -249,7 +249,7 @@ export default function AccountPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6"
+          className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 mb-5 sm:mb-6"
         >
           <Card className="p-4">
             <div className="flex items-center gap-3">
@@ -426,10 +426,10 @@ export default function AccountPage() {
               </h2>
 
               {/* Category Tabs */}
-              <div className="flex gap-2 mb-6 border-b border-gold/10 pb-3">
+              <div className="flex gap-2 mb-4 sm:mb-6 border-b border-gold/10 pb-3 overflow-x-auto scrollbar-hide -mx-2 px-2">
                 <button
                   onClick={() => setActiveCategory('active')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap touch-manipulation ${
                     activeCategory === 'active'
                       ? 'bg-gold/20 text-gold'
                       : 'text-cream-muted hover:text-cream hover:bg-gold/10'
@@ -445,7 +445,7 @@ export default function AccountPage() {
                 </button>
                 <button
                   onClick={() => setActiveCategory('completed')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap touch-manipulation ${
                     activeCategory === 'completed'
                       ? 'bg-green-500/20 text-green-400'
                       : 'text-cream-muted hover:text-cream hover:bg-gold/10'
@@ -461,7 +461,7 @@ export default function AccountPage() {
                 </button>
                 <button
                   onClick={() => setActiveCategory('cancelled')}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap touch-manipulation ${
                     activeCategory === 'cancelled'
                       ? 'bg-red-500/20 text-red-400'
                       : 'text-cream-muted hover:text-cream hover:bg-gold/10'

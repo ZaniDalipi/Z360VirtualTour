@@ -445,7 +445,9 @@
     "verifyYourEmail": "Verify Your Email",
     "checkInboxMessage": "We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.",
     "didntReceiveEmail": "Didn't receive the email? Check your spam folder or",
-    "loginToResend": "log in to resend"
+    "loginToResend": "log in to resend",
+    "orContinueWithEmail": "or continue with email",
+    "googleLoginFailed": "Failed to sign in with Google. Please try again."
   },
   "account": {
     "welcomeUser": "Welcome, {name}!",

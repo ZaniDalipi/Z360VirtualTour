@@ -29,6 +29,8 @@ model User {
   phone             String?
   company           String?
   avatar            String?   // User profile picture URL
+  googleId          String?   @unique // Google OAuth ID
+  authProvider      String    @default("email") // "email" or "google"
   isActive          Boolean   @default(true)
   emailVerified     Boolean   @default(false)
   verifyToken       String?   // Email verification token

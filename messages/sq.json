@@ -445,7 +445,9 @@
     "verifyYourEmail": "Verifikoni Email-in Tuaj",
     "checkInboxMessage": "Kemi dërguar një link verifikimi në adresën tuaj email. Kontrolloni inbox-in dhe klikoni linkun.",
     "didntReceiveEmail": "Nuk morët email? Kontrolloni folderin spam ose",
-    "loginToResend": "hyni për të ridërguar"
+    "loginToResend": "hyni për të ridërguar",
+    "orContinueWithEmail": "ose vazhdoni me email",
+    "googleLoginFailed": "Hyrja me Google dështoi. Ju lutemi provoni përsëri."
   },
   "account": {
     "welcomeUser": "Mirësevini, {name}!",

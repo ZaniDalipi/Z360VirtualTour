@@ -445,7 +445,9 @@
     "verifyYourEmail": "Верификувајте го Вашиот Email",
     "checkInboxMessage": "Испративме линк за верификација на вашата email адреса. Проверете го inbox-от и кликнете на линкот.",
     "didntReceiveEmail": "Не добивте email? Проверете го spam фолдерот или",
-    "loginToResend": "најавете се за повторно испраќање"
+    "loginToResend": "најавете се за повторно испраќање",
+    "orContinueWithEmail": "или продолжете со email",
+    "googleLoginFailed": "Не успеа најавата со Google. Обидете се повторно."
   },
   "account": {
     "welcomeUser": "Добредојдовте, {name}!",
