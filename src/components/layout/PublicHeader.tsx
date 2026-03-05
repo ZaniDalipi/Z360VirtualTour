@@ -1,21 +1,22 @@
 'use client'
 
 import { Link } from '@/i18n/routing'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { usePathname } from 'next/navigation'
-import { Menu, X, LogIn, UserPlus, Phone, User } from 'lucide-react'
+import { Menu, X, LogIn, UserPlus, User } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { LanguageSwitcher } from '@/components/ui'
 import { cn } from '@/lib/utils'
-import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
 
 export function PublicHeader() {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [menuVisible, setMenuVisible] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
   const { user, isInitialized } = useAuth()
+  const menuTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const t = useTranslations('nav')
   const tContact = useTranslations('contact')
@@ -54,6 +55,20 @@ export function PublicHeader() {
     }
     return () => {
       document.body.style.overflow = ''
+    }
+  }, [mobileMenuOpen])
+
+  // Animate menu open/close with CSS transitions
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      // Opening: mount first, then animate in
+      setMenuVisible(false)
+      menuTimeoutRef.current = setTimeout(() => setMenuVisible(true), 10)
+    } else {
+      setMenuVisible(false)
+    }
+    return () => {
+      if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current)
     }
   }, [mobileMenuOpen])
 
@@ -164,113 +179,122 @@ export function PublicHeader() {
           </div>
         </div>
 
-        {/* Mobile Menu - Full screen overlay with native transitions */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="lg:hidden fixed inset-0 top-14 sm:top-16 bg-navy-dark/98 backdrop-blur-sm z-[9989] overflow-y-auto overscroll-contain scroll-momentum"
-            >
-              <nav className="flex flex-col p-4 pb-safe max-w-lg mx-auto">
-                {navLinks.map((link, index) => {
-                  const isActive = pathname === link.href || pathname?.includes(link.href + '/')
-                  return (
-                    <motion.div
-                      key={link.href}
-                      initial={{ opacity: 0, x: -12 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.04, duration: 0.2 }}
-                    >
-                      <Link
-                        href={link.href}
-                        className={cn(
-                          'block text-lg font-medium px-4 py-3.5 rounded-xl transition-all duration-150 touch-manipulation active:scale-[0.97] active:opacity-75',
-                          isActive
-                            ? 'text-gold bg-gold/10'
-                            : 'text-cream active:bg-cream/5'
-                        )}
-                        onClick={handleCloseMenu}
-                      >
-                        {link.label}
-                      </Link>
-                    </motion.div>
-                  )
-                })}
-
-                {/* Divider */}
-                <div className="my-3 border-t border-cream/10" />
-
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.25 }}
-                  className="px-4 py-2"
-                >
-                  <LanguageSwitcher />
-                </motion.div>
-
-                {/* Auth Links */}
-                {isInitialized && !user && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
+        {/* Mobile Menu - Full screen overlay with CSS transitions */}
+        {mobileMenuOpen && (
+          <div
+            className={cn(
+              'lg:hidden fixed inset-0 top-14 sm:top-16 bg-navy-dark/98 backdrop-blur-sm z-[9989] overflow-y-auto overscroll-contain scroll-momentum transition-opacity duration-200',
+              menuVisible ? 'opacity-100' : 'opacity-0'
+            )}
+          >
+            <nav className="flex flex-col p-4 pb-safe max-w-lg mx-auto">
+              {navLinks.map((link, index) => {
+                const isActive = pathname === link.href || pathname?.includes(link.href + '/')
+                return (
+                  <div
+                    key={link.href}
+                    className={cn(
+                      'transition-all duration-200',
+                      menuVisible
+                        ? 'opacity-100 translate-x-0'
+                        : 'opacity-0 -translate-x-3'
+                    )}
+                    style={{ transitionDelay: menuVisible ? `${index * 40}ms` : '0ms' }}
                   >
                     <Link
-                      href="/account/login"
-                      className="flex items-center gap-3 text-cream-muted font-medium px-4 py-3.5 rounded-xl transition-all duration-150 touch-manipulation active:scale-[0.97] active:bg-cream/5 active:opacity-75"
+                      href={link.href}
+                      className={cn(
+                        'block text-lg font-medium px-4 py-3.5 rounded-xl transition-all duration-150 touch-manipulation active:scale-[0.97] active:opacity-75',
+                        isActive
+                          ? 'text-gold bg-gold/10'
+                          : 'text-cream active:bg-cream/5'
+                      )}
                       onClick={handleCloseMenu}
                     >
-                      <LogIn className="w-5 h-5" />
-                      <span className="text-base">{tAuth('login')}</span>
+                      {link.label}
                     </Link>
-                    <Link
-                      href="/account/signup"
-                      className="flex items-center gap-3 text-cream font-medium px-4 py-3.5 rounded-xl transition-all duration-150 touch-manipulation active:scale-[0.97] active:bg-cream/5 active:opacity-75"
-                      onClick={handleCloseMenu}
-                    >
-                      <UserPlus className="w-5 h-5" />
-                      <span className="text-base">{tAuth('signup')}</span>
-                    </Link>
-                  </motion.div>
-                )}
-                {isInitialized && user && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <Link
-                      href="/account"
-                      className="flex items-center gap-3 text-cream font-medium px-4 py-3.5 rounded-xl transition-all duration-150 touch-manipulation active:scale-[0.97] active:bg-cream/5 active:opacity-75"
-                      onClick={handleCloseMenu}
-                    >
-                      <User className="w-5 h-5" />
-                      <span className="text-base">{user.name || 'Account'}</span>
-                    </Link>
-                  </motion.div>
-                )}
+                  </div>
+                )
+              })}
 
-                {/* CTA Button */}
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.35 }}
-                  className="pt-3 px-4"
+              {/* Divider */}
+              <div className="my-3 border-t border-cream/10" />
+
+              <div
+                className={cn(
+                  'px-4 py-2 transition-opacity duration-200',
+                  menuVisible ? 'opacity-100' : 'opacity-0'
+                )}
+                style={{ transitionDelay: menuVisible ? '250ms' : '0ms' }}
+              >
+                <LanguageSwitcher />
+              </div>
+
+              {/* Auth Links */}
+              {isInitialized && !user && (
+                <div
+                  className={cn(
+                    'transition-opacity duration-200',
+                    menuVisible ? 'opacity-100' : 'opacity-0'
+                  )}
+                  style={{ transitionDelay: menuVisible ? '300ms' : '0ms' }}
                 >
-                  <Link href="/contact" onClick={handleCloseMenu}>
-                    <button className="w-full bg-gold hover:bg-gold-soft text-navy font-bold py-3.5 rounded-xl transition-all duration-150 text-base touch-manipulation active:scale-[0.97] active:opacity-90">
-                      {tContact('title')}
-                    </button>
+                  <Link
+                    href="/account/login"
+                    className="flex items-center gap-3 text-cream-muted font-medium px-4 py-3.5 rounded-xl transition-all duration-150 touch-manipulation active:scale-[0.97] active:bg-cream/5 active:opacity-75"
+                    onClick={handleCloseMenu}
+                  >
+                    <LogIn className="w-5 h-5" />
+                    <span className="text-base">{tAuth('login')}</span>
                   </Link>
-                </motion.div>
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                  <Link
+                    href="/account/signup"
+                    className="flex items-center gap-3 text-cream font-medium px-4 py-3.5 rounded-xl transition-all duration-150 touch-manipulation active:scale-[0.97] active:bg-cream/5 active:opacity-75"
+                    onClick={handleCloseMenu}
+                  >
+                    <UserPlus className="w-5 h-5" />
+                    <span className="text-base">{tAuth('signup')}</span>
+                  </Link>
+                </div>
+              )}
+              {isInitialized && user && (
+                <div
+                  className={cn(
+                    'transition-opacity duration-200',
+                    menuVisible ? 'opacity-100' : 'opacity-0'
+                  )}
+                  style={{ transitionDelay: menuVisible ? '300ms' : '0ms' }}
+                >
+                  <Link
+                    href="/account"
+                    className="flex items-center gap-3 text-cream font-medium px-4 py-3.5 rounded-xl transition-all duration-150 touch-manipulation active:scale-[0.97] active:bg-cream/5 active:opacity-75"
+                    onClick={handleCloseMenu}
+                  >
+                    <User className="w-5 h-5" />
+                    <span className="text-base">{user.name || 'Account'}</span>
+                  </Link>
+                </div>
+              )}
+
+              {/* CTA Button */}
+              <div
+                className={cn(
+                  'pt-3 px-4 transition-all duration-200',
+                  menuVisible
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-2'
+                )}
+                style={{ transitionDelay: menuVisible ? '350ms' : '0ms' }}
+              >
+                <Link href="/contact" onClick={handleCloseMenu}>
+                  <button className="w-full bg-gold hover:bg-gold-soft text-navy font-bold py-3.5 rounded-xl transition-all duration-150 text-base touch-manipulation active:scale-[0.97] active:opacity-90">
+                    {tContact('title')}
+                  </button>
+                </Link>
+              </div>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Spacer to push content below fixed header */}
