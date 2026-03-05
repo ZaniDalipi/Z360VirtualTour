@@ -111,26 +111,34 @@
 
   /* Custom button styles */
   .btn-primary {
-    @apply bg-cream font-semibold px-6 py-3 rounded-md
-           shadow-button transition-all duration-200
+    @apply bg-cream font-semibold px-6 py-3 rounded-xl
+           shadow-button transition-all duration-150
            hover:scale-[1.02] hover:shadow-glow
-           active:scale-[0.98] active:bg-cream-soft;
+           active:scale-[0.96] active:opacity-90 active:bg-cream-soft;
     color: #0D1B2A;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   .btn-secondary {
     @apply bg-transparent border-[1.5px] border-gold/40 font-medium
-           px-6 py-3 rounded-md transition-all duration-200
-           hover:border-gold hover:bg-gold/10;
+           px-6 py-3 rounded-xl transition-all duration-150
+           hover:border-gold hover:bg-gold/10
+           active:scale-[0.96] active:bg-gold/15;
     color: #0D1B2A;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   .btn-icon {
     @apply w-12 h-12 flex items-center justify-center
-           bg-navy-light/50 border border-gold/20 rounded-md
-           transition-all duration-200
-           hover:bg-gold/20 hover:border-gold/40;
+           bg-navy-light/50 border border-gold/20 rounded-xl
+           transition-all duration-150
+           hover:bg-gold/20 hover:border-gold/40
+           active:scale-90 active:bg-gold/25;
     color: #0D1B2A;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   /* Touch-friendly button sizing */
@@ -150,10 +158,10 @@
 
   /* Input styles */
   .input-field {
-    @apply w-full bg-navy-medium border border-cream/15 rounded-md
-           px-4 py-3 text-cream placeholder:text-cream-dim
-           focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/50
-           transition-all duration-200;
+    @apply w-full bg-navy-medium border border-cream/15 rounded-xl
+           px-4 py-3 text-base text-cream placeholder:text-cream-dim
+           focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/30
+           transition-all duration-150;
   }
 
   /* Touch-friendly input sizing */
@@ -166,7 +174,15 @@
 
   /* Chip/tag styles */
   .chip {
-    @apply px-4 py-2 rounded-full text-sm font-medium transition-all duration-200;
+    @apply px-4 py-2 rounded-full text-sm font-medium transition-all duration-150;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    min-height: 40px;
+  }
+
+  .chip:active {
+    transform: scale(0.95);
+    opacity: 0.85;
   }
 
   .chip-active {
@@ -180,7 +196,14 @@
 
   /* Navigation bar */
   .nav-item {
-    @apply flex flex-col items-center gap-1 py-2 px-4 transition-all duration-200;
+    @apply flex flex-col items-center gap-1 py-2 px-4 transition-all duration-150;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .nav-item:active {
+    transform: scale(0.92);
+    opacity: 0.7;
   }
 
   .nav-item-active {
@@ -419,5 +442,59 @@
   /* Focus visible for accessibility */
   .focus-ring {
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-navy;
+  }
+
+  /* Native-feel active state for interactive elements */
+  .native-press {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+
+  .native-press:active {
+    transform: scale(0.97);
+    opacity: 0.85;
+  }
+
+  /* Lighter press for smaller items */
+  .native-press-sm {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+
+  .native-press-sm:active {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+
+  /* Bottom sheet modal styles for mobile */
+  .bottom-sheet-enter {
+    transform: translateY(100%);
+  }
+
+  .bottom-sheet-active {
+    transform: translateY(0);
+  }
+
+  /* Pull indicator for bottom sheets */
+  .sheet-handle {
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(232, 220, 196, 0.3);
+    margin: 8px auto 4px;
+  }
+
+  /* iOS-style rubber band overscroll */
+  .overscroll-rubber {
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Momentum scrolling for iOS */
+  .scroll-momentum {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
   }
 }

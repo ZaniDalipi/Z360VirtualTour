@@ -386,23 +386,23 @@ export default function AccountPage() {
             {/* Quick Actions */}
             <Card className="p-4">
               <h3 className="text-sm font-medium text-cream mb-3">{t('quickActions', { defaultValue: 'Quick Actions' })}</h3>
-              <div className="space-y-2">
-                <Link href="/contact" className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gold/10 transition-colors group">
-                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+              <div className="space-y-1">
+                <Link href="/contact" className="flex items-center gap-3 p-3 min-h-[48px] rounded-xl hover:bg-gold/10 active:bg-gold/15 active:scale-[0.98] transition-all duration-150 group touch-manipulation">
+                  <div className="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center">
                     <Plus className="w-4 h-4 text-gold" />
                   </div>
                   <span className="text-sm text-cream group-hover:text-gold transition-colors">{t('requestNewQuote', { defaultValue: 'Request New Quote' })}</span>
                   <ChevronRight className="w-4 h-4 text-cream-muted ml-auto" />
                 </Link>
-                <Link href="/tours" className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gold/10 transition-colors group">
-                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+                <Link href="/tours" className="flex items-center gap-3 p-3 min-h-[48px] rounded-xl hover:bg-gold/10 active:bg-gold/15 active:scale-[0.98] transition-all duration-150 group touch-manipulation">
+                  <div className="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center">
                     <Eye className="w-4 h-4 text-gold" />
                   </div>
                   <span className="text-sm text-cream group-hover:text-gold transition-colors">{t('browseTours', { defaultValue: 'Browse Tours' })}</span>
                   <ChevronRight className="w-4 h-4 text-cream-muted ml-auto" />
                 </Link>
-                <Link href="/schedule" className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-gold/10 transition-colors group">
-                  <div className="w-8 h-8 rounded-lg bg-gold/10 flex items-center justify-center">
+                <Link href="/schedule" className="flex items-center gap-3 p-3 min-h-[48px] rounded-xl hover:bg-gold/10 active:bg-gold/15 active:scale-[0.98] transition-all duration-150 group touch-manipulation">
+                  <div className="w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center">
                     <Calendar className="w-4 h-4 text-gold" />
                   </div>
                   <span className="text-sm text-cream group-hover:text-gold transition-colors">{t('viewSchedule', { defaultValue: 'View Schedule' })}</span>
@@ -426,10 +426,10 @@ export default function AccountPage() {
               </h2>
 
               {/* Category Tabs */}
-              <div className="flex gap-2 mb-4 sm:mb-6 border-b border-gold/10 pb-3 overflow-x-auto scrollbar-hide -mx-2 px-2">
+              <div className="flex gap-2 mb-4 sm:mb-6 border-b border-gold/10 pb-3 overflow-x-auto scrollbar-hide scroll-momentum -mx-2 px-2">
                 <button
                   onClick={() => setActiveCategory('active')}
-                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                  className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-medium transition-all duration-150 whitespace-nowrap touch-manipulation active:scale-95 active:opacity-80 ${
                     activeCategory === 'active'
                       ? 'bg-gold/20 text-gold'
                       : 'text-cream-muted hover:text-cream hover:bg-gold/10'
@@ -438,14 +438,14 @@ export default function AccountPage() {
                   <Hourglass className="w-4 h-4" />
                   {t('categoryActive', { defaultValue: 'Active' })}
                   {categorizedBookings.active.length > 0 && (
-                    <span className="bg-gold/30 text-gold text-xs px-1.5 py-0.5 rounded-full">
+                    <span className="bg-gold/30 text-gold text-xs px-1.5 py-0.5 rounded-full min-w-[22px] text-center">
                       {categorizedBookings.active.length}
                     </span>
                   )}
                 </button>
                 <button
                   onClick={() => setActiveCategory('completed')}
-                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                  className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-medium transition-all duration-150 whitespace-nowrap touch-manipulation active:scale-95 active:opacity-80 ${
                     activeCategory === 'completed'
                       ? 'bg-green-500/20 text-green-400'
                       : 'text-cream-muted hover:text-cream hover:bg-gold/10'
@@ -454,14 +454,14 @@ export default function AccountPage() {
                   <CheckCircle className="w-4 h-4" />
                   {t('categoryCompleted', { defaultValue: 'Completed' })}
                   {categorizedBookings.completed.length > 0 && (
-                    <span className="bg-green-500/30 text-green-400 text-xs px-1.5 py-0.5 rounded-full">
+                    <span className="bg-green-500/30 text-green-400 text-xs px-1.5 py-0.5 rounded-full min-w-[22px] text-center">
                       {categorizedBookings.completed.length}
                     </span>
                   )}
                 </button>
                 <button
                   onClick={() => setActiveCategory('cancelled')}
-                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap touch-manipulation ${
+                  className={`flex items-center gap-2 px-4 py-2.5 min-h-[44px] rounded-xl text-sm font-medium transition-all duration-150 whitespace-nowrap touch-manipulation active:scale-95 active:opacity-80 ${
                     activeCategory === 'cancelled'
                       ? 'bg-red-500/20 text-red-400'
                       : 'text-cream-muted hover:text-cream hover:bg-gold/10'
@@ -470,7 +470,7 @@ export default function AccountPage() {
                   <XCircle className="w-4 h-4" />
                   {t('categoryCancelled', { defaultValue: 'Cancelled' })}
                   {categorizedBookings.cancelled.length > 0 && (
-                    <span className="bg-red-500/30 text-red-400 text-xs px-1.5 py-0.5 rounded-full">
+                    <span className="bg-red-500/30 text-red-400 text-xs px-1.5 py-0.5 rounded-full min-w-[22px] text-center">
                       {categorizedBookings.cancelled.length}
                     </span>
                   )}
@@ -526,7 +526,7 @@ export default function AccountPage() {
                     {filteredBookings.map((booking) => (
                       <div
                         key={booking.id}
-                        className="p-4 rounded-xl border border-gold/10 hover:border-gold/30 transition-colors"
+                        className="p-4 rounded-xl border border-gold/10 hover:border-gold/30 active:bg-navy-medium/50 transition-all duration-150 touch-manipulation"
                       >
                         <div className="flex items-start justify-between gap-4">
                           <div className="flex-1 min-w-0">
@@ -574,7 +574,7 @@ export default function AccountPage() {
                             )}
                             <Link
                               href={`/account/bookings/${booking.id}`}
-                              className="inline-flex items-center gap-1 text-sm text-cream-muted hover:text-cream mt-2"
+                              className="inline-flex items-center gap-1 text-sm text-cream-muted hover:text-cream active:text-gold mt-2 py-1 touch-manipulation"
                             >
                               {t('viewDetails')}
                               <ChevronRight className="w-4 h-4" />

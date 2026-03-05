@@ -11,13 +11,13 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', isLoading, children, disabled, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gold/50 disabled:opacity-50 disabled:cursor-not-allowed'
+    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-gold/50 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation'
 
     const variants = {
-      primary: 'bg-gold text-[#0D1B2A] hover:bg-gold/90 hover:scale-[1.02] hover:shadow-glow active:scale-[0.98] shadow-button font-semibold',
-      secondary: 'bg-transparent border-[1.5px] border-gold/40 text-cream hover:border-gold hover:bg-gold/10',
-      ghost: 'bg-transparent text-cream hover:bg-cream/10',
-      icon: 'bg-navy-light/50 border border-gold/20 text-cream hover:bg-gold/20 hover:border-gold/40',
+      primary: 'bg-gold text-[#0D1B2A] hover:bg-gold/90 hover:scale-[1.02] hover:shadow-glow active:scale-[0.96] active:opacity-90 shadow-button font-semibold',
+      secondary: 'bg-transparent border-[1.5px] border-gold/40 text-cream hover:border-gold hover:bg-gold/10 active:scale-[0.96] active:bg-gold/15',
+      ghost: 'bg-transparent text-cream hover:bg-cream/10 active:scale-[0.96] active:bg-cream/15',
+      icon: 'bg-navy-light/50 border border-gold/20 text-cream hover:bg-gold/20 hover:border-gold/40 active:scale-90 active:bg-gold/25',
     }
 
     const sizes = {

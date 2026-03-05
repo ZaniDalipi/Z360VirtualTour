@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback } from 'react'
+import { useEffect, useCallback, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react'
 import { Button } from './Button'
@@ -43,6 +43,14 @@ export function Modal({
   showCancel = false,
 }: ModalProps) {
   const Icon = iconMap[type]
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640)
+    check()
+    window.addEventListener('resize', check, { passive: true })
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   const handleConfirm = useCallback(() => {
     onConfirm?.()
@@ -72,6 +80,21 @@ export function Modal({
     }
   }, [isOpen])
 
+  // Mobile: bottom sheet animation | Desktop: center scale
+  const mobileVariants = {
+    initial: { opacity: 0, y: '100%' },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: '100%' },
+  }
+
+  const desktopVariants = {
+    initial: { opacity: 0, scale: 0.95, y: 20 },
+    animate: { opacity: 1, scale: 1, y: 0 },
+    exit: { opacity: 0, scale: 0.95, y: 20 },
+  }
+
+  const variants = isMobile ? mobileVariants : desktopVariants
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -88,13 +111,25 @@ export function Modal({
 
           {/* Modal */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+            {...variants}
+            transition={isMobile
+              ? { type: 'spring', damping: 28, stiffness: 350 }
+              : { duration: 0.2 }
+            }
+            className={`fixed z-50 ${
+              isMobile
+                ? 'inset-x-0 bottom-0'
+                : 'inset-0 flex items-center justify-center p-4 sm:p-6'
+            }`}
           >
-            <div className="w-full max-w-md bg-navy-light border border-gold/20 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+            <div className={`w-full bg-navy-light border border-gold/20 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto ${
+              isMobile
+                ? 'rounded-t-2xl safe-bottom'
+                : 'max-w-md rounded-2xl mx-auto'
+            }`}>
+              {/* Sheet handle (mobile only) */}
+              {isMobile && <div className="sheet-handle" />}
+
               {/* Header */}
               <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gold/10">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -107,7 +142,7 @@ export function Modal({
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-3 -mr-1 rounded-lg text-cream-muted hover:text-cream hover:bg-gold/10 transition-colors touch-manipulation"
+                  className="w-11 h-11 -mr-2 rounded-xl flex items-center justify-center text-cream-muted hover:text-cream hover:bg-gold/10 active:scale-90 transition-all duration-150 touch-manipulation"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
@@ -120,13 +155,15 @@ export function Modal({
               </div>
 
               {/* Actions */}
-              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 p-4 sm:p-5 border-t border-gold/10 bg-navy/50">
+              <div className={`flex items-stretch gap-2 sm:gap-3 p-4 sm:p-5 border-t border-gold/10 bg-navy/50 ${
+                isMobile ? 'flex-col-reverse pb-safe' : 'flex-col-reverse sm:flex-row sm:items-center sm:justify-end'
+              }`}>
                 {showCancel && (
-                  <Button variant="secondary" onClick={onClose} className="w-full sm:w-auto">
+                  <Button variant="secondary" onClick={onClose} className="w-full sm:w-auto h-12 sm:h-auto touch-manipulation active:scale-[0.97]">
                     {cancelText}
                   </Button>
                 )}
-                <Button onClick={handleConfirm} className="w-full sm:w-auto">
+                <Button onClick={handleConfirm} className="w-full sm:w-auto h-12 sm:h-auto touch-manipulation active:scale-[0.97]">
                   {confirmText}
                 </Button>
               </div>

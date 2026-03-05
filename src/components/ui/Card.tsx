@@ -11,10 +11,10 @@ interface CardProps {
 
 export function Card({ children, className, variant = 'default', hover = false }: CardProps) {
   const variants = {
-    default: 'bg-navy-dark border border-gold/10 rounded-lg',
-    elevated: 'bg-navy-medium/85 backdrop-blur-2xl border border-gold/15 rounded-lg',
-    glass: 'bg-navy-dark/80 backdrop-blur-xl border border-cream/10 rounded-lg',
-    property: 'bg-navy-dark border border-gold/10 rounded-lg shadow-card overflow-hidden',
+    default: 'bg-navy-dark border border-gold/10 rounded-xl sm:rounded-lg',
+    elevated: 'bg-navy-medium/85 backdrop-blur-2xl border border-gold/15 rounded-xl sm:rounded-lg',
+    glass: 'bg-navy-dark/80 backdrop-blur-xl border border-cream/10 rounded-xl sm:rounded-lg',
+    property: 'bg-navy-dark border border-gold/10 rounded-xl sm:rounded-lg shadow-card overflow-hidden',
   }
 
   return (

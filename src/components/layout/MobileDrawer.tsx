@@ -96,7 +96,7 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
               </Link>
               <button
                 onClick={onClose}
-                className="w-10 h-10 rounded-xl bg-navy-medium border border-cream/10 flex items-center justify-center text-cream-muted hover:text-cream hover:border-gold/30 transition-colors"
+                className="w-11 h-11 rounded-xl bg-navy-medium border border-cream/10 flex items-center justify-center text-cream-muted hover:text-cream hover:border-gold/30 active:scale-90 active:bg-gold/10 transition-all duration-150 touch-manipulation"
                 aria-label="Close menu"
               >
                 <X className="w-5 h-5" />
@@ -121,10 +121,10 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
                         href={link.href}
                         onClick={onClose}
                         className={cn(
-                          'flex items-center gap-3 px-4 py-3.5 rounded-xl text-body-lg transition-all duration-200',
+                          'flex items-center gap-3 px-4 py-3.5 rounded-xl text-body-lg transition-all duration-150 touch-manipulation active:scale-[0.97] active:opacity-80',
                           isActive
                             ? 'bg-gold text-navy font-semibold'
-                            : 'text-cream-soft hover:text-cream hover:bg-gold/10'
+                            : 'text-cream-soft hover:text-cream hover:bg-gold/10 active:bg-gold/15'
                         )}
                       >
                         <Icon className="w-5 h-5" />
@@ -165,7 +165,7 @@ export function MobileDrawer({ isOpen, onClose, user }: MobileDrawerProps) {
             {/* CTA Button */}
             <div className="p-4 border-t border-gold/10 safe-bottom">
               <Link href="/contact" onClick={onClose}>
-                <button className="w-full bg-gold hover:bg-gold-soft text-navy font-semibold py-4 px-6 rounded-xl transition-colors flex items-center justify-center gap-2">
+                <button className="w-full bg-gold hover:bg-gold-soft text-navy font-semibold py-4 px-6 rounded-xl transition-all duration-150 flex items-center justify-center gap-2 touch-manipulation active:scale-[0.97] active:opacity-90">
                   Work With Us
                   <ChevronRight className="w-4 h-4" />
                 </button>

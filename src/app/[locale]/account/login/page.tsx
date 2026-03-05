@@ -84,13 +84,14 @@ export default function LoginPage() {
     <div className="min-h-screen bg-navy">
       <PublicHeader />
 
-      <div className="flex items-center justify-center py-8 sm:py-12 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-4rem)] sm:min-h-0">
+      <div className="flex items-center justify-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8 min-h-[calc(100vh-4rem)] sm:min-h-0">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           className="w-full max-w-md"
         >
-          <Card className="p-5 sm:p-8">
+          <Card className="p-5 sm:p-8 rounded-2xl">
             {/* Header */}
             <div className="text-center mb-6 sm:mb-8">
               <div className="relative h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4">
@@ -168,7 +169,7 @@ export default function LoginPage() {
                   <label className="block text-sm font-medium text-cream">
                     {t('password')}
                   </label>
-                  <Link href="/account/forgot-password" className="text-sm text-gold hover:text-gold/80 active:text-gold/60">
+                  <Link href="/account/forgot-password" className="text-sm text-gold hover:text-gold/80 active:text-gold/60 py-1 touch-manipulation">
                     {t('forgotPassword', { defaultValue: 'Forgot password?' })}
                   </Link>
                 </div>

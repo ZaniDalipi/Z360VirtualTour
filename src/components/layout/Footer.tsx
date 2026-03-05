@@ -62,10 +62,10 @@ export function Footer() {
                   <a
                     key={social.label}
                     href={social.href}
-                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-navy-medium flex items-center justify-center text-cream-muted hover:text-gold hover:bg-gold/10 transition-colors"
+                    className="w-11 h-11 sm:w-10 sm:h-10 rounded-xl sm:rounded-lg bg-navy-medium flex items-center justify-center text-cream-muted hover:text-gold hover:bg-gold/10 active:scale-90 active:bg-gold/20 transition-all duration-150 touch-manipulation"
                     aria-label={social.label}
                   >
-                    <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <Icon className="w-5 h-5" />
                   </a>
                 )
               })}
@@ -75,10 +75,10 @@ export function Footer() {
           {/* Services */}
           <div>
             <h3 className="text-h4 font-semibold text-cream mb-4">{t('services')}</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-1">
               {footerLinks.services.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-xs sm:text-body text-cream-muted hover:text-cream transition-colors">
+                  <Link href={link.href} className="inline-block py-1.5 text-sm text-cream-muted hover:text-cream active:text-gold transition-colors touch-manipulation">
                     {link.label}
                   </Link>
                 </li>
@@ -89,10 +89,10 @@ export function Footer() {
           {/* Company */}
           <div>
             <h3 className="text-h4 font-semibold text-cream mb-4">{t('company')}</h3>
-            <ul className="space-y-3">
+            <ul className="space-y-1">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="text-xs sm:text-body text-cream-muted hover:text-cream transition-colors">
+                  <Link href={link.href} className="inline-block py-1.5 text-sm text-cream-muted hover:text-cream active:text-gold transition-colors touch-manipulation">
                     {link.label}
                   </Link>
                 </li>

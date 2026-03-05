@@ -113,11 +113,12 @@ export default function SignupPage() {
 
       <div className="flex items-center justify-center py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
           className="w-full max-w-md"
         >
-          <Card className="p-5 sm:p-8">
+          <Card className="p-5 sm:p-8 rounded-2xl">
             {/* Header */}
             <div className="text-center mb-5 sm:mb-8">
               <div className="relative h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4">

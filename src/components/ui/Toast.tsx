@@ -85,8 +85,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ showToast, success, error, warning, info }}>
       {children}
 
-      {/* Toast Container */}
-      <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+      {/* Toast Container - full width on mobile, right-aligned on desktop */}
+      <div className="fixed bottom-0 sm:bottom-4 right-0 sm:right-4 z-[100] flex flex-col gap-2 w-full sm:max-w-sm pointer-events-none safe-bottom sm:pb-0 px-3 sm:px-0 pb-3">
         <AnimatePresence mode="popLayout">
           {toasts.map((toast) => {
             const config = toastConfig[toast.type]
@@ -95,16 +95,17 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             return (
               <motion.div
                 key={toast.id}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                initial={{ opacity: 0, y: 40, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 100, scale: 0.95 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
                 className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl border backdrop-blur-lg shadow-lg ${config.bgColor} ${config.borderColor}`}
               >
                 <Icon className={`w-5 h-5 flex-shrink-0 mt-0.5 ${config.iconColor}`} />
                 <p className="flex-1 text-sm text-cream">{toast.message}</p>
                 <button
                   onClick={() => removeToast(toast.id)}
-                  className="flex-shrink-0 text-cream-muted hover:text-cream transition-colors"
+                  className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-cream-muted hover:text-cream active:scale-90 transition-all duration-150 touch-manipulation -mr-1 -mt-1"
                 >
                   <X className="w-4 h-4" />
                 </button>

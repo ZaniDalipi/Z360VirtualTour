@@ -82,12 +82,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         <input
           ref={ref}
           className={cn(
-            'w-full bg-navy-medium border border-cream/15 rounded-md',
-            'px-4 py-3 text-cream placeholder:text-cream-dim',
-            'focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold/50',
-            'transition-all duration-200',
+            'w-full bg-navy-medium border border-cream/15 rounded-xl',
+            'px-4 py-3 text-cream text-base placeholder:text-cream-dim',
+            'focus:outline-none focus:border-gold focus:ring-2 focus:ring-gold/30',
+            'transition-all duration-150',
             icon && 'pl-12',
-            displayError && 'border-red-500 focus:border-red-500 focus:ring-red-500/50',
+            displayError && 'border-red-500 focus:border-red-500 focus:ring-red-500/30',
             className
           )}
           onInvalid={handleInvalid}
