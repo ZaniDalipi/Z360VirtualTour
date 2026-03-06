@@ -44,6 +44,7 @@
     "clsx": "^2.1.0",
     "cookies-next": "^4.1.0",
     "framer-motion": "^10.17.9",
+    "google-auth-library": "^10.6.1",
     "jose": "^5.2.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.303.0",

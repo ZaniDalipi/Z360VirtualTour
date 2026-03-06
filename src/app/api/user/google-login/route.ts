@@ -4,12 +4,15 @@ import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 import { cookies } from 'next/headers'
+import { OAuth2Client } from 'google-auth-library'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
 
+const client = new OAuth2Client(GOOGLE_CLIENT_ID)
+
 interface GooglePayload {
-  sub: string       // Google user ID
+  sub: string
   email: string
   email_verified: boolean
   name: string
@@ -20,35 +23,19 @@ interface GooglePayload {
 
 async function verifyGoogleToken(credential: string): Promise<GooglePayload | null> {
   try {
-    // Decode and verify the Google ID token
-    // Split the JWT and decode the payload
-    const parts = credential.split('.')
-    if (parts.length !== 3) return null
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: GOOGLE_CLIENT_ID,
+    })
 
-    const payload = JSON.parse(
-      Buffer.from(parts[1], 'base64url').toString('utf-8')
-    ) as GooglePayload & { iss: string; aud: string; exp: number }
-
-    // Verify issuer
-    if (payload.iss !== 'accounts.google.com' && payload.iss !== 'https://accounts.google.com') {
-      return null
-    }
-
-    // Verify audience matches our client ID
-    if (GOOGLE_CLIENT_ID && payload.aud !== GOOGLE_CLIENT_ID) {
-      return null
-    }
-
-    // Verify token hasn't expired
-    if (payload.exp * 1000 < Date.now()) {
-      return null
-    }
+    const payload = ticket.getPayload()
+    if (!payload || !payload.sub || !payload.email) return null
 
     return {
       sub: payload.sub,
       email: payload.email,
-      email_verified: payload.email_verified,
-      name: payload.name,
+      email_verified: payload.email_verified ?? false,
+      name: payload.name || payload.email.split('@')[0],
       picture: payload.picture,
       given_name: payload.given_name,
       family_name: payload.family_name,
